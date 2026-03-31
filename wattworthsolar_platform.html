@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WattWorth — For Watt It's Worth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════════
+   WATTWORTHDESIGN SYSTEM
+   Background:   #F7F5F2  soft cream
+   Surface:      #FFFFFF  white cards
+   Text:         #1F1F1F  charcoal
+   Text-dim:     #6B6B6B  muted gray
+   Green:        #2E7D5B  deep solar green (primary CTA)
+   Gold:         #D6B25E  soft gold (savings / money)
+   Blue:         #8FAFC1  muted sky (data / charts)
+   Green-pale:   #EBF5F0
+   Gold-pale:    #FBF5E6
+   Blue-pale:    #EEF4F8
+   Green-dark:   #1E5C41
+   Border:       rgba(31,31,31,0.08)
+══════════════════════════════════════════════ */
+:root {
+  --bg:         #F7F5F2;
+  --surface:    #FFFFFF;
+  --ink:        #1F1F1F;
+  --ink-mid:    #3A3A3A;
+  --ink-dim:    #6B6B6B;
+  --green:      #2E7D5B;
+  --green-dark: #1E5C41;
+  --green-pale: #EBF5F0;
+  --green-mid:  #5BA882;
+  --gold:       #D6B25E;
+  --gold-dark:  #B8923A;
+  --gold-pale:  #FBF5E6;
+  --blue:       #8FAFC1;
+  --blue-pale:  #EEF4F8;
+  --border:     rgba(31,31,31,0.08);
+  --shadow-sm:  0 1px 3px rgba(31,31,31,0.06), 0 4px 12px rgba(31,31,31,0.04);
+  --shadow-md:  0 4px 16px rgba(31,31,31,0.08), 0 12px 40px rgba(31,31,31,0.06);
+  --shadow-lg:  0 8px 32px rgba(31,31,31,0.1), 0 24px 64px rgba(31,31,31,0.08);
+  --r:          12px;
+  --r-lg:       20px;
+  --r-xl:       28px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  overflow-x: hidden;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV ─────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 52px; height: 68px;
+  background: rgba(247,245,242,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.logo-wrap { display: flex; flex-direction: column; line-height: 1; }
+.logo-main {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem; font-weight: 700;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+.logo-main span { color: var(--green); }
+.logo-sub {
+  font-size: 0.62rem; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-dim);
+  margin-top: 1px;
+}
+.nav-right { display: flex; align-items: center; gap: 24px; }
+.nav-link {
+  font-size: 0.88rem; font-weight: 500; color: var(--ink-dim);
+  text-decoration: none; transition: color 0.2s;
+}
+.nav-link:hover { color: var(--ink); }
+.nav-cta {
+  background: var(--green); color: #fff;
+  border: none; border-radius: 50px;
+  padding: 10px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.02em;
+  transition: all 0.2s;
+}
+.nav-cta:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+/* ── HERO ────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 55% 45%;
+  align-items: center;
+  padding: 100px 52px 80px;
+  gap: 48px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg-circle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hero-bg-circle.c1 {
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(46,125,91,0.06) 0%, transparent 70%);
+  top: -200px; right: -200px;
+}
+.hero-bg-circle.c2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(214,178,94,0.07) 0%, transparent 70%);
+  bottom: -100px; left: 10%;
+}
+
+/* Location trust banner */
+.location-banner {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--green-pale);
+  border: 1px solid rgba(46,125,91,0.2);
+  border-radius: 50px; padding: 8px 16px;
+  font-size: 0.82rem; font-weight: 500; color: var(--green-dark);
+  margin-bottom: 28px;
+  animation: fadeUp 0.5s ease both;
+}
+.location-banner .pulse {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.5; transform:scale(1.4); }
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.8rem, 4.5vw, 4.2rem);
+  font-weight: 700; line-height: 1.1;
+  letter-spacing: -0.02em; color: var(--ink);
+  margin-bottom: 22px;
+  animation: fadeUp 0.6s 0.05s ease both;
+}
+h1 em { font-style: italic; color: var(--green); }
+h1 .gold { color: var(--gold-dark); }
+
+.hero-sub {
+  font-size: 1.08rem; font-weight: 300;
+  color: var(--ink-dim); max-width: 460px;
+  line-height: 1.72; margin-bottom: 36px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.trust-pills {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 36px;
+  animation: fadeUp 0.6s 0.15s ease both;
+}
+.trust-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 50px; padding: 7px 14px;
+  font-size: 0.8rem; font-weight: 500; color: var(--ink-dim);
+  box-shadow: var(--shadow-sm);
+}
+.trust-pill svg { color: var(--green); flex-shrink: 0; }
+
+.hero-cta-row {
+  display: flex; align-items: center; gap: 18px;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+.btn-hero {
+  background: var(--green); color: #fff;
+  border: none; border-radius: 50px;
+  padding: 16px 36px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.02em;
+  transition: all 0.24s;
+  display: flex; align-items: center; gap: 9px;
+  box-shadow: 0 4px 20px rgba(46,125,91,0.3);
+}
+.btn-hero:hover {
+  background: var(--green-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(46,125,91,0.35);
+}
+.btn-hero svg { transition: transform 0.2s; }
+.btn-hero:hover svg { transform: translateX(3px); }
+.hero-timer {
+  font-size: 0.82rem; color: var(--ink-dim);
+  display: flex; align-items: center; gap: 6px;
+}
+.hero-timer::before {
+  content: ''; width: 5px; height: 5px;
+  background: var(--green-mid); border-radius: 50%;
+}
+
+/* Hero right — demo card stack */
+.hero-cards {
+  display: flex; flex-direction: column; gap: 12px;
+  animation: fadeUp 0.7s 0.15s ease both;
+  position: relative; z-index: 2;
+}
+.hcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  position: relative; overflow: hidden;
+}
+.hcard::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.hcard.green::before { background: linear-gradient(90deg, var(--green), var(--green-mid)); }
+.hcard.gold::before { background: linear-gradient(90deg, var(--gold), #e8c97a); }
+.hcard.blue::before { background: linear-gradient(90deg, var(--blue), #b0cad9); }
+.hc-label {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-dim); margin-bottom: 8px;
+}
+.hc-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.6rem; font-weight: 700; line-height: 1;
+  letter-spacing: -0.02em;
+}
+.hcard.green .hc-value { color: var(--green-dark); }
+.hcard.gold .hc-value { color: var(--gold-dark); }
+.hcard.blue .hc-value { color: var(--blue); }
+.hc-sub { font-size: 0.8rem; color: var(--ink-dim); margin-top: 5px; }
+.hcard-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hcard-mini {
+  background: var(--bg);
+  border-radius: var(--r);
+  padding: 16px 18px;
+}
+.hm-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem; font-weight: 600; line-height: 1;
+  color: var(--green-dark);
+}
+.hm-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); margin-top: 4px; }
+
+/* Referral teaser card */
+.referral-teaser {
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+  border-radius: var(--r-lg);
+  padding: 20px 24px;
+  display: flex; align-items: center; gap: 14px;
+  color: #fff;
+}
+.rt-icon {
+  width: 42px; height: 42px; flex-shrink: 0;
+  background: rgba(255,255,255,0.15); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+}
+.rt-text { flex: 1; }
+.rt-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
+.rt-value { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; }
+.rt-sub { font-size: 0.78rem; opacity: 0.7; margin-top: 1px; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* ── PROOF BAR ───────────────────────────────── */
+.proof-bar {
+  background: var(--green-dark);
+  color: #fff; padding: 0 52px;
+  display: flex; align-items: stretch; overflow: hidden;
+}
+.proof-stat {
+  flex: 1; padding: 22px 0;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  text-align: center;
+}
+.proof-stat:last-child { border-right: none; }
+.ps-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem; font-weight: 700; line-height: 1;
+  color: var(--gold);
+}
+.ps-label { font-size: 0.78rem; opacity: 0.6; font-weight: 500; margin-top: 3px; }
+
+/* ── HOW IT WORKS ────────────────────────────── */
+.section { padding: 100px 52px; }
+.section.alt { background: var(--surface); }
+
+.sec-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--green);
+  margin-bottom: 16px;
+}
+.sec-tag::before { content: ''; width: 18px; height: 2px; background: var(--green); }
+
+h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 700; line-height: 1.15;
+  letter-spacing: -0.02em; color: var(--ink);
+  margin-bottom: 14px;
+}
+h2 em { font-style: italic; color: var(--green); }
+.sec-sub { font-size: 1rem; color: var(--ink-dim); max-width: 480px; line-height: 1.7; font-weight: 300; }
+
+.steps-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 2px; margin-top: 56px;
+  background: var(--border);
+  border-radius: var(--r-xl); overflow: hidden;
+}
+.step-card {
+  background: var(--surface);
+  padding: 40px 32px;
+  transition: background 0.2s;
+  position: relative;
+}
+.step-card:hover { background: var(--bg); }
+.step-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.5rem; font-weight: 400; line-height: 1;
+  color: rgba(31,31,31,0.06); margin-bottom: 20px;
+}
+.step-card:hover .step-num { color: rgba(46,125,91,0.15); }
+.step-ico {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--green-pale);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--green); margin-bottom: 18px;
+}
+.step-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 600;
+  margin-bottom: 9px; line-height: 1.3;
+}
+.step-card p { font-size: 0.86rem; color: var(--ink-dim); line-height: 1.65; }
+
+/* ── REFERRAL SECTION ────────────────────────── */
+.referral-section { padding: 100px 52px; background: var(--bg); }
+.referral-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center; margin-top: 56px;
+}
+.ref-rewards {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.reward-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 22px 24px;
+  display: flex; align-items: center; gap: 18px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.reward-card::after {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px;
+}
+.reward-card.r1::after { background: var(--blue); }
+.reward-card.r2::after { background: var(--green); }
+.reward-card.r3::after { background: var(--gold); }
+.reward-card:hover { box-shadow: var(--shadow-md); transform: translateX(4px); }
+
+.rc-icon {
+  font-size: 1.8rem; width: 52px; height: 52px; flex-shrink: 0;
+  background: var(--bg); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.rc-text { flex: 1; }
+.rc-trigger { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); margin-bottom: 3px; }
+.rc-desc { font-size: 0.9rem; color: var(--ink-mid); font-weight: 500; }
+.rc-amount {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; font-weight: 700;
+  color: var(--gold-dark); white-space: nowrap;
+}
+
+.ref-dashboard-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  overflow: hidden; box-shadow: var(--shadow-md);
+}
+.rdp-header {
+  background: var(--green-dark); color: #fff;
+  padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.rdp-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; }
+.rdp-badge {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  background: rgba(255,255,255,0.15); border-radius: 50px; padding: 4px 10px;
+}
+.rdp-earnings {
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.rde-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); }
+.rde-value { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: var(--gold-dark); }
+.rde-sub { font-size: 0.78rem; color: var(--ink-dim); margin-top: 2px; }
+.rdp-breakdown { padding: 0 8px 8px; }
+.rdb-item {
+  padding: 12px 16px; border-radius: 10px;
+  display: flex; align-items: center; gap: 12px;
+  transition: background 0.15s;
+}
+.rdb-item:hover { background: var(--bg); }
+.rdb-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; color: #fff;
+}
+.rdb-name { font-size: 0.88rem; font-weight: 500; color: var(--ink); }
+.rdb-status { font-size: 0.75rem; color: var(--ink-dim); }
+.rdb-earn { margin-left: auto; font-weight: 600; font-size: 0.88rem; }
+.status-dot {
+  display: inline-block; width: 6px; height: 6px;
+  border-radius: 50%; margin-right: 5px;
+}
+.s-submitted { color: var(--blue); }
+.s-submitted .status-dot { background: var(--blue); }
+.s-estimated { color: var(--green); }
+.s-estimated .status-dot { background: var(--green); }
+.s-installed { color: var(--gold-dark); }
+.s-installed .status-dot { background: var(--gold); }
+
+/* ── FINANCING VIZ ───────────────────────────── */
+.fin-section { padding: 80px 52px; background: var(--surface); }
+.fin-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center; margin-top: 52px;
+}
+.fin-chart {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 32px;
+}
+.fin-chart-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; margin-bottom: 24px; }
+.fin-bar-row { display: flex; flex-direction: column; gap: 14px; }
+.fin-bar-item { }
+.fb-label-row { display: flex; justify-content: space-between; margin-bottom: 7px; }
+.fb-label { font-size: 0.8rem; font-weight: 500; color: var(--ink-mid); }
+.fb-amount { font-size: 0.8rem; font-weight: 600; }
+.fb-track { height: 10px; background: rgba(31,31,31,0.06); border-radius: 5px; overflow: hidden; }
+.fb-fill { height: 100%; border-radius: 5px; }
+.fb-fill.current { background: rgba(31,31,31,0.3); }
+.fb-fill.solar { background: linear-gradient(90deg, var(--green), var(--green-mid)); }
+.fb-fill.savings { background: linear-gradient(90deg, var(--gold), #e8c97a); }
+.fin-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.fin-stat {
+  background: var(--surface); border-radius: var(--r);
+  padding: 16px; text-align: center;
+  border: 1px solid var(--border);
+}
+.fs-val { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; }
+.fs-val.green { color: var(--green-dark); }
+.fs-val.gold { color: var(--gold-dark); }
+.fs-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-dim); margin-top: 3px; }
+
+.fin-right h3 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-bottom: 14px; }
+.fin-right p { color: var(--ink-dim); font-size: 0.95rem; line-height: 1.7; font-weight: 300; margin-bottom: 20px; }
+.fin-option {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px; border-radius: var(--r);
+  background: var(--bg); border: 1px solid var(--border);
+  margin-bottom: 10px; transition: all 0.2s;
+}
+.fin-option:hover { border-color: var(--green); }
+.fo-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.fo-dot.green { background: var(--green); }
+.fo-dot.gold { background: var(--gold); }
+.fo-dot.blue { background: var(--blue); }
+.fo-name { font-weight: 600; font-size: 0.9rem; }
+.fo-desc { font-size: 0.8rem; color: var(--ink-dim); }
+.fo-price { margin-left: auto; font-weight: 700; color: var(--green-dark); font-size: 0.9rem; }
+
+/* ── SUNLOOP FOOTER STRIP ────────────────────── */
+.sunloop-strip {
+  background: var(--bg); border-top: 1px solid var(--border);
+  padding: 14px 52px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+}
+.sl-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.75rem; font-weight: 500; color: var(--ink-dim);
+}
+.sl-badge::before {
+  content: 'Powered by';
+  font-size: 0.7rem; opacity: 0.6;
+}
+.sl-logo {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem; font-weight: 600; color: var(--green-dark);
+  letter-spacing: 0.05em;
+}
+
+/* ── FOOTER ──────────────────────────────────── */
+footer {
+  background: var(--ink); color: #fff;
+  padding: 52px 52px 36px;
+}
+.footer-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr;
+  gap: 48px; margin-bottom: 40px;
+}
+.footer-brand .fl {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem; font-weight: 700; color: #fff;
+  margin-bottom: 6px;
+}
+.footer-brand .fl span { color: var(--green-mid); }
+.footer-brand p { font-size: 0.82rem; color: rgba(255,255,255,0.35); line-height: 1.7; max-width: 300px; margin-top: 10px; }
+.footer-col h4 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
+.footer-col a { display: block; font-size: 0.85rem; color: rgba(255,255,255,0.55); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; }
+.footer-col a:hover { color: #fff; }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 24px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.footer-disc { font-size: 0.7rem; color: rgba(255,255,255,0.25); line-height: 1.7; max-width: 680px; }
+.footer-sl {
+  font-size: 0.72rem; color: rgba(255,255,255,0.25);
+  display: flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.footer-sl span { color: var(--green-mid); font-weight: 600; }
+
+/* ════════════════════════════════════════════════
+   MODAL FUNNEL SYSTEM
+════════════════════════════════════════════════ */
+.overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,10,10,0.55);
+  backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+  padding: 16px;
+}
+.overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  width: 100%; max-width: 560px;
+  max-height: 92vh; overflow-y: auto;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  animation: mIn 0.3s cubic-bezier(0.34,1.5,0.64,1);
+}
+@keyframes mIn {
+  from { opacity:0; transform:scale(0.95) translateY(12px); }
+  to { opacity:1; transform:scale(1) translateY(0); }
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px; z-index: 10;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--ink-dim); border-radius: 50%;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 0.9rem; transition: all 0.18s;
+}
+.modal-close:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+/* Progress */
+.modal-progress { padding: 28px 36px 0; }
+.mp-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.mp-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-dim); }
+.mp-count { font-size: 0.7rem; color: var(--ink-dim); }
+.mp-track { height: 3px; background: rgba(31,31,31,0.08); border-radius: 3px; overflow: hidden; }
+.mp-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.45s cubic-bezier(0.4,0,0.2,1); }
+
+/* Step body */
+.modal-body { padding: 28px 36px 36px; }
+.fstep { display: none; animation: sIn 0.25s ease; }
+.fstep.active { display: block; }
+@keyframes sIn {
+  from { opacity:0; transform:translateX(12px); }
+  to { opacity:1; transform:translateX(0); }
+}
+
+.fstep-tag { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--green); margin-bottom: 8px; }
+.fstep-title { font-family: 'Playfair Display', serif; font-size: 1.65rem; font-weight: 700; line-height: 1.2; margin-bottom: 7px; color: var(--ink); }
+.fstep-desc { font-size: 0.88rem; color: var(--ink-dim); margin-bottom: 24px; line-height: 1.6; }
+
+/* Fields */
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); margin-bottom: 6px; }
+.field input, .field select {
+  width: 100%;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--ink);
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+  padding: 12px 15px; outline: none;
+  transition: border-color 0.18s, background 0.18s;
+  appearance: none;
+}
+.field input::placeholder { color: rgba(31,31,31,0.3); }
+.field input:focus, .field select:focus { border-color: var(--green); background: #fff; }
+.field select option { background: #fff; color: var(--ink); }
+.fcols { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+
+/* Option choices */
+.choices { display: flex; flex-direction: column; gap: 7px; }
+.choices.two { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.choice {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 11px; padding: 14px 16px;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; gap: 12px; user-select: none;
+}
+.choice:hover { border-color: var(--green); background: var(--green-pale); }
+.choice.picked { border-color: var(--green); background: var(--green-pale); }
+.ch-ico { font-size: 1.2rem; width: 36px; height: 36px; background: var(--surface); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.choice.picked .ch-ico { background: rgba(46,125,91,0.15); }
+.ch-t { flex: 1; }
+.ch-label { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
+.ch-sub { font-size: 0.76rem; color: var(--ink-dim); margin-top: 2px; }
+.ch-radio { width: 17px; height: 17px; border: 1.5px solid rgba(31,31,31,0.2); border-radius: 50%; flex-shrink: 0; transition: all 0.18s; display: flex; align-items: center; justify-content: center; }
+.choice.picked .ch-radio { background: var(--green); border-color: var(--green); }
+.choice.picked .ch-radio::after { content: ''; width: 5px; height: 5px; background: #fff; border-radius: 50%; }
+
+/* Soft commit step */
+.soft-commit {
+  background: var(--green-pale);
+  border: 1px solid rgba(46,125,91,0.2);
+  border-radius: var(--r-lg);
+  padding: 20px 22px; margin-bottom: 22px;
+  display: flex; align-items: center; gap: 14px;
+}
+.sc-icon { font-size: 1.6rem; }
+.sc-text { flex: 1; }
+.sc-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--green-dark); }
+.sc-sub { font-size: 0.8rem; color: var(--green); margin-top: 2px; }
+
+/* Upload area */
+.upload-area {
+  border: 1.5px dashed rgba(31,31,31,0.2);
+  border-radius: var(--r); padding: 20px;
+  text-align: center; cursor: pointer;
+  transition: all 0.18s; margin-bottom: 14px;
+}
+.upload-area:hover { border-color: var(--green); background: var(--green-pale); }
+.upload-area .ua-icon { font-size: 1.5rem; margin-bottom: 7px; }
+.upload-area .ua-label { font-size: 0.85rem; font-weight: 500; color: var(--ink-dim); }
+.upload-area .ua-sub { font-size: 0.75rem; color: var(--ink-dim); opacity: 0.6; }
+.upload-skip { font-size: 0.8rem; color: var(--ink-dim); text-align: center; cursor: pointer; margin-top: 4px; }
+.upload-skip:hover { color: var(--green); }
+
+/* Action buttons */
+.btn-next {
+  width: 100%; margin-top: 18px;
+  background: var(--green); color: #fff;
+  border: none; border-radius: 10px; padding: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.02em; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.btn-next:hover { background: var(--green-dark); }
+.btn-next:disabled { opacity: 0.3; pointer-events: none; }
+.btn-back {
+  background: none; border: none; color: var(--ink-dim);
+  font-family: 'DM Sans', sans-serif; font-size: 0.83rem;
+  cursor: pointer; padding: 0; margin-bottom: 18px;
+  display: flex; align-items: center; gap: 5px; transition: color 0.18s;
+}
+.btn-back:hover { color: var(--ink); }
+.btn-secondary {
+  width: 100%; margin-top: 10px;
+  background: transparent; color: var(--ink-dim);
+  border: 1.5px solid var(--border); border-radius: 10px; padding: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; transition: all 0.18s;
+}
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ════ ADDRESS INTELLIGENCE PANEL ════ */
+.addr-intel {
+  background: var(--green-pale);
+  border: 1px solid rgba(46,125,91,0.18);
+  border-radius: var(--r); padding: 14px 16px;
+  margin-top: 12px; display: none;
+  animation: fadeUp 0.3s ease;
+}
+.addr-intel.visible { display: block; }
+.ai-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--green-dark); margin-bottom: 10px; }
+.ai-items { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.ai-item { background: var(--surface); border-radius: 8px; padding: 10px 12px; }
+.ai-item-label { font-size: 0.66rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-dim); margin-bottom: 3px; }
+.ai-item-val { font-size: 0.88rem; font-weight: 600; color: var(--green-dark); }
+
+/* ════ QUOTE SCREEN ════ */
+.quote-hero {
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+  color: #fff; padding: 32px 36px 28px;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  position: relative; overflow: hidden;
+}
+.quote-hero::before {
+  content: '';
+  position: absolute; width: 280px; height: 280px;
+  border-radius: 50%; border: 50px solid rgba(255,255,255,0.05);
+  top: -80px; right: -60px;
+}
+.qh-tag { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.65; margin-bottom: 8px; }
+.qh-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+.qh-addr { font-size: 0.82rem; opacity: 0.55; }
+.qh-score {
+  position: absolute; top: 24px; right: 36px;
+  background: rgba(255,255,255,0.15); border-radius: 50px;
+  padding: 6px 14px; font-size: 0.75rem; font-weight: 600;
+}
+
+.quote-body { padding: 28px 36px 36px; }
+
+/* Savings range card */
+.savings-range {
+  background: var(--bg); border-radius: var(--r-lg);
+  padding: 24px; margin-bottom: 18px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.savings-range::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--green), var(--gold));
+}
+.sr-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-dim); margin-bottom: 8px; }
+.sr-range {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem; font-weight: 700; line-height: 1;
+  color: var(--gold-dark); letter-spacing: -0.02em;
+}
+.sr-range .sep { color: var(--ink-dim); font-size: 1.5rem; margin: 0 8px; }
+.sr-period { font-size: 0.82rem; color: var(--ink-dim); margin-top: 6px; }
+.sr-context {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 50px; padding: 4px 12px;
+  font-size: 0.72rem; color: var(--ink-dim); margin-top: 10px;
+}
+.sr-context::before { content: 'ⓘ'; font-size: 0.7rem; }
+
+/* Metrics */
+.q-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 18px; }
+.q-met { background: var(--bg); border-radius: var(--r); padding: 14px 10px; text-align: center; }
+.qm-val { font-family: 'Playfair Display', serif; font-size: 1.45rem; font-weight: 700; line-height: 1; color: var(--green-dark); }
+.qm-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-dim); margin-top: 4px; }
+
+/* Bill vs solar viz */
+.bill-viz { background: var(--bg); border-radius: var(--r); padding: 18px; margin-bottom: 18px; }
+.bv-title { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); margin-bottom: 14px; }
+.bv-row { margin-bottom: 10px; }
+.bv-row-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.bvr-label { font-size: 0.8rem; font-weight: 500; }
+.bvr-val { font-size: 0.8rem; font-weight: 700; }
+.bv-track { height: 8px; background: rgba(31,31,31,0.06); border-radius: 4px; overflow: hidden; }
+.bv-fill { height: 100%; border-radius: 4px; transition: width 1.2s ease; }
+.bv-fill.bill { background: rgba(31,31,31,0.25); }
+.bv-fill.solar { background: linear-gradient(90deg, var(--green), var(--green-mid)); }
+.bv-fill.savings { background: linear-gradient(90deg, var(--gold), #e8c97a); }
+.bv-savings-label { font-size: 0.78rem; color: var(--green-dark); font-weight: 600; margin-top: 10px; }
+
+/* Plan picker */
+.plan-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-dim); margin-bottom: 9px; }
+.plan-card {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px; margin-bottom: 7px;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; gap: 14px;
+}
+.plan-card:hover { border-color: var(--green); }
+.plan-card.chosen { border-color: var(--green); background: var(--green-pale); }
+.plan-chip {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  background: var(--gold); color: var(--ink); border-radius: 4px; padding: 2px 7px;
+}
+.plan-name { font-weight: 600; font-size: 0.88rem; margin-bottom: 1px; }
+.plan-desc { font-size: 0.76rem; color: var(--ink-dim); }
+.plan-price { margin-left: auto; font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--green-dark); white-space: nowrap; }
+.plan-price small { font-family: 'DM Sans', sans-serif; font-size: 0.68rem; color: var(--ink-dim); font-weight: 400; display: block; text-align: right; }
+
+.q-disclaimer { font-size: 0.68rem; color: var(--ink-dim); text-align: center; line-height: 1.55; margin: 16px 0; padding: 12px; background: var(--bg); border-radius: 8px; }
+
+.btn-proposal {
+  width: 100%;
+  background: var(--green); color: #fff;
+  border: none; border-radius: 10px; padding: 15px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.98rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 16px rgba(46,125,91,0.25);
+}
+.btn-proposal:hover { background: var(--green-dark); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(46,125,91,0.3); }
+
+/* ════ REFERRAL MODAL SCREEN ════ */
+.ref-screen { padding: 32px 36px 36px; }
+.ref-headline { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+.ref-sub { font-size: 0.88rem; color: var(--ink-dim); margin-bottom: 24px; line-height: 1.6; }
+
+.ref-tiers { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.ref-tier { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg); border-radius: 10px; border: 1px solid var(--border); }
+.ref-tier-icon { font-size: 1.1rem; }
+.ref-tier-text { flex: 1; font-size: 0.84rem; color: var(--ink-mid); }
+.ref-tier-amt { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.1rem; color: var(--gold-dark); }
+
+.ref-link-box {
+  background: var(--green-pale); border: 1px solid rgba(46,125,91,0.2);
+  border-radius: var(--r); padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.rlb-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--green-dark); margin-bottom: 4px; }
+.rlb-url { font-size: 0.82rem; color: var(--green-dark); font-weight: 500; word-break: break-all; flex: 1; }
+.rlb-copy { flex-shrink: 0; background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: background 0.18s; }
+.rlb-copy:hover { background: var(--green-dark); }
+.rlb-copy.copied { background: var(--gold-dark); }
+
+.ref-or { text-align: center; font-size: 0.75rem; color: var(--ink-dim); margin: 12px 0; }
+.ref-manual { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+
+.ref-share { display: flex; gap: 8px; margin-bottom: 18px; }
+.share-btn {
+  flex: 1; padding: 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg);
+  font-size: 0.8rem; font-weight: 600; cursor: pointer;
+  transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.share-btn:hover { border-color: var(--green); background: var(--green-pale); color: var(--green-dark); }
+
+/* ════ REFERRAL DASHBOARD SCREEN ════ */
+.ref-dash { padding: 0; }
+.rd-header {
+  background: var(--green-dark); color: #fff;
+  padding: 28px 36px;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+}
+.rd-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.rdh-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; }
+.rdh-close { background: rgba(255,255,255,0.15); border: none; color: #fff; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.18s; }
+.rdh-close:hover { background: rgba(255,255,255,0.25); }
+.rd-earnings-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.rde-stat { background: rgba(255,255,255,0.1); border-radius: var(--r); padding: 14px 16px; }
+.rdes-val { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; }
+.rdes-val.gold { color: var(--gold); }
+.rdes-val.green { color: #7DDBB0; }
+.rdes-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; opacity: 0.55; margin-top: 3px; }
+
+.rd-body { padding: 24px 36px 36px; }
+.rd-section-title { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-dim); margin-bottom: 12px; margin-top: 20px; }
+.rd-referral-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border-radius: var(--r);
+  border: 1px solid var(--border); margin-bottom: 7px;
+  background: var(--surface); transition: background 0.15s;
+}
+.rd-referral-item:hover { background: var(--bg); }
+.rdi-avatar {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; font-weight: 700; color: #fff;
+}
+.rdi-info { flex: 1; }
+.rdi-name { font-weight: 600; font-size: 0.88rem; color: var(--ink); }
+.rdi-date { font-size: 0.74rem; color: var(--ink-dim); margin-top: 1px; }
+.rdi-status {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.74rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 50px;
+}
+.rdi-status.submitted { background: var(--blue-pale); color: var(--blue); }
+.rdi-status.estimated { background: var(--green-pale); color: var(--green-dark); }
+.rdi-status.qualified { background: var(--gold-pale); color: var(--gold-dark); }
+.rdi-status.installed { background: #FFF3E0; color: #E65100; }
+.rdi-status::before { content: '●'; font-size: 0.5rem; }
+.rdi-earn { margin-left: 8px; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 0.95rem; color: var(--gold-dark); }
+
+.rd-link-section { margin-top: 20px; }
+.rd-add-referral { margin-top: 12px; }
+
+/* ════ CONFIRM SCREEN ════ */
+.confirm-body { padding: 44px 36px 40px; text-align: center; }
+.confirm-icon {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: var(--green-pale); border: 2px solid rgba(46,125,91,0.25);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px; font-size: 1.6rem;
+}
+.confirm-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; margin-bottom: 10px; }
+.confirm-desc { font-size: 0.88rem; color: var(--ink-dim); max-width: 360px; margin: 0 auto 28px; line-height: 1.65; }
+.confirm-steps {
+  background: var(--bg); border-radius: var(--r-lg);
+  padding: 6px; text-align: left; margin-bottom: 24px;
+}
+.cs-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 9px; }
+.cs-num { width: 24px; height: 24px; border-radius: 50%; background: var(--green-pale); color: var(--green-dark); font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cs-text { font-size: 0.86rem; color: var(--ink-mid); }
+.btn-view-referral {
+  width: 100%; background: var(--green); color: #fff;
+  border: none; border-radius: 10px; padding: 14px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; margin-bottom: 10px;
+}
+.btn-view-referral:hover { background: var(--green-dark); }
+.btn-close-done {
+  width: 100%; background: transparent; color: var(--ink-dim);
+  border: 1.5px solid var(--border); border-radius: 10px; padding: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; transition: all 0.18s;
+}
+.btn-close-done:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ════ LOADING OVERLAY ════ */
+.loading-screen {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(247,245,242,0.93); backdrop-filter: blur(16px);
+  flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+}
+.loading-screen.on { display: flex; }
+.loader-spinner {
+  width: 48px; height: 48px;
+  border: 3px solid rgba(46,125,91,0.15);
+  border-top-color: var(--green);
+  border-radius: 50%; animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-steps { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.ls-item {
+  font-size: 0.82rem; color: var(--ink-dim); opacity: 0.4;
+  display: flex; align-items: center; gap: 8px; transition: opacity 0.3s;
+}
+.ls-item.active { opacity: 1; color: var(--green-dark); font-weight: 600; }
+.ls-item.done { opacity: 0.7; }
+.ls-item.done::after { content: ' ✓'; color: var(--green); }
+.ls-bar-wrap { width: 220px; height: 2px; background: rgba(46,125,91,0.1); border-radius: 2px; }
+.ls-bar { height: 100%; background: var(--green); border-radius: 2px; width: 0; transition: width 3.5s ease; }
+
+/* ── RESPONSIVE ───────────────────────────────── */
+@media (max-width: 960px) {
+  nav { padding: 0 20px; }
+  .nav-right .nav-link { display: none; }
+  .hero { grid-template-columns: 1fr; padding: 90px 20px 60px; }
+  .hero-cards { display: none; }
+  .proof-bar { padding: 0 20px; flex-wrap: wrap; }
+  .proof-stat { min-width: 130px; padding: 18px 10px; }
+  .section, .fin-section, .referral-section { padding: 70px 20px; }
+  .steps-grid { grid-template-columns: 1fr 1fr; }
+  .referral-grid { grid-template-columns: 1fr; gap: 40px; }
+  .fin-grid { grid-template-columns: 1fr; gap: 40px; }
+  .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+  .footer-bottom { flex-direction: column; gap: 10px; }
+  .sunloop-strip { padding: 12px 20px; }
+  footer { padding: 40px 20px 28px; }
+  .modal-body, .modal-progress { padding-left: 20px; padding-right: 20px; }
+  .quote-hero, .ref-screen, .ref-dash, .rd-header, .rd-body, .confirm-body { padding-left: 20px; padding-right: 20px; }
+  .q-metrics { grid-template-columns: 1fr 1fr; }
+  .rd-earnings-row { grid-template-columns: 1fr; gap: 8px; }
+  .choices.two { grid-template-columns: 1fr; }
+  .hcard-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  h1 { font-size: 2.4rem; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .ref-manual { grid-template-columns: 1fr; }
+  .ref-share { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────── -->
+<nav>
+  <div class="logo-wrap">
+    <div class="logo-main">Watt<span>Worth</span></div>
+    <div class="logo-sub">Solar Savings Platform</div>
+  </div>
+  <div class="nav-right">
+    <a href="#how" class="nav-link">How it works</a>
+    <a href="#referral" class="nav-link">Earn $1,000</a>
+    <a href="#" class="nav-link" onclick="openDash(event)">My Dashboard</a>
+    <button class="nav-cta" onclick="openFunnel()">Check my savings</button>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-bg-circle c1"></div>
+  <div class="hero-bg-circle c2"></div>
+
+  <div class="hero-left">
+    <div class="location-banner">
+      <div class="pulse"></div>
+      Homeowners in your area are saving up to $2,200/year
+    </div>
+
+    <h1>For <em>watt</em><br>it's <span class="gold">worth</span> to you</h1>
+
+    <p class="hero-sub">See your real solar savings in under 60 seconds. No calls, no reps, no obligation — and earn up to $1,000 every time you refer a friend who goes solar.</p>
+
+    <div class="trust-pills">
+      <div class="trust-pill">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        No calls required
+      </div>
+      <div class="trust-pill">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Free PDF proposal
+      </div>
+      <div class="trust-pill">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Takes 60 seconds
+      </div>
+      <div class="trust-pill">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Earn $1,000 per referral
+      </div>
+    </div>
+
+    <div class="hero-cta-row">
+      <button class="btn-hero" onclick="openFunnel()">
+        Check my savings
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <span class="hero-timer">Takes about 60 seconds</span>
+    </div>
+  </div>
+
+  <div class="hero-cards">
+    <div class="hcard green">
+      <div class="hc-label">Estimated monthly savings</div>
+      <div class="hc-value">$<span id="hero-monthly">148</span></div>
+      <div class="hc-sub">Based on avg. $185/mo bill · Your area</div>
+    </div>
+    <div class="hcard-row">
+      <div class="hcard-mini">
+        <div class="hm-val">7.8 kW</div>
+        <div class="hm-label">System size</div>
+      </div>
+      <div class="hcard-mini">
+        <div class="hm-val">9.6 yr</div>
+        <div class="hm-label">Payback</div>
+      </div>
+    </div>
+    <div class="hcard gold">
+      <div class="hc-label">25-year projected return</div>
+      <div class="hc-value">$<span>57,400</span></div>
+      <div class="hc-sub">After 30% federal tax credit</div>
+    </div>
+    <div class="referral-teaser">
+      <div class="rt-icon">💸</div>
+      <div class="rt-text">
+        <div class="rt-label">Referral program</div>
+        <div class="rt-value">Earn up to $1,000</div>
+        <div class="rt-sub">Per homeowner who installs solar</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PROOF BAR ──────────────────────────────────── -->
+<div class="proof-bar">
+  <div class="proof-stat">
+    <div class="ps-val">14,200+</div>
+    <div class="ps-label">Estimates generated</div>
+  </div>
+  <div class="proof-stat">
+    <div class="ps-val">$1,840</div>
+    <div class="ps-label">Avg. annual savings</div>
+  </div>
+  <div class="proof-stat">
+    <div class="ps-val">$2.1M+</div>
+    <div class="ps-label">Referral rewards paid</div>
+  </div>
+  <div class="proof-stat">
+    <div class="ps-val">Zero</div>
+    <div class="ps-label">Calls required upfront</div>
+  </div>
+  <div class="proof-stat">
+    <div class="ps-val">4.9 ★</div>
+    <div class="ps-label">Customer satisfaction</div>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ───────────────────────────────── -->
+<section class="section alt" id="how">
+  <div class="sec-tag">How it works</div>
+  <h2>From address to savings<br>to <em>earning</em> — in minutes</h2>
+  <p class="sec-sub">We replaced the old solar sales process with a self-serve flow that respects your time and rewards your network.</p>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <div class="step-ico">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+      </div>
+      <h3>Enter your address</h3>
+      <p>We instantly look up your utility provider, local solar irradiance, and avg. electricity rates. No technical knowledge needed.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <div class="step-ico">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <h3>Get an instant estimate</h3>
+      <p>See a savings range, system size, payback period, and financing options — before talking to anyone. All clearly labeled as estimates.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <div class="step-ico">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <h3>Receive your proposal</h3>
+      <p>A branded PDF proposal lands in your inbox with a shareable link. Your saved quote stays live — review it any time.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">04</div>
+      <div class="step-ico">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <h3>Refer & earn $1,000</h3>
+      <p>Share your unique link. When a friend submits, estimates, or installs — you earn. Track everything in your referral dashboard.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── REFERRAL SECTION ──────────────────────────── -->
+<section class="referral-section" id="referral">
+  <div class="sec-tag">Referral program</div>
+  <h2>Turn your network into<br><em>passive income</em></h2>
+  <p class="sec-sub">Every homeowner you refer earns you real cash — no selling, no pitching. Just share your link and watch the rewards add up.</p>
+
+  <div class="referral-grid">
+    <div>
+      <div class="ref-rewards">
+        <div class="reward-card r1">
+          <div class="rc-icon">📨</div>
+          <div class="rc-text">
+            <div class="rc-trigger">When they submit</div>
+            <div class="rc-desc">Referral fills out the funnel</div>
+          </div>
+          <div class="rc-amount">$50</div>
+        </div>
+        <div class="reward-card r2">
+          <div class="rc-icon">📊</div>
+          <div class="rc-text">
+            <div class="rc-trigger">When they complete estimate</div>
+            <div class="rc-desc">Referral views their full quote</div>
+          </div>
+          <div class="rc-amount">$100</div>
+        </div>
+        <div class="reward-card r3">
+          <div class="rc-icon">⚡</div>
+          <div class="rc-text">
+            <div class="rc-trigger">When they install solar</div>
+            <div class="rc-desc">System fully installed & live</div>
+          </div>
+          <div class="rc-amount">$1,000</div>
+        </div>
+      </div>
+      <p style="font-size:0.78rem;color:var(--ink-dim);margin-top:16px;line-height:1.6;">Rewards are cumulative — earn all three milestones per referral. Paid via bank transfer or check within 30 days of each trigger event. Terms apply.</p>
+    </div>
+
+    <!-- Dashboard Preview -->
+    <div class="ref-dashboard-preview">
+      <div class="rdp-header">
+        <div class="rdp-title">Your Referral Dashboard</div>
+        <div class="rdp-badge">3 Active Referrals</div>
+      </div>
+      <div class="rdp-earnings">
+        <div>
+          <div class="rde-label">Total Earned</div>
+          <div class="rde-value">$1,200</div>
+          <div class="rde-sub">+$1,000 pending install</div>
+        </div>
+        <button class="btn-hero" style="padding:10px 20px;font-size:0.82rem;" onclick="openFunnel()">
+          Add referral →
+        </button>
+      </div>
+      <div class="rdp-breakdown">
+        <div class="rdb-item">
+          <div class="rdb-avatar" style="background:var(--green)">MJ</div>
+          <div>
+            <div class="rdb-name">Maria Johnson</div>
+            <div class="rdb-status s-installed"><span class="status-dot"></span>Installed ⚡</div>
+          </div>
+          <div class="rdb-earn" style="color:var(--gold-dark)">+$1,000</div>
+        </div>
+        <div class="rdb-item">
+          <div class="rdb-avatar" style="background:var(--blue)">TR</div>
+          <div>
+            <div class="rdb-name">Tom Reynolds</div>
+            <div class="rdb-status s-estimated"><span class="status-dot"></span>Completed estimate</div>
+          </div>
+          <div class="rdb-earn" style="color:var(--green-dark)">+$100</div>
+        </div>
+        <div class="rdb-item">
+          <div class="rdb-avatar" style="background:var(--blue)" style="background:#C4714A">SK</div>
+          <div>
+            <div class="rdb-name">Sara Kim</div>
+            <div class="rdb-status s-submitted"><span class="status-dot"></span>Submitted</div>
+          </div>
+          <div class="rdb-earn" style="color:var(--ink-dim)">+$50</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FINANCING VIZ ──────────────────────────────── -->
+<section class="fin-section">
+  <div class="sec-tag">The math</div>
+  <h2>Your bill vs. <em>solar</em><br>— see the difference</h2>
+
+  <div class="fin-grid">
+    <div class="fin-chart">
+      <div class="fin-chart-title">Monthly Cost Comparison</div>
+      <div class="fin-bar-row">
+        <div class="fin-bar-item">
+          <div class="fb-label-row">
+            <span class="fb-label">Current electric bill</span>
+            <span class="fb-amount" style="color:var(--ink-dim)">$185/mo</span>
+          </div>
+          <div class="fb-track"><div class="fb-fill current" style="width:100%"></div></div>
+        </div>
+        <div class="fin-bar-item">
+          <div class="fb-label-row">
+            <span class="fb-label">Solar loan payment</span>
+            <span class="fb-amount" style="color:var(--green-dark)">$106/mo</span>
+          </div>
+          <div class="fb-track"><div class="fb-fill solar" style="width:57%"></div></div>
+        </div>
+        <div class="fin-bar-item">
+          <div class="fb-label-row">
+            <span class="fb-label">Monthly savings</span>
+            <span class="fb-amount" style="color:var(--gold-dark)">$79/mo</span>
+          </div>
+          <div class="fb-track"><div class="fb-fill savings" style="width:43%"></div></div>
+        </div>
+      </div>
+      <div class="fin-summary">
+        <div class="fin-stat"><div class="fs-val green">$948</div><div class="fs-label">Year 1 savings</div></div>
+        <div class="fin-stat"><div class="fs-val gold">$34,200</div><div class="fs-label">25-yr projection</div></div>
+        <div class="fin-stat"><div class="fs-val green">30%</div><div class="fs-label">Federal ITC</div></div>
+        <div class="fin-stat"><div class="fs-val gold">$0</div><div class="fs-label">Down payment</div></div>
+      </div>
+    </div>
+
+    <div class="fin-right">
+      <h3>Three ways to go solar</h3>
+      <p>Choose the path that fits your goals. All options are available after you get your free estimate.</p>
+      <div class="fin-option">
+        <div class="fo-dot green"></div>
+        <div>
+          <div class="fo-name">Cash Purchase</div>
+          <div class="fo-desc">Own outright. Maximum ROI. Full 30% ITC.</div>
+        </div>
+        <div class="fo-price">Best value</div>
+      </div>
+      <div class="fin-option">
+        <div class="fo-dot gold"></div>
+        <div>
+          <div class="fo-name">Solar Loan</div>
+          <div class="fo-desc">$0 down, own the system, claim the credit.</div>
+        </div>
+        <div class="fo-price">$0 down</div>
+      </div>
+      <div class="fin-option">
+        <div class="fo-dot blue"></div>
+        <div>
+          <div class="fo-name">Lease / PPA</div>
+          <div class="fo-desc">$0 down, $0 maintenance, fixed low rate.</div>
+        </div>
+        <div class="fo-price">Lowest risk</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SunLoop strip -->
+<div class="sunloop-strip">
+  <span class="sl-badge"><span class="sl-logo">SunLoop</span></span>
+  <span style="font-size:0.72rem;color:var(--ink-dim)"> — Lead routing, CRM, and automation infrastructure</span>
+</div>
+
+<!-- ── FOOTER ──────────────────────────────────────── -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="fl">Watt<span>Worth</span></div>
+      <p>For watt it's worth — a self-serve solar savings platform that respects your time, rewards your network, and never requires a cold call.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <a href="#">Get my estimate</a>
+      <a href="#">Referral program</a>
+      <a href="#">My dashboard</a>
+      <a href="#">Saved quote</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a href="#">Privacy policy</a>
+      <a href="#">Terms of service</a>
+      <a href="#">Referral terms</a>
+      <a href="#">TCPA disclosure</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-disc">Estimates are based on regional solar irradiance data, publicly available utility rates, and typical usage patterns for your area. Actual savings will vary based on system design, shading, roof orientation, utility tariff structure, and financing terms. The 30% federal Investment Tax Credit (ITC) is available to qualifying taxpayers; consult a tax professional. WattWorth is not a licensed solar contractor. This platform connects homeowners with certified installers. Referral rewards are subject to terms and conditions and installer partnership agreements. Not a guarantee of savings.</p>
+    <div class="footer-sl">Powered by <span>SunLoop</span></div>
+  </div>
+</footer>
+
+
+<!-- ════════════════════════════════════════════════
+     FUNNEL MODAL
+════════════════════════════════════════════════ -->
+<div class="overlay" id="funnelOverlay" onclick="overlayClick(event,'funnelOverlay')">
+<div class="modal" id="funnelModal">
+  <button class="modal-close" onclick="closeModal('funnelOverlay')">✕</button>
+
+  <!-- progress bar -->
+  <div class="modal-progress" id="funnelProgress">
+    <div class="mp-top">
+      <span class="mp-label" id="funnelStepLabel">Your address</span>
+      <span class="mp-count" id="funnelStepCount">1 / 6</span>
+    </div>
+    <div class="mp-track"><div class="mp-fill" id="funnelFill" style="width:16.6%"></div></div>
+  </div>
+
+  <div class="modal-body">
+
+    <!-- STEP 1: Address -->
+    <div class="fstep active" id="fs1">
+      <div class="fstep-tag">Step 1 — Location</div>
+      <div class="fstep-title">What's your home address?</div>
+      <div class="fstep-desc">We use your address to look up local utility rates, solar potential, and customize your estimate.</div>
+
+      <div class="field">
+        <label>Street Address</label>
+        <input type="text" id="inp-addr" placeholder="123 Maple Street" oninput="checkAddressIntel()">
+      </div>
+      <div class="fcols">
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="inp-city" placeholder="Austin">
+        </div>
+        <div class="field">
+          <label>State</label>
+          <select id="inp-state" onchange="checkAddressIntel()">
+            <option value="">Select</option>
+            <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+            <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+            <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+            <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+            <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+            <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+            <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+            <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+            <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+            <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+            <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+            <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+            <option>WI</option><option>WY</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Address Intelligence Panel -->
+      <div class="addr-intel" id="addrIntel">
+        <div class="ai-label">📡 We found data for your area</div>
+        <div class="ai-items">
+          <div class="ai-item">
+            <div class="ai-item-label">Utility</div>
+            <div class="ai-item-val" id="ai-utility">—</div>
+          </div>
+          <div class="ai-item">
+            <div class="ai-item-label">Avg Rate</div>
+            <div class="ai-item-val" id="ai-rate">—</div>
+          </div>
+          <div class="ai-item">
+            <div class="ai-item-label">Solar Score</div>
+            <div class="ai-item-val" id="ai-solar">—</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-next" onclick="goStep(2)">Continue →</button>
+    </div>
+
+    <!-- STEP 2: Bill -->
+    <div class="fstep" id="fs2">
+      <button class="btn-back" onclick="goStep(1)">← Back</button>
+      <div class="fstep-tag">Step 2 — Usage</div>
+      <div class="fstep-title">Average monthly electric bill?</div>
+      <div class="fstep-desc">This is the single biggest factor in your savings estimate.</div>
+      <div class="choices">
+        <div class="choice" onclick="pick(this,'bill','under-75')">
+          <div class="ch-ico">💡</div>
+          <div class="ch-t"><div class="ch-label">Under $75</div><div class="ch-sub">Small home or apartment</div></div>
+          <div class="ch-radio"></div>
+        </div>
+        <div class="choice" onclick="pick(this,'bill','75-150')">
+          <div class="ch-ico">🏠</div>
+          <div class="ch-t"><div class="ch-label">$75 – $150</div><div class="ch-sub">Average household</div></div>
+          <div class="ch-radio"></div>
+        </div>
+        <div class="choice" onclick="pick(this,'bill','150-250')">
+          <div class="ch-ico">⚡</div>
+          <div class="ch-t"><div class="ch-label">$150 – $250</div><div class="ch-sub">Above-average usage</div></div>
+          <div class="ch-radio"></div>
+        </div>
+        <div class="choice" onclick="pick(this,'bill','250+')">
+          <div class="ch-ico">🔋</div>
+          <div class="ch-t"><div class="ch-label">$250+</div><div class="ch-sub">High usage / large home</div></div>
+          <div class="ch-radio"></div>
+        </div>
+      </div>
+
+      <!-- Optional upload -->
+      <div style="margin-top:16px">
+        <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-dim);margin-bottom:8px;">Optional — Upload a bill for a more accurate estimate</div>
+        <div class="upload-area" onclick="simulateUpload()">
+          <div class="ua-icon">📄</div>
+          <div class="ua-label">Click to upload your utility bill</div>
+          <div class="ua-sub">PDF or image · Marks you as high-intent</div>
+        </div>
+        <div class="upload-skip" id="uploadStatus">Skip this step</div>
+      </div>
+
+      <button class="btn-next" id="btn-bill" disabled onclick="goStep(3)">Continue →</button>
+    </div>
+
+    <!-- STEP 3: Ownership -->
+    <div class="fstep" id="fs3">
+      <button class="btn-back" onclick="goStep(2)">← Back</button>
+      <div class="fstep-tag">Step 3 — Property</div>
+      <div class="fstep-title">Do you own or rent your home?</div>
+      <div class="fstep-desc">Ownership determines which financing options you can access.</div>
+      <div class="choices two">
+        <div class="choice" onclick="pick(this,'ownership','own')">
+          <div class="ch-ico">🏡</div>
+          <div class="ch-t"><div class="ch-label">I own</div><div class="ch-sub">Full options available</div></div>
+          <div class="ch-radio"></div>
+        </div>
+        <div class="choice" onclick="pick(this,'ownership','rent')">
+          <div class="ch-ico">🏢</div>
+          <div class="ch-t"><div class="ch-label">I rent</div><div class="ch-sub">Community solar options</div></div>
+          <div class="ch-radio"></div>
+        </div>
+      </div>
+      <button class="btn-next" id="btn-own" disabled onclick="goStep(4)">Continue →</button>
+    </div>
+
+    <!-- STEP 4: Roof -->
+    <div class="fstep" id="fs4">
+      <button class="btn-back" onclick="goStep(3)">← Back</button>
+      <div class="fstep-tag">Step 4 — Roof</div>
+      <div class="fstep-title">What type of roof do you have?</div>
+      <div class="fstep-desc">Optional — helps refine installation cost estimates.</div>
+      <div class="choices two">
+        <div class="choice" onclick="pick(this,'roof','asphalt')">
+          <div class="ch-ico">🏠</div>
+          <div class="ch-t"><div class="ch-label">Asphalt</div></div>
+          <div class="ch-radio"></div>
+        </div>
+        <div class="choice" onclick="pick(this,'roof','metal')">
+          <div class="ch-ico">🔩</div>
+          <div class="ch-t"><div class="ch-label">Metal</div></div>
+          <div class="ch-radio"></div>
+        </div>
+        <div class="choice" onclick="pick(this,'roof','tile')">
+          <div class="ch-ico">🧱</div>
+          <div class="ch-t"><div class="ch-label">Tile / Clay</div></div>
+          <div class="ch-radio"></div>
+        </div>
+        <div class="choice" onclick="pick(this,'roof','flat')">
+          <div class="ch-ico">📐</div>
+          <div class="ch-t"><div class="ch-label">Flat</div></div>
+          <div class="ch-radio"></div>
+        </div>
+        <div class="choice" style="grid-column:1/-1" onclick="pick(this,'roof','unknown')">
+          <div class="ch-ico">❓</div>
+          <div class="ch-t"><div class="ch-label">Not sure</div></div>
+          <div class="ch-radio"></div>
+        </div>
+      </div>
+      <button class="btn-next" id="btn-roof" disabled onclick="goStep(5)">Continue →</button>
+    </div>
+
+    <!-- STEP 5: Soft Commit + Contact -->
+    <div class="fstep" id="fs5">
+      <button class="btn-back" onclick="goStep(4)">← Back</button>
+      <div class="soft-commit">
+        <div class="sc-icon">📊</div>
+        <div class="sc-text">
+          <div class="sc-title">Your estimate is ready</div>
+          <div class="sc-sub">Where should we send your full savings report?</div>
+        </div>
+      </div>
+      <div class="fstep-tag">Step 5 — Your Details</div>
+      <div class="fstep-title">Almost there</div>
+      <div class="fstep-desc">Enter your info to view and receive your personalized solar savings report.</div>
+      <div class="fcols">
+        <div class="field"><label>First Name</label><input type="text" id="inp-first" placeholder="Alex"></div>
+        <div class="field"><label>Last Name</label><input type="text" id="inp-last" placeholder="Johnson"></div>
+      </div>
+      <div class="field"><label>Email Address</label><input type="email" id="inp-email" placeholder="alex@example.com"></div>
+      <div class="field"><label>Phone (optional — for SMS updates)</label><input type="tel" id="inp-phone" placeholder="(555) 000-0000"></div>
+      <p style="font-size:0.7rem;color:var(--ink-dim);line-height:1.55;margin-bottom:4px;">By submitting you agree to receive your free solar estimate and optional follow-up from WattWorth. We never sell your data. No spam. Unsubscribe anytime. Powered by SunLoop.</p>
+      <button class="btn-next" onclick="submitLead()">Generate my free estimate →</button>
+    </div>
+
+    <!-- STEP: QUOTE -->
+    <div class="fstep" id="fs-quote"></div>
+
+    <!-- STEP: REFERRAL -->
+    <div class="fstep" id="fs-referral">
+      <div class="ref-screen">
+        <div class="fstep-tag">💸 Earn up to $1,000</div>
+        <div class="ref-headline">Refer a homeowner,<br>earn real cash</div>
+        <div class="ref-sub">You've seen how much solar can save you. Share that same opportunity with friends and family — and get paid when they take action.</div>
+
+        <div class="ref-tiers">
+          <div class="ref-tier"><div class="ref-tier-icon">📨</div><div class="ref-tier-text">They submit the form</div><div class="ref-tier-amt">$50</div></div>
+          <div class="ref-tier"><div class="ref-tier-icon">📊</div><div class="ref-tier-text">They complete their estimate</div><div class="ref-tier-amt">$100</div></div>
+          <div class="ref-tier"><div class="ref-tier-icon">⚡</div><div class="ref-tier-text">They install solar</div><div class="ref-tier-amt">$1,000</div></div>
+        </div>
+
+        <div class="ref-link-box">
+          <div style="flex:1">
+            <div class="rlb-label">Your unique referral link</div>
+            <div class="rlb-url" id="refLinkUrl">wattworthsolar.com/r/</div>
+          </div>
+          <button class="rlb-copy" id="copyBtn" onclick="copyRefLink()">Copy</button>
+        </div>
+
+        <div class="ref-or">— or refer someone directly —</div>
+
+        <div class="ref-manual">
+          <div class="field" style="margin:0"><label>Their Name</label><input type="text" id="ref-name" placeholder="Jane Smith"></div>
+          <div class="field" style="margin:0"><label>Email or Phone</label><input type="text" id="ref-contact" placeholder="jane@email.com"></div>
+        </div>
+
+        <div class="ref-share">
+          <button class="share-btn" onclick="shareVia('sms')">📱 SMS</button>
+          <button class="share-btn" onclick="shareVia('email')">📧 Email</button>
+          <button class="share-btn" onclick="shareVia('whatsapp')">💬 WhatsApp</button>
+        </div>
+
+        <button class="btn-next" onclick="submitReferral()">Send Referral Invite →</button>
+        <button class="btn-secondary" onclick="goStep('confirm')">Skip for now — go to dashboard</button>
+      </div>
+    </div>
+
+    <!-- STEP: CONFIRM -->
+    <div class="fstep" id="fs-confirm">
+      <div class="confirm-body">
+        <div class="confirm-icon">🎉</div>
+        <div class="confirm-title">You're all set, <span id="confirm-name">friend</span>!</div>
+        <div class="confirm-desc">Your proposal is on its way to your inbox. Here's what happens next:</div>
+        <div class="confirm-steps">
+          <div class="cs-item"><div class="cs-num">1</div><div class="cs-text">📧 Proposal PDF emailed within 2 minutes</div></div>
+          <div class="cs-item"><div class="cs-num">2</div><div class="cs-text">🔗 Your saved quote link is ready to revisit anytime</div></div>
+          <div class="cs-item"><div class="cs-num">3</div><div class="cs-text">💸 Your referral link is active — share it and earn</div></div>
+          <div class="cs-item"><div class="cs-num">4</div><div class="cs-text">👋 A solar advisor will reach out only if you request it</div></div>
+        </div>
+        <button class="btn-view-referral" onclick="openDash()">View my referral dashboard →</button>
+        <button class="btn-close-done" onclick="closeModal('funnelOverlay')">Close</button>
+      </div>
+    </div>
+
+  </div><!-- /modal-body -->
+</div><!-- /modal -->
+</div><!-- /overlay -->
+
+
+<!-- ════════════════════════════════════════════════
+     REFERRAL DASHBOARD MODAL
+════════════════════════════════════════════════ -->
+<div class="overlay" id="dashOverlay" onclick="overlayClick(event,'dashOverlay')">
+<div class="modal" id="dashModal">
+  <div class="ref-dash">
+    <div class="rd-header">
+      <div class="rd-header-top">
+        <div class="rdh-title">My Referral Dashboard</div>
+        <button class="rdh-close" onclick="closeModal('dashOverlay')">✕</button>
+      </div>
+      <div class="rd-earnings-row">
+        <div class="rde-stat">
+          <div class="rdes-val gold">$1,200</div>
+          <div class="rdes-label">Total Earned</div>
+        </div>
+        <div class="rde-stat">
+          <div class="rdes-val green">3</div>
+          <div class="rdes-label">Active Referrals</div>
+        </div>
+        <div class="rde-stat">
+          <div class="rdes-val" style="color:#fff">$1,000</div>
+          <div class="rdes-label">Pending (install)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rd-body">
+      <!-- Referral link -->
+      <div class="rd-link-section">
+        <div class="rd-section-title" style="margin-top:0">Your referral link</div>
+        <div class="ref-link-box">
+          <div style="flex:1">
+            <div class="rlb-label">Share this link</div>
+            <div class="rlb-url" id="dashRefLink">wattworthsolar.com/r/</div>
+          </div>
+          <button class="rlb-copy" id="dashCopyBtn" onclick="copyDashLink()">Copy</button>
+        </div>
+        <div class="ref-share" style="margin-top:10px">
+          <button class="share-btn" onclick="shareVia('sms')">📱 SMS</button>
+          <button class="share-btn" onclick="shareVia('email')">📧 Email</button>
+          <button class="share-btn" onclick="shareVia('whatsapp')">💬 WhatsApp</button>
+        </div>
+      </div>
+
+      <!-- Referrals list -->
+      <div class="rd-section-title">Your referrals</div>
+
+      <div class="rd-referral-item">
+        <div class="rdi-avatar" style="background:var(--green)">MJ</div>
+        <div class="rdi-info">
+          <div class="rdi-name">Maria Johnson</div>
+          <div class="rdi-date">Referred Jan 12 · Austin, TX</div>
+        </div>
+        <div class="rdi-status installed">Installed</div>
+        <div class="rdi-earn">+$1,000</div>
+      </div>
+
+      <div class="rd-referral-item">
+        <div class="rdi-avatar" style="background:var(--blue)">TR</div>
+        <div class="rdi-info">
+          <div class="rdi-name">Tom Reynolds</div>
+          <div class="rdi-date">Referred Feb 3 · Denver, CO</div>
+        </div>
+        <div class="rdi-status estimated">Estimated</div>
+        <div class="rdi-earn" style="color:var(--green-dark)">+$100</div>
+      </div>
+
+      <div class="rd-referral-item">
+        <div class="rdi-avatar" style="background:#C4714A">SK</div>
+        <div class="rdi-info">
+          <div class="rdi-name">Sara Kim</div>
+          <div class="rdi-date">Referred Feb 18 · Phoenix, AZ</div>
+        </div>
+        <div class="rdi-status submitted">Submitted</div>
+        <div class="rdi-earn" style="color:var(--ink-dim)">+$50</div>
+      </div>
+
+      <!-- Add referral inline -->
+      <div class="rd-add-referral">
+        <div class="rd-section-title">Add a new referral</div>
+        <div class="ref-manual">
+          <div class="field" style="margin:0"><label>Their Name</label><input type="text" id="dash-ref-name" placeholder="Jane Smith"></div>
+          <div class="field" style="margin:0"><label>Email or Phone</label><input type="text" id="dash-ref-contact" placeholder="jane@email.com"></div>
+        </div>
+        <button class="btn-next" style="margin-top:12px" onclick="submitDashReferral()">Send Referral Invite →</button>
+      </div>
+
+      <p style="font-size:0.68rem;color:var(--ink-dim);margin-top:16px;line-height:1.6;text-align:center;">Rewards paid within 30 days of each milestone trigger. Subject to installer partnership terms. WattWorth powered by SunLoop.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- ── LOADING SCREEN ───────────────────────────── -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loader-spinner"></div>
+  <div class="loader-steps">
+    <div class="ls-item active" id="ls1">Analyzing solar data for your area</div>
+    <div class="ls-item" id="ls2">Calculating system size & savings</div>
+    <div class="ls-item" id="ls3">Applying local incentives</div>
+    <div class="ls-item" id="ls4">Scoring your lead profile</div>
+    <div class="ls-item" id="ls5">Building your estimate</div>
+  </div>
+  <div class="ls-bar-wrap"><div class="ls-bar" id="lsBar"></div></div>
+</div>
+
+
+<script>
+/* ══════════════════════════════════════════
+   WATTWORTHAPP STATE
+══════════════════════════════════════════ */
+const lead = {
+  address:'', city:'', state:'',
+  bill:'', ownership:'', roof:'',
+  firstName:'', lastName:'', email:'', phone:'',
+  billUploaded: false,
+  estimate: null,
+  qualScore: 0,
+  refCode: '',
+  utmSource: new URLSearchParams(location.search).get('utm_source') || 'direct',
+  utmMedium: new URLSearchParams(location.search).get('utm_medium') || '',
+  refBy: new URLSearchParams(location.search).get('ref') || ''
+};
+
+const stepLabels = ['Your Address','Monthly Bill','Ownership','Roof Type','Your Details'];
+
+/* ── ADDRESS INTELLIGENCE ─────────────────── */
+const utilityData = {
+  TX: { utility:'Oncor / AEP', rate:'$0.13/kWh', solar:'Excellent ☀️' },
+  CA: { utility:'PG&E / SCE', rate:'$0.27/kWh', solar:'Excellent ☀️' },
+  FL: { utility:'FPL / Duke', rate:'$0.13/kWh', solar:'Very Good ⛅' },
+  NY: { utility:'Con Edison', rate:'$0.20/kWh', solar:'Good ⛅' },
+  AZ: { utility:'APS / SRP', rate:'$0.13/kWh', solar:'Exceptional ☀️' },
+  NV: { utility:'NV Energy', rate:'$0.12/kWh', solar:'Exceptional ☀️' },
+  CO: { utility:'Xcel Energy', rate:'$0.13/kWh', solar:'Very Good ☀️' },
+};
+const defaultUtility = { utility:'Local Utility', rate:'$0.14/kWh', solar:'Good ⛅' };
+
+function checkAddressIntel() {
+  const state = document.getElementById('inp-state').value;
+  const addr = document.getElementById('inp-addr').value;
+  const panel = document.getElementById('addrIntel');
+  if (state && addr.length > 3) {
+    const d = utilityData[state] || defaultUtility;
+    document.getElementById('ai-utility').textContent = d.utility;
+    document.getElementById('ai-rate').textContent = d.rate;
+    document.getElementById('ai-solar').textContent = d.solar;
+    panel.classList.add('visible');
+  } else {
+    panel.classList.remove('visible');
+  }
+}
+
+/* ── REFERRAL CODE ────────────────────────── */
+function genRefCode(name) {
+  const clean = (name || 'user').replace(/\s+/g,'').toUpperCase().slice(0,4);
+  const rand = Math.random().toString(36).substring(2,6).toUpperCase();
+  return clean + rand;
+}
+
+/* ── STEP NAVIGATION ─────────────────────── */
+function goStep(n) {
+  document.querySelectorAll('.fstep').forEach(s => s.classList.remove('active'));
+  const prog = document.getElementById('funnelProgress');
+  const body = document.querySelector('#funnelModal .modal-body');
+
+  if (n === 'quote' || n === 'referral' || n === 'confirm') {
+    prog.style.display = 'none';
+    body.style.padding = '0';
+    document.getElementById('fs-' + n).classList.add('active');
+    return;
+  }
+  prog.style.display = 'block';
+  body.style.padding = '';
+  document.getElementById('fs' + n).classList.add('active');
+  document.getElementById('funnelStepLabel').textContent = stepLabels[n-1];
+  document.getElementById('funnelStepCount').textContent = n + ' / 6';
+  document.getElementById('funnelFill').style.width = (n / 6 * 100) + '%';
+}
+
+/* ── OPTION PICKING ──────────────────────── */
+function pick(el, field, val) {
+  const grp = el.closest('.choices');
+  grp.querySelectorAll('.choice').forEach(c => c.classList.remove('picked'));
+  el.classList.add('picked');
+  lead[field] = val;
+  const btns = { bill:'btn-bill', ownership:'btn-own', roof:'btn-roof' };
+  if (btns[field]) document.getElementById(btns[field]).disabled = false;
+}
+
+/* ── BILL UPLOAD SIMULATION ──────────────── */
+function simulateUpload() {
+  const status = document.getElementById('uploadStatus');
+  lead.billUploaded = true;
+  status.textContent = '✅ Bill uploaded — tagged as high-intent';
+  status.style.color = 'var(--green-dark)';
+  status.style.fontWeight = '600';
+}
+
+/* ── CALCULATE ESTIMATE ──────────────────── */
+function calcEstimate() {
+  const kwhMap = { 'under-75':450, '75-150':900, '150-250':1400, '250+':2100 };
+  const kwh = kwhMap[lead.bill] || 900;
+
+  const irradiance = {
+    AZ:6.0,NV:6.2,NM:5.9,CA:5.5,TX:5.2,FL:5.0,CO:5.4,UT:5.5,
+    GA:4.8,NC:4.7,SC:4.8,VA:4.5,MD:4.3,NY:4.0,NJ:4.1,MA:4.0,
+    CT:4.0,PA:4.1,OH:4.0,MI:3.9,IL:4.2,WI:4.0,MN:4.3,WA:3.8,
+    OR:4.0,ID:5.0,MT:4.5,WY:5.0,ND:4.5,SD:4.7,NE:4.8,KS:5.0,
+    MO:4.5,IA:4.4,IN:4.1,KY:4.4,TN:4.7,AL:4.8,MS:4.8,LA:4.8,
+    AR:4.6,OK:5.1,HI:5.7,AK:3.0
+  };
+  const psh = irradiance[lead.state] || 4.5;
+  const systemKw = Math.round((kwh / (psh * 30 * 0.8)) * 10) / 10;
+
+  const rates = {
+    CA:0.27,TX:0.13,FL:0.13,NY:0.20,MA:0.24,CT:0.23,NJ:0.17,
+    IL:0.13,WA:0.10,OR:0.12,AZ:0.13,NV:0.12,CO:0.13,HI:0.34
+  };
+  const rate = rates[lead.state] || 0.14;
+
+  const monthlyLow  = Math.round(kwh * rate * 0.75);
+  const monthlyHigh = Math.round(kwh * rate * 0.95);
+  const yearlyLow   = monthlyLow * 12;
+  const yearlyHigh  = monthlyHigh * 12;
+  const py25 = Math.round(((yearlyLow + yearlyHigh)/2) * 25 * 1.03);
+  const co2  = Math.round(kwh * 12 * 0.386);
+  const cost = Math.round(systemKw * 3200);
+  const credit = Math.round(cost * 0.30);
+  const net = cost - credit;
+  const payback = Math.round(net / ((yearlyLow+yearlyHigh)/2) * 10) / 10;
+
+  // Scoring
+  let score = 0;
+  const sMap = {'250+':40,'150-250':30,'75-150':20,'under-75':5};
+  score += sMap[lead.bill] || 10;
+  score += lead.ownership === 'own' ? 40 : 10;
+  score += ['asphalt','metal','tile'].includes(lead.roof) ? 20 : 10;
+  if (lead.billUploaded) score = Math.min(score + 5, 100);
+  lead.qualScore = Math.min(score, 100);
+
+  const tier = score >= 80 ? 'HOT 🔴' : score >= 50 ? 'WARM 🟡' : 'COOL 🔵';
+
+  return { systemKw, monthlyLow, monthlyHigh, yearlyLow, yearlyHigh, py25, co2, cost, credit, net, payback, tier };
+}
+
+/* ── SUBMIT + SHOW QUOTE ──────────────────── */
+async function submitLead() {
+  lead.firstName = document.getElementById('inp-first').value.trim();
+  lead.lastName  = document.getElementById('inp-last').value.trim();
+  lead.email     = document.getElementById('inp-email').value.trim();
+  lead.phone     = document.getElementById('inp-phone').value.trim();
+  lead.address   = document.getElementById('inp-addr').value.trim();
+  lead.city      = document.getElementById('inp-city').value.trim();
+  lead.state     = document.getElementById('inp-state').value;
+
+  if (!lead.firstName || !lead.email) { alert('Please enter your name and email.'); return; }
+
+  // Loading sequence
+  const ls = document.getElementById('loadingScreen');
+  ls.classList.add('on');
+  document.getElementById('lsBar').style.width = '95%';
+  const lsItems = ['ls1','ls2','ls3','ls4','ls5'];
+  let li = 0;
+  const lsInterval = setInterval(() => {
+    if (li > 0) { document.getElementById(lsItems[li-1]).classList.remove('active'); document.getElementById(lsItems[li-1]).classList.add('done'); }
+    if (li < lsItems.length) { document.getElementById(lsItems[li]).classList.add('active'); li++; }
+  }, 650);
+
+  await new Promise(r => setTimeout(r, 3600));
+  clearInterval(lsInterval);
+  ls.classList.remove('on');
+  lsItems.forEach(i => { document.getElementById(i).classList.remove('active','done'); });
+  li = 0;
+
+  lead.estimate = calcEstimate();
+  lead.refCode  = genRefCode(lead.firstName);
+  document.getElementById('refLinkUrl').textContent  = 'wattworthsolar.com/r/' + lead.refCode;
+  document.getElementById('dashRefLink').textContent = 'wattworthsolar.com/r/' + lead.refCode;
+  document.getElementById('confirm-name').textContent = lead.firstName;
+
+  renderQuote();
+  goStep('quote');
+  sendWebhook();
+}
+
+/* ── RENDER QUOTE ────────────────────────── */
+function renderQuote() {
+  const e = lead.estimate;
+  const addr = `${lead.city}, ${lead.state}`;
+  const tierColor = e.tier.includes('HOT') ? '#C62828' : e.tier.includes('WARM') ? '#E65100' : '#1565C0';
+
+  document.getElementById('fs-quote').innerHTML = `
+    <div class="quote-hero">
+      <div class="qh-tag">⚡ WattWorth Estimate</div>
+      <div class="qh-name">${lead.firstName}, here's your savings picture</div>
+      <div class="qh-addr">📍 ${addr} · Score: ${lead.qualScore}/100</div>
+      <div class="qh-score" style="background:rgba(255,255,255,0.12)">${e.tier}</div>
+    </div>
+    <div class="quote-body">
+
+      <div class="savings-range">
+        <div class="sr-label">Estimated Monthly Savings Range</div>
+        <div class="sr-range">
+          $${e.monthlyLow}<span class="sep">–</span>$${e.monthlyHigh}
+        </div>
+        <div class="sr-period">per month · $${e.yearlyLow.toLocaleString()}–$${e.yearlyHigh.toLocaleString()} / year</div>
+        <div class="sr-context">Based on similar homes in your area</div>
+      </div>
+
+      <div class="q-metrics">
+        <div class="q-met"><div class="qm-val">${e.systemKw} kW</div><div class="qm-label">System Size</div></div>
+        <div class="q-met"><div class="qm-val">$${(e.py25/1000).toFixed(0)}K</div><div class="qm-label">25-Yr Return</div></div>
+        <div class="q-met"><div class="qm-val">${e.payback} yr</div><div class="qm-label">Payback</div></div>
+        <div class="q-met"><div class="qm-val">30%</div><div class="qm-label">Fed. Credit</div></div>
+        <div class="q-met"><div class="qm-val">$${(e.credit/1000).toFixed(1)}K</div><div class="qm-label">ITC Est.</div></div>
+        <div class="q-met"><div class="qm-val">${(e.co2/1000).toFixed(1)}T</div><div class="qm-label">CO₂/yr</div></div>
+      </div>
+
+      <div class="bill-viz">
+        <div class="bv-title">Current Bill vs. Solar</div>
+        <div class="bv-row">
+          <div class="bv-row-top"><span class="bvr-label">Current electric bill</span><span class="bvr-val" style="color:var(--ink-dim)">~$${Math.round((e.monthlyLow+e.monthlyHigh)/2/0.85)}/mo</span></div>
+          <div class="bv-track"><div class="bv-fill bill" style="width:100%"></div></div>
+        </div>
+        <div class="bv-row">
+          <div class="bv-row-top"><span class="bvr-label">Solar loan payment (est.)</span><span class="bvr-val" style="color:var(--green-dark)">~$${Math.round(e.net/120*1.04)}/mo</span></div>
+          <div class="bv-track"><div class="bv-fill solar" style="width:${Math.round(e.net/120*1.04 / (Math.round((e.monthlyLow+e.monthlyHigh)/2/0.85)) * 100)}%"></div></div>
+        </div>
+        <div class="bv-row">
+          <div class="bv-row-top"><span class="bvr-label">Monthly savings</span><span class="bvr-val" style="color:var(--gold-dark)">$${e.monthlyLow}–$${e.monthlyHigh}/mo</span></div>
+          <div class="bv-track"><div class="bv-fill savings" style="width:${Math.round(e.monthlyLow / (Math.round((e.monthlyLow+e.monthlyHigh)/2/0.85)) * 100)}%"></div></div>
+        </div>
+        <div class="bv-savings-label">↑ That's money back in your pocket, starting month 1</div>
+      </div>
+
+      <div class="plan-label">Choose your financing path</div>
+      <div class="plan-card chosen" onclick="pickPlan(this,'purchase')">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+            <div class="plan-name">Cash Purchase</div><span class="plan-chip">Best ROI</span>
+          </div>
+          <div class="plan-desc">Own outright. Maximum 25-yr savings. Full 30% ITC applies.</div>
+        </div>
+        <div class="plan-price">$${e.net.toLocaleString()}<small>after fed. credit</small></div>
+      </div>
+      <div class="plan-card" onclick="pickPlan(this,'loan')">
+        <div style="flex:1">
+          <div class="plan-name" style="margin-bottom:3px">Solar Loan</div>
+          <div class="plan-desc">$0 down. Own the system. Claim the ITC yourself.</div>
+        </div>
+        <div class="plan-price">~$${Math.round(e.net/120*1.04)}/mo<small>10-yr est. @ 5% APR</small></div>
+      </div>
+      <div class="plan-card" onclick="pickPlan(this,'lease')">
+        <div style="flex:1">
+          <div class="plan-name" style="margin-bottom:3px">Lease / PPA</div>
+          <div class="plan-desc">$0 down, $0 maintenance. Immediate savings, no ownership.</div>
+        </div>
+        <div class="plan-price">~$${Math.round(e.monthlyLow*0.65)}/mo<small>fixed rate est.</small></div>
+      </div>
+
+      <div class="q-disclaimer">Estimates based on regional solar data and typical usage patterns. Actual savings may vary. Final system design subject to site inspection. This is not a contract or binding offer.<br><span style="color:var(--green-dark);font-weight:600">Powered by SunLoop</span></div>
+
+      <button class="btn-proposal" onclick="requestProposal()">
+        📄 Send my free proposal PDF →
+      </button>
+    </div>
+  `;
+}
+
+function pickPlan(el, plan) {
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('chosen'));
+  el.classList.add('chosen');
+  lead.selectedPlan = plan;
+}
+
+async function requestProposal() {
+  const ls = document.getElementById('loadingScreen');
+  document.getElementById('ls1').textContent = 'Generating your WattWorth proposal PDF…';
+  document.getElementById('ls2').textContent = 'Applying SunLoop routing…';
+  document.getElementById('ls3').textContent = 'Generating your referral link…';
+  document.getElementById('ls4').textContent = 'Scheduling follow-up sequence…';
+  document.getElementById('ls5').textContent = 'Almost done…';
+  ls.classList.add('on');
+  document.getElementById('lsBar').style.width = '95%';
+  await new Promise(r => setTimeout(r, 2000));
+  ls.classList.remove('on');
+  // Reset loader text
+  document.getElementById('ls1').textContent = 'Analyzing solar data for your area';
+  document.getElementById('ls2').textContent = 'Calculating system size & savings';
+  document.getElementById('ls3').textContent = 'Applying local incentives';
+  document.getElementById('ls4').textContent = 'Scoring your lead profile';
+  document.getElementById('ls5').textContent = 'Building your estimate';
+  document.getElementById('lsBar').style.width = '0';
+  goStep('referral');
+}
+
+/* ── REFERRAL ACTIONS ────────────────────── */
+function copyRefLink() {
+  const link = 'https://wattworthsolar.com/r/' + lead.refCode;
+  navigator.clipboard?.writeText(link).catch(()=>{});
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = 'Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+}
+function copyDashLink() {
+  const link = 'https://wattworthsolar.com/r/' + (lead.refCode || 'DEMO1234');
+  navigator.clipboard?.writeText(link).catch(()=>{});
+  const btn = document.getElementById('dashCopyBtn');
+  btn.textContent = 'Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+}
+function shareVia(channel) {
+  const link = 'https://wattworthsolar.com/r/' + (lead.refCode || 'DEMO1234');
+  const msg = encodeURIComponent(`Check your solar savings for free — I saved $${(lead.estimate?.monthlyLow || 120)}/mo! ${link}`);
+  const urls = {
+    sms: `sms:?body=${msg}`,
+    email: `mailto:?subject=Check%20your%20solar%20savings&body=${msg}`,
+    whatsapp: `https://wa.me/?text=${msg}`
+  };
+  window.open(urls[channel], '_blank');
+}
+function submitReferral() {
+  const name = document.getElementById('ref-name').value.trim();
+  const contact = document.getElementById('ref-contact').value.trim();
+  if (name || contact) {
+    // Would POST to webhook in production
+    console.log('Referral submitted:', { name, contact, refBy: lead.refCode });
+  }
+  goStep('confirm');
+}
+function submitDashReferral() {
+  const name = document.getElementById('dash-ref-name').value.trim();
+  const contact = document.getElementById('dash-ref-contact').value.trim();
+  if (!name && !contact) { alert('Please enter a name or contact for your referral.'); return; }
+  alert(`✅ Referral invite sent to ${name || contact}! You'll earn $50 when they submit.`);
+  document.getElementById('dash-ref-name').value = '';
+  document.getElementById('dash-ref-contact').value = '';
+}
+
+/* ── WEBHOOK ──────────────────────────────── */
+async function sendWebhook() {
+  const payload = {
+    source: 'wattworthsolar', powered_by: 'sunloop',
+    timestamp: new Date().toISOString(),
+    utm: { source: lead.utmSource, medium: lead.utmMedium },
+    referred_by: lead.refBy,
+    lead: {
+      firstName: lead.firstName, lastName: lead.lastName,
+      email: lead.email, phone: lead.phone,
+      address: lead.address, city: lead.city, state: lead.state,
+    },
+    qualification: {
+      billTier: lead.bill, ownership: lead.ownership, roofType: lead.roof,
+      billUploaded: lead.billUploaded, qualScore: lead.qualScore,
+      tier: lead.estimate?.tier
+    },
+    estimate: lead.estimate,
+    referral: { code: lead.refCode }
+  };
+  const HOOK = 'https://hooks.zapier.com/hooks/catch/YOUR_HOOK_ID/';
+  try {
+    await fetch(HOOK, { method:'POST', headers:{'Content-Type':'application/json'}, mode:'no-cors', body:JSON.stringify(payload) });
+  } catch(e) { console.warn('Webhook not configured'); }
+}
+
+/* ── MODAL HELPERS ───────────────────────── */
+function openFunnel() {
+  document.getElementById('funnelOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  goStep(1);
+}
+function openDash(e) {
+  if (e) e.preventDefault();
+  document.getElementById('dashOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+function overlayClick(e, id) {
+  if (e.target.id === id) closeModal(id);
+}
+
+// Parse ref param from URL
+if (lead.refBy) {
+  document.querySelector('.location-banner').innerHTML =
+    `<div class="pulse"></div>You were referred by a friend — get your free estimate`;
+}
+</script>
+</body>
+</html>
