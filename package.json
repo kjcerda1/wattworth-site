@@ -1,1 +1,1 @@
-{"name":"wattworth-mvp","version":"1.0.0","private":true,"description":"WattWorth solar prequalification MVP","scripts":{"check":"node --check assets/app.js && node --check api/submit-lead.js"},"engines":{"node":">=20"}}
+{"name":"wattworth-mvp","version":"1.0.0","private":true,"description":"WattWorth solar prequalification MVP","scripts":{"check":"node --check assets/app.js && node --check api/submit-lead.js && node --check api/referral-summary.js"},"engines":{"node":">=20"}}
