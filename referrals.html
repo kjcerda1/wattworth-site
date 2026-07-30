@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="View WattWorth referral activity by referral code.">
+  <meta name="description" content="View private WattWorth referral activity by dashboard access code.">
+  <meta name="robots" content="noindex,nofollow">
   <title>Referral Dashboard - WattWorth</title>
   <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,11 +26,11 @@
       <div>
         <div class="eyebrow">Referral dashboard</div>
         <h1>Track referred WattWorth leads.</h1>
-        <p>Enter a referral code to see aggregate lead counts. Personal details, meter numbers, bill files, and private notes stay out of this public view.</p>
-        <p class="dashboard-reward">Reward: $1,000 after a verified qualifying solar installation.</p>
+        <p>Use the private dashboard access code to see aggregate lead counts. Personal details, meter numbers, utility data, bill files, and private notes stay out of this view.</p>
+        <p class="dashboard-reward">Reward: $1,000 after a verified qualifying solar installation. Status may be reviewed and tracked manually.</p>
       </div>
       <form class="dashboard-form" id="referralForm">
-        <label>Referral code<input name="code" autocomplete="off" maxlength="40" required></label>
+        <label>Private dashboard access code<input name="access" autocomplete="off" maxlength="500" required></label>
         <button class="button" type="submit">View dashboard</button>
       </form>
     </section>
@@ -37,8 +38,8 @@
     <section class="dashboard-results" id="dashboardResults" hidden>
       <div class="dashboard-heading">
         <div>
-          <div class="eyebrow">Code</div>
-          <h2 id="referralCodeTitle"></h2>
+          <div class="eyebrow">Private summary</div>
+          <h2 id="referralCodeTitle">Referral activity</h2>
         </div>
         <p id="dashboardMessage" role="status"></p>
       </div>
@@ -56,46 +57,50 @@
     const results = document.getElementById('dashboardResults');
     const message = document.getElementById('dashboardMessage');
     const fields = {
-      code: document.getElementById('referralCodeTitle'),
       total: document.getElementById('countTotal'),
       pending: document.getElementById('countPending'),
       qualified: document.getElementById('countQualified'),
       completed: document.getElementById('countCompleted')
     };
 
+    function setCounts(counts) {
+      fields.total.textContent = counts.total || 0;
+      fields.pending.textContent = counts.pending || 0;
+      fields.qualified.textContent = counts.qualified || 0;
+      fields.completed.textContent = counts.completed || 0;
+    }
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const button = form.querySelector('button');
-      const code = form.elements.code.value.trim().toUpperCase();
-      if (!code) return;
+      const access = form.elements.access.value.trim();
+      if (!access) return;
       button.disabled = true;
       button.textContent = 'Loading...';
       message.textContent = '';
       try {
-        const response = await fetch('/api/referral-summary?code=' + encodeURIComponent(code));
+        const response = await fetch('/api/referral-summary?access=' + encodeURIComponent(access), { cache: 'no-store' });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.ok) throw new Error(data.error || 'We could not load that referral dashboard.');
-        const counts = data.counts || {};
-        fields.code.textContent = data.referralCode || code;
-        fields.total.textContent = counts.total || 0;
-        fields.pending.textContent = counts.pending || 0;
-        fields.qualified.textContent = counts.qualified || 0;
-        fields.completed.textContent = counts.completed || 0;
+        setCounts(data.counts || {});
         results.hidden = false;
         message.textContent = 'Showing aggregate referral activity only.';
       } catch (error) {
         results.hidden = false;
-        fields.code.textContent = code;
-        fields.total.textContent = '0';
-        fields.pending.textContent = '0';
-        fields.qualified.textContent = '0';
-        fields.completed.textContent = '0';
+        setCounts({});
         message.textContent = error.message;
       } finally {
         button.disabled = false;
         button.textContent = 'View dashboard';
       }
     });
+
+    const queryAccess = new URLSearchParams(location.search).get('access');
+    if (queryAccess) {
+      form.elements.access.value = queryAccess;
+      history.replaceState(null, '', location.pathname);
+      form.requestSubmit();
+    }
   </script>
 </body>
 </html>

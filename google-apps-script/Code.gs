@@ -1,9 +1,11 @@
 const SHEET_NAME = 'Leads';
+const REFERRAL_ADMIN_SHEET_NAME = 'Referral Admin';
 const EXPECTED_SECRET = PropertiesService.getScriptProperties().getProperty('WATTWORTH_WEBHOOK_SECRET');
 const BILL_FOLDER_ID = PropertiesService.getScriptProperties().getProperty('WATTWORTH_BILL_UPLOAD_FOLDER_ID');
 const MAX_BILL_FILE_SIZE = 3 * 1024 * 1024;
 const ALLOWED_BILL_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
 const HEADERS = ['Submitted At','Lead ID','First Name','Last Name','Email','Phone','ZIP','Electric Provider','Meter Number','Verification Method','Bill Range','Ownership','Roof Type','Roof Age','System Range','Offset Range','Fit Category','Referral Code','Referrer Name','Bill File URL','Bill Filename','Bill MIME Type','Bill SHA-256','Status','Pedro Notes','Last Contacted','Source'];
+const REFERRAL_ADMIN_HEADERS = ['Referral Code','Access Token SHA-256','Status','Created At','Notes'];
 
 function doPost(e) {
   let createdFile = null;
@@ -42,7 +44,7 @@ function doGet(e) {
     if ((e.parameter.action || '') !== 'referral-summary') {
       return json_({ ok: false, error: 'Unknown action' });
     }
-    return json_(referralSummary_(e.parameter.code || ''));
+    return json_(referralSummary_(e.parameter.accessHash || ''));
   } catch (error) {
     console.error(error && error.message ? error.message : error);
     return json_({ ok: false, error: 'Referral lookup failed' });
@@ -105,16 +107,31 @@ function detectedType_(bytes) {
   return '';
 }
 
-function getSheet_() {
+function getSpreadsheet_() {
   const spreadsheetId = PropertiesService.getScriptProperties().getProperty('WATTWORTH_SPREADSHEET_ID');
   if (!spreadsheetId) throw new Error('Missing WATTWORTH_SPREADSHEET_ID');
-  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  return SpreadsheetApp.openById(spreadsheetId);
+}
+
+function getSheet_() {
+  const spreadsheet = getSpreadsheet_();
   return spreadsheet.getSheetByName(SHEET_NAME) || spreadsheet.insertSheet(SHEET_NAME);
+}
+
+function getReferralAdminSheet_() {
+  const spreadsheet = getSpreadsheet_();
+  return spreadsheet.getSheetByName(REFERRAL_ADMIN_SHEET_NAME) || spreadsheet.insertSheet(REFERRAL_ADMIN_SHEET_NAME);
 }
 
 function ensureHeader_(sheet) {
   if (sheet.getLastRow() > 0) return;
   sheet.appendRow(HEADERS);
+  sheet.setFrozenRows(1);
+}
+
+function ensureReferralAdminHeader_(sheet) {
+  if (sheet.getLastRow() > 0) return;
+  sheet.appendRow(REFERRAL_ADMIN_HEADERS);
   sheet.setFrozenRows(1);
 }
 
@@ -182,9 +199,14 @@ function sanitizeName_(value) {
   return String(value || '').replace(/[^A-Za-z0-9._-]/g, '-').slice(0, 180) || 'file';
 }
 
-function referralSummary_(code) {
-  const referralCode = String(code || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
-  if (!referralCode || referralCode.length < 4) return { ok: false, error: 'Enter a valid referral code.' };
+function referralSummary_(accessHash) {
+  const hash = String(accessHash || '').trim().toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(hash)) return { ok: false, error: 'Dashboard access was not found.' };
+  const adminSheet = getReferralAdminSheet_();
+  ensureReferralAdminHeader_(adminSheet);
+  const referralCode = referralCodeForAccessHash_(adminSheet, hash);
+  if (!referralCode) return { ok: false, error: 'Dashboard access was not found.' };
+
   const sheet = getSheet_();
   ensureHeader_(sheet);
   const values = sheet.getDataRange().getValues();
@@ -199,7 +221,31 @@ function referralSummary_(code) {
     else if (status.indexOf('qualified') >= 0) counts.qualified += 1;
     else counts.pending += 1;
   });
-  return { ok: true, referralCode: referralCode, counts: counts };
+  return { ok: true, counts: counts };
+}
+
+function referralCodeForAccessHash_(sheet, accessHash) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return '';
+  const values = sheet.getRange(2, 1, lastRow - 1, REFERRAL_ADMIN_HEADERS.length).getValues();
+  for (let i = 0; i < values.length; i += 1) {
+    const referralCode = String(values[i][0] || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    const storedHash = String(values[i][1] || '').trim().toLowerCase();
+    const status = String(values[i][2] || 'Active').trim().toLowerCase();
+    if (referralCode && status !== 'disabled' && constantTimeEqual_(storedHash, accessHash)) return referralCode;
+  }
+  return '';
+}
+
+function constantTimeEqual_(left, right) {
+  const a = String(left || '');
+  const b = String(right || '');
+  let mismatch = a.length ^ b.length;
+  const length = Math.max(a.length, b.length);
+  for (let i = 0; i < length; i += 1) {
+    mismatch |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return mismatch === 0;
 }
 
 function indexMap_(header) {
