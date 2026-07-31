@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Get a preliminary solar savings estimate for your Texas home with WattWorth.">
+  <title>WattWorth - See what your home could save</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="WattWorth home">
+      <span class="brand-name">Watt<span>Worth</span></span>
+      <small>by Arden Home</small>
+    </a>
+    <div class="header-actions">
+      <a class="text-link" href="/referrals.html">Referral dashboard</a>
+      <button class="button button-small" data-open-estimator>Check my estimate</button>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero section-shell">
+      <div class="hero-copy">
+        <div class="eyebrow">Texas homeowner solar prequalification</div>
+        <h1>See what <em>your home</em> could save.</h1>
+        <p>Answer a few simple questions to receive a preliminary solar estimate. No account, no obligation, and no pressure to purchase.</p>
+        <div class="hero-actions">
+          <button class="button" data-open-estimator>Find out what I could save</button>
+          <span>About 90 seconds</span>
+        </div>
+        <div class="trust-row" aria-label="WattWorth benefits">
+          <span>Preliminary estimate</span>
+          <span>Bill review ready</span>
+          <span>Referral tracking</span>
+        </div>
+      </div>
+      <aside class="estimate-preview" aria-label="Example estimate preview">
+        <div class="preview-label">Your preliminary picture</div>
+        <div class="preview-number">6-9 kW</div>
+        <div class="preview-sub">Potential system-size range</div>
+        <div class="preview-grid">
+          <div><strong>50-85%</strong><span>Potential bill offset</span></div>
+          <div><strong>1 day</strong><span>Typical follow-up</span></div>
+        </div>
+        <p>Final production, pricing, and savings require utility data, roof review, equipment selection, and a professional site assessment.</p>
+      </aside>
+    </section>
+
+    <section class="how-it-works section-shell">
+      <div class="section-heading">
+        <div class="eyebrow">How it works</div>
+        <h2>Useful first answers, without pretending it is a final proposal.</h2>
+      </div>
+      <div class="steps-grid">
+        <article><span>01</span><h3>Tell us about your bill</h3><p>Your electric-bill range and utility verification help anchor the review.</p></article>
+        <article><span>02</span><h3>Describe your home</h3><p>Ownership, roof, ZIP code, and utility details help determine fit.</p></article>
+        <article><span>03</span><h3>Review your estimate</h3><p>See a conservative range and choose whether to request follow-up.</p></article>
+      </div>
+    </section>
+
+    <section class="disclosure section-shell">
+      <div>
+        <div class="eyebrow">Built for clarity</div>
+        <h2>WattWorth is a lead and estimate service, not a solar contractor.</h2>
+      </div>
+      <p>We provide preliminary educational estimates and connect interested homeowners with an independent solar professional. Results are not a contract, financing approval, tax opinion, utility guarantee, or final system design.</p>
+    </section>
+
+    <section class="faq section-shell">
+      <div class="section-heading"><div class="eyebrow">Questions</div><h2>Before you begin</h2></div>
+      <details><summary>Is the estimate exact?</summary><p>No. It is a preliminary range based on the information you provide and general regional assumptions.</p></details>
+      <details><summary>Why do you ask for utility verification?</summary><p>It helps the follow-up reviewer match the request to real utility details instead of relying only on a broad monthly-bill range.</p></details>
+      <details><summary>Will WattWorth sell my information?</summary><p>We use your information to generate your estimate and, when you consent, share it with the named solar professional for follow-up. See our Privacy Policy for details.</p></details>
+      <details><summary>Do I have to buy anything?</summary><p>No. Requesting an estimate or follow-up does not obligate you to purchase solar products or services.</p></details>
+    </section>
+  </main>
+
+  <footer>
+    <div class="brand-name">Watt<span>Worth</span></div>
+    <nav aria-label="Footer">
+      <a href="/referrals.html">Referral dashboard</a>
+      <a href="/legal/privacy.html">Privacy</a>
+      <a href="/legal/terms.html">Terms</a>
+      <a href="/legal/estimate-disclaimer.html">Estimate disclaimer</a>
+    </nav>
+    <p>&copy; <span id="year"></span> Arden Home. WattWorth is not a utility or solar contractor.</p>
+  </footer>
+
+  <div class="modal" id="estimatorModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-estimator></div>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="estimatorTitle">
+      <button class="modal-close" data-close-estimator aria-label="Close estimate form">x</button>
+      <div class="progress"><div id="progressBar"></div></div>
+      <form id="estimateForm" novalidate>
+        <div class="form-step active" data-step="1">
+          <div class="step-label">Step 1 of 6</div>
+          <h2 id="estimatorTitle">About how much is your monthly electric bill?</h2>
+          <div class="choice-grid">
+            <label><input type="radio" name="billRange" value="under-100" required><span>Under $100</span></label>
+            <label><input type="radio" name="billRange" value="100-175"><span>$100-$175</span></label>
+            <label><input type="radio" name="billRange" value="176-250"><span>$176-$250</span></label>
+            <label><input type="radio" name="billRange" value="251-plus"><span>$251+</span></label>
+          </div>
+          <button type="button" class="button form-next">Continue</button>
+        </div>
+
+        <div class="form-step" data-step="2">
+          <div class="step-label">Step 2 of 6</div>
+          <h2>Do you own the home?</h2>
+          <div class="choice-grid two">
+            <label><input type="radio" name="ownership" value="own" required><span>Yes, I own it</span></label>
+            <label><input type="radio" name="ownership" value="rent"><span>No, I rent</span></label>
+          </div>
+          <div class="form-nav"><button type="button" class="text-button form-back">Back</button><button type="button" class="button form-next">Continue</button></div>
+        </div>
+
+        <div class="form-step" data-step="3">
+          <div class="step-label">Step 3 of 6</div>
+          <h2>Verify the utility details.</h2>
+          <p class="step-help" id="verificationHelp">To complete your request, provide either an electric bill or your meter number and electric provider.</p>
+          <fieldset class="verification-options" aria-describedby="verificationHelp">
+            <legend class="sr-only">Choose a utility verification method</legend>
+            <label><input type="radio" name="verificationPath" value="bill" checked><span><strong>Upload my electric bill</strong><small>Upload a PDF, JPG, or PNG up to 3 MB.</small></span></label>
+            <label><input type="radio" name="verificationPath" value="meter"><span><strong>Enter my meter details instead</strong><small>Use your electric provider and meter number.</small></span></label>
+          </fieldset>
+          <div class="field-grid">
+            <label>ZIP code<input name="zip" inputmode="numeric" maxlength="5" autocomplete="postal-code" required></label>
+            <label>Electric provider<input name="electricProvider" autocomplete="organization" placeholder="Example: CPS Energy"></label>
+            <label>Meter number<input name="meterNumber" autocomplete="off" maxlength="80"></label>
+            <label>Electric bill<input type="file" name="billUpload" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"><small>PDF, PNG, or JPG up to 3 MB.</small></label>
+          </div>
+          <p class="form-error" id="verificationError" role="alert" aria-live="polite"></p>
+          <div class="form-nav"><button type="button" class="text-button form-back">Back</button><button type="button" class="button form-next">Continue</button></div>
+        </div>
+
+        <div class="form-step" data-step="4">
+          <div class="step-label">Step 4 of 6</div>
+          <h2>Tell us about the roof.</h2>
+          <div class="field-grid">
+            <label>Roof type<select name="roofType" required><option value="">Select one</option><option>Asphalt shingle</option><option>Metal</option><option>Tile</option><option>Flat / membrane</option><option>Not sure</option></select></label>
+            <label>Approximate roof age<select name="roofAge" required><option value="">Select one</option><option>0-5 years</option><option>6-10 years</option><option>11-20 years</option><option>20+ years</option><option>Not sure</option></select></label>
+          </div>
+          <div class="form-nav"><button type="button" class="text-button form-back">Back</button><button type="button" class="button form-next">Continue</button></div>
+        </div>
+
+        <div class="form-step" data-step="5">
+          <div class="step-label">Step 5 of 6</div>
+          <h2>Any referral details?</h2>
+          <p class="step-help">Referral rewards are reviewed after a verified qualifying solar installation.</p>
+          <div class="field-grid">
+            <label>Referral code<input name="referralCode" autocomplete="off" maxlength="40" placeholder="Optional"></label>
+            <label>Referrer name<input name="referrerName" autocomplete="name" maxlength="120" placeholder="Optional"></label>
+          </div>
+          <div class="form-nav"><button type="button" class="text-button form-back">Back</button><button type="button" class="button form-next">Continue</button></div>
+        </div>
+
+        <div class="form-step" data-step="6">
+          <div class="step-label">Step 6 of 6</div>
+          <h2>Where should we send your estimate?</h2>
+          <div class="field-grid">
+            <label>First name<input name="firstName" autocomplete="given-name" required></label>
+            <label>Last name<input name="lastName" autocomplete="family-name" required></label>
+            <label>Email<input type="email" name="email" autocomplete="email" required></label>
+            <label>Phone<input name="phone" autocomplete="tel" required></label>
+          </div>
+          <label class="consent"><input type="checkbox" name="consent" required><span>I request a preliminary solar estimate and consent to WattWorth sharing my submitted information, including any uploaded electric bill, with the identified independent solar professional, who may contact me by phone or email about this request. Consent is not a condition of purchase.</span></label>
+          <label class="honeypot">Company<input name="company" tabindex="-1" autocomplete="off"></label>
+          <p class="form-error" id="formError" role="alert" aria-live="polite"></p>
+          <div class="form-nav"><button type="button" class="text-button form-back">Back</button><button type="submit" class="button" id="submitButton">Generate my estimate</button></div>
+        </div>
+      </form>
+
+      <div class="result-panel success-panel" hidden>
+        <div class="eyebrow">Preliminary estimate</div>
+        <h2>Your request was received.</h2>
+        <p class="result-lead">A solar professional will review your details and follow up with next steps.</p>
+        <div class="result-grid">
+          <div><span>System range</span><strong id="systemRange"></strong></div>
+          <div><span>Potential bill offset</span><strong id="offsetRange"></strong></div>
+          <div><span>Fit category</span><strong id="fitCategory"></strong></div>
+        </div>
+        <p class="result-note">This range is educational and preliminary. Actual production, savings, pricing, financing, and eligibility depend on usage history, utility rules, roof condition, shading, equipment, and final professional design.</p>
+        <button type="button" class="button" data-close-estimator>Done</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>

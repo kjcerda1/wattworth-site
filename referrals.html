@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="View private WattWorth referral activity by dashboard access code.">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Referral Dashboard - WattWorth</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="WattWorth home">
+      <span class="brand-name">Watt<span>Worth</span></span>
+      <small>by Arden Home</small>
+    </a>
+    <a class="button button-small" href="/">New estimate</a>
+  </header>
+
+  <main class="dashboard-shell">
+    <section class="dashboard-hero">
+      <div>
+        <div class="eyebrow">Referral dashboard</div>
+        <h1>Track referred WattWorth leads.</h1>
+        <p>Use the private dashboard access code to see aggregate lead counts. Personal details, meter numbers, utility data, bill files, and private notes stay out of this view.</p>
+        <p class="dashboard-reward">Reward: $1,000 after a verified qualifying solar installation. Status may be reviewed and tracked manually.</p>
+      </div>
+      <form class="dashboard-form" id="referralForm">
+        <label>Private dashboard access code<input name="access" autocomplete="off" maxlength="500" required></label>
+        <button class="button" type="submit">View dashboard</button>
+      </form>
+    </section>
+
+    <section class="dashboard-results" id="dashboardResults" hidden>
+      <div class="dashboard-heading">
+        <div>
+          <div class="eyebrow">Private summary</div>
+          <h2 id="referralCodeTitle">Referral activity</h2>
+        </div>
+        <p id="dashboardMessage" role="status"></p>
+      </div>
+      <div class="metric-grid" aria-label="Referral totals">
+        <div><span>Total</span><strong id="countTotal">0</strong></div>
+        <div><span>Pending</span><strong id="countPending">0</strong></div>
+        <div><span>Qualified</span><strong id="countQualified">0</strong></div>
+        <div><span>Completed</span><strong id="countCompleted">0</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('referralForm');
+    const results = document.getElementById('dashboardResults');
+    const message = document.getElementById('dashboardMessage');
+    const fields = {
+      total: document.getElementById('countTotal'),
+      pending: document.getElementById('countPending'),
+      qualified: document.getElementById('countQualified'),
+      completed: document.getElementById('countCompleted')
+    };
+
+    function setCounts(counts) {
+      fields.total.textContent = counts.total || 0;
+      fields.pending.textContent = counts.pending || 0;
+      fields.qualified.textContent = counts.qualified || 0;
+      fields.completed.textContent = counts.completed || 0;
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = form.querySelector('button');
+      const access = form.elements.access.value.trim();
+      if (!access) return;
+      button.disabled = true;
+      button.textContent = 'Loading...';
+      message.textContent = '';
+      try {
+        const response = await fetch('/api/referral-summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ access })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) throw new Error(data.error || 'We could not load that referral dashboard.');
+        setCounts(data.counts || {});
+        results.hidden = false;
+        message.textContent = 'Showing aggregate referral activity only.';
+      } catch (error) {
+        results.hidden = false;
+        setCounts({});
+        message.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = 'View dashboard';
+      }
+    });
+
+    const hashParams = new URLSearchParams(location.hash.startsWith('#') ? location.hash.slice(1) : '');
+    const hashAccess = hashParams.get('access');
+    if (hashAccess) {
+      form.elements.access.value = hashAccess;
+      history.replaceState(null, '', location.pathname + location.search);
+      form.requestSubmit();
+    }
+  </script>
+</body>
+</html>
