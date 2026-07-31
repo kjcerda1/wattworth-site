@@ -50,13 +50,14 @@ function genericAccessFailure(res) {
 
 module.exports = async function handler(req, res) {
   setDashboardHeaders(res);
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET');
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed.' });
   }
   if (rateLimited(req)) return res.status(429).json({ error: 'Please wait before trying again.' });
 
-  const hash = accessHash(req.query && req.query.access);
+  const body = req.body && typeof req.body === 'object' ? req.body : {};
+  const hash = accessHash(body.access);
   if (!hash) return genericAccessFailure(res);
 
   const webhook = process.env.GOOGLE_SHEETS_WEBHOOK_URL;

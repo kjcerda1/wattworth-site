@@ -29,7 +29,7 @@ npm run check
 3. In Apps Script, set script properties for `WATTWORTH_WEBHOOK_SECRET`, `WATTWORTH_SPREADSHEET_ID`, and `WATTWORTH_BILL_UPLOAD_FOLDER_ID`.
 4. Deploy.
 5. Submit bill-only, meter-only, and combined verification test leads before sending traffic. Bill submissions should create a private Drive file URL; meter-only submissions should create a Sheet row without a Drive file.
-6. Create a `Referral Admin` sheet with `Referral Code`, `Access Token SHA-256`, `Status`, `Created At`, and `Notes` columns. Generate each private dashboard token with at least 32 cryptographically secure random bytes, give the raw token only to the intended referrer, and store only its SHA-256 hash in the sheet. Visit `/referrals.html?access=<private-token>` and confirm the aggregate dashboard summary loads without exposing personal details. Referral rewards remain $1,000 after a verified qualifying solar installation and are not automatic payouts.
+6. Create a `Referral Admin` sheet with `Referral Code`, `Access Token SHA-256`, `Status`, `Created At`, and `Notes` columns. Generate each private dashboard token with at least 32 cryptographically secure random bytes, give the raw token only to the intended referrer, and store only its SHA-256 hash in the sheet. Visit `/referrals.html#access=<private-token>` and confirm the aggregate dashboard summary loads without exposing personal details. Referral rewards remain $1,000 after a verified qualifying solar installation and are not automatic payouts.
 
 The API fails closed: customers will not see a successful result when lead or bill storage is unavailable.
 

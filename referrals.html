@@ -79,7 +79,12 @@
       button.textContent = 'Loading...';
       message.textContent = '';
       try {
-        const response = await fetch('/api/referral-summary?access=' + encodeURIComponent(access), { cache: 'no-store' });
+        const response = await fetch('/api/referral-summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ access })
+        });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.ok) throw new Error(data.error || 'We could not load that referral dashboard.');
         setCounts(data.counts || {});
@@ -95,10 +100,11 @@
       }
     });
 
-    const queryAccess = new URLSearchParams(location.search).get('access');
-    if (queryAccess) {
-      form.elements.access.value = queryAccess;
-      history.replaceState(null, '', location.pathname);
+    const hashParams = new URLSearchParams(location.hash.startsWith('#') ? location.hash.slice(1) : '');
+    const hashAccess = hashParams.get('access');
+    if (hashAccess) {
+      form.elements.access.value = hashAccess;
+      history.replaceState(null, '', location.pathname + location.search);
       form.requestSubmit();
     }
   </script>
