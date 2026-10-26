@@ -19,7 +19,7 @@ test('split: percent starts blank, nothing is invented', async () => {
   key = r.payload.access_key; pid = r.payload.partner.id;
   assert.equal(r.payload.partner.fee_mode, 'split');
   assert.equal(r.payload.partner.split_percent, null);
-  const l = await call('../api/leads', mk('POST', { body: { first_name: 'Sam', last_name: 'Lee', phone: '5125550177', email: 's@example.com', city: 'Austin', state: 'TX', zip: '78701', monthly_bill: 250, homeowner: true, consent: true, consent_text: 'I agree to be contacted (test wording for the split).', source: 'x' } }));
+  const l = await call('../api/leads', mk('POST', { body: { first_name: 'Sam', last_name: 'Lee', phone: '5125550177', email: 's@example.com', city: 'Austin', state: 'TX', zip: '78701', monthly_bill: 250, homeowner: true, consent: true, electric_provider: 'CPS Energy', meter_number: 'M1234567', consent_text: 'I agree to be contacted (test wording for the split).', source: 'x' } }));
   lid = l.payload.id || (await admin()).leads[0].id;
   await pbody({ lead_id: lid, stage: 'signed' });
   let a = await admin(); let lead = a.leads.find((x) => x.id === lid);

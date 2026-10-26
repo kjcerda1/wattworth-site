@@ -110,7 +110,7 @@
     return `<h2>Ad spend</h2><div class="card"><div class="grid" style="grid-template-columns:1fr 1fr;gap:16px"><div class="kpi"><div class="n">${m.cplCents == null ? 'n/a' : W.money(m.cplCents)}</div><div class="l">Cost per lead</div></div><div class="kpi"><div class="n">${m.cpsCents == null ? 'n/a' : W.money(m.cpsCents)}</div><div class="l">Cost per signed deal</div></div></div>
       <div style="overflow-x:auto;margin-top:12px"><table style="width:100%;border-collapse:collapse;font-size:14px"><tr style="text-align:left;color:var(--muted)"><th style="padding:6px 4px">Month</th><th>Spend</th><th>Leads</th><th>Signed</th></tr>${m.months.map((r) => `<tr style="border-top:1px solid var(--line)"><td style="padding:8px 4px">${esc(r.month)}</td><td>${W.money(r.spendCents)}</td><td>${r.leads}</td><td>${r.signed}</td></tr>`).join('')}</table></div></div>`;
   }
-  const evText = (e) => ({ created: 'Lead received', stage: `${esc(W.LABEL[e.from_value] || e.from_value)} → <b>${esc(W.LABEL[e.to_value] || e.to_value)}</b>`, size: `Size set: ${esc(e.to_value)} kW`, value: `Value set: ${usd(e.to_value)}`, note: 'Note: ' + esc(e.note || ''), duplicate: 'Duplicate (not re-sent)', fee: 'Fee ' + esc(e.to_value), payout: 'Payout ' + esc(e.to_value), dispute: 'Invalid flag ' + esc(e.to_value) }[e.type] || esc(e.type));
+  const evText = (e) => ({ created: 'Lead received', stage: `${esc(W.LABEL[e.from_value] || e.from_value)} → <b>${esc(W.LABEL[e.to_value] || e.to_value)}</b>`, size: `Size set: ${esc(e.to_value)} kW`, value: `Value set: ${usd(e.to_value)}`, note: 'Note: ' + esc(e.note || ''), duplicate: 'Duplicate (not re-sent)', fee: 'Fee ' + esc(e.to_value), bill_view: 'Bill viewed', reward: 'Referral reward: ' + esc(W.REWARD_LABEL[e.to_value] || e.to_value), dispute: 'Invalid flag ' + esc(e.to_value) }[e.type] || esc(e.type));
   binders.overview = () => app.querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => { S.tab = b.dataset.go; render(); }));
 
   /* ---------- Deals ---------- */
@@ -125,7 +125,8 @@
       <div class="pills">${opts.map(([k, l]) => `<button class="pill ${S.filter === k ? 'on' : ''}" data-f="${k}">${l}<b>${k === 'all' ? real.length : k === 'inplace' ? real.filter((x) => W.IN_PLACE.includes(x.stage)).length : real.filter((x) => x.stage === k).length}</b></button>`).join('')}</div>
       <div class="list">${shown.map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} <span class="badge ${l.stage}">${W.LABEL[l.stage]}</span></div>
         <div class="t2">${esc(l.ref)} · ${esc([l.city, l.state].filter(Boolean).join(', '))} · ${ago(l.created_at)}${l.system_kw ? ' · ' + l.system_kw + ' kW' : ''}${l.contract_value ? ' · ' + usd(l.contract_value) : ''}${l.partner_name ? ' · ' + esc(l.partner_name) : ''}</div>
-        <div class="t2">${sentLine(sentBy[l.id], l)} · ${l.first_contacted_at ? 'Contacted ' + ago(l.first_contacted_at) : 'Not contacted yet'}${l.referrer_code ? ' · Referred by ' + esc(l.referrer_name || l.referrer_code) : ''}</div></div>
+        <div class="t2">${sentLine(sentBy[l.id], l)} · ${l.first_contacted_at ? 'Contacted ' + ago(l.first_contacted_at) : 'Not contacted yet'}${l.referrer_code ? ' · Referred by ' + esc(l.referrer_name || l.referrer_code) : ''}</div>
+        <div class="t2">${l.verification_method ? 'Verified: ' + (l.verification_method === 'bill' ? 'bill' : l.verification_method === 'meter' ? 'provider + meter' : 'bill + meter') : 'No verification on file'}${l.electric_provider ? ' · ' + esc(l.electric_provider) + ' #' + esc(l.meter_number) : ''}${l.has_bill ? ' · <a href="#" data-bill="' + l.id + '">View bill</a>' : ''}</div></div>
         <div style="text-align:right">${feeBadge(l)}</div></div>`).join('') || '<div class="empty">No deals match.</div>'}</div>`;
   };
   const sentLine = (ds, l) => l.duplicate_of ? 'Duplicate, not sent' : !ds || !ds.length ? '<b style="color:var(--red)">Not sent</b>' : ds.some((x) => x.status === 'sent') ? 'Sent to ' + esc(l.partner_name || 'partner') + ' (' + ds.filter((x) => x.status === 'sent').map((x) => x.channel).join(', ') + ')' : '<b style="color:var(--red)">Send failed</b>';
@@ -136,6 +137,7 @@
   binders.deals = () => {
     $('#q').oninput = (e) => { S.q = e.target.value; const p = e.target.selectionStart; render(); const el = $('#q'); el.focus(); el.setSelectionRange(p, p); };
     app.querySelectorAll('[data-f]').forEach((b) => (b.onclick = () => { S.filter = b.dataset.f; render(); }));
+    app.querySelectorAll('[data-bill]').forEach((a) => (a.onclick = (e) => { e.preventDefault(); App.viewBill('admin', a.dataset.bill); }));
     app.querySelectorAll('[data-erase]').forEach((b) => (b.onclick = async () => {
       if (!confirm('Permanently erase this person and all their messages and history? This cannot be undone.')) return;
       try { await act({ action: 'erase_lead', lead_id: b.dataset.erase }); toast('Erased'); await load(true); } catch (e) { toast(e.message || 'Failed', true); }
@@ -179,23 +181,32 @@
     const d = S.d, k = d.kpis;
     const owed = d.leads.filter((l) => l.fee && ['owed', 'needs_size', 'no_tier', 'rate_unset', 'needs_commission', 'split_unset'].includes(l.fee.state));
     const paid = d.leads.filter((l) => l.fee && l.fee.state === 'paid');
-    const pend = d.payouts.filter((p) => p.status === 'pending'), done = d.payouts.filter((p) => p.status === 'paid');
-    return `<div class="grid kpis" style="margin-top:12px">${kpi(W.money(k.feesOwedCents), 'Commission owed to you', 'gold')}${kpi(W.money(k.feesPaidCents), 'Commission collected')}${kpi(W.money(k.payoutsDueCents), 'Referral payouts due now', k.payoutsDueCents ? 'alert' : '')}${kpi(W.money(k.payoutsUpcomingCents), 'Referral payouts scheduled')}${k.creditsDueCents ? kpi(W.money(k.creditsDueCents), 'Credits owed for invalid leads', 'alert') : ''}</div>
+    const rw = (st) => d.rewards.filter((p) => st.includes(p.status)), openRw = rw(['installation_confirmed', 'reward_pending']), doneRw = rw(['paid']);
+    return `<div class="grid kpis" style="margin-top:12px">${kpi(W.money(k.feesOwedCents), 'Commission owed to you', 'gold')}${kpi(W.money(k.feesPaidCents), 'Commission collected')}${kpi(W.money(k.rewardsDueCents), 'Referral rewards ready to pay', k.rewardsDueCents ? 'alert' : '')}${kpi(k.rewardsToVerify, 'Referral installations to verify')}${k.creditsDueCents ? kpi(W.money(k.creditsDueCents), 'Credits owed for invalid leads', 'alert') : ''}</div>
       <h2>Monthly statement</h2><div class="card"><p class="note" style="margin-top:0">Optional. A statement lists every deal that reached <b>${W.LABEL[d.config.feeTrigger]}</b> in the month, with credits for invalid leads. Open it to review or save as PDF, or email it to your partner.</p>
         <div class="row2"><div><label for="stm">Month</label><input id="stm" type="month" value="${S.stMonth}"></div><div><label for="stp">Partner</label><select id="stp">${d.partners.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" id="stopen">Open statement</button><button class="btn ghost" id="stmail">Email to partner</button></div></div>
       ${afterAds()}
       <h2>Commission to collect</h2><div class="list">${owed.map((l) => `<div class="card">${dealLine(l)}${l.fee.state === 'owed' ? `<div class="row2" style="margin-top:10px;align-items:end"><div><label for="rp-${l.id}">Received so far? Add a payment ($)</label><input id="rp-${l.id}" inputmode="decimal" placeholder="e.g. 500"></div><div style="display:flex;gap:6px"><button class="btn sm" data-recpay="${l.id}">Add payment</button><button class="btn ghost sm" data-feepaid="${l.id}">Paid in full</button></div></div>` : ''}</div>`).join('') || '<div class="empty">Nothing to collect yet.</div>'}</div>
       ${paid.length ? `<h2>Collected</h2><div class="list">${paid.map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} ${feeBadge(l)}</div><div class="t2">${esc(l.ref)} · settled ${date(l.fee_paid_at)}${l.commission_cents != null && l.fee.pct != null ? ' · ' + W.money(l.commission_cents) + ' commission × ' + l.fee.pct + '%' : ''}</div></div><button class="btn ghost sm" data-feepaid="${l.id}" data-undo="1">Undo</button></div>`).join('')}</div>` : ''}
-      <h2>Referral payouts</h2><div class="list">${pend.map((p) => { const due = !p.due_at || new Date(p.due_at) <= Date.now(); return `<div class="item"><div class="l"><div class="t1">${W.money(p.amount_cents)} · ${esc(W.REFERRAL[p.milestone].label)}</div><div class="t2">${esc(p.lead_ref || '')} · referrer ${esc(p.referrer_code)}${p.due_at ? ' · due ' + date(p.due_at) : ''}</div></div>${due ? `<button class="btn sm" data-paypaid="${p.id}">Mark paid</button>` : '<span class="badge pending">Scheduled</span>'}</div>`; }).join('') || '<div class="empty">No referral payouts pending.</div>'}</div>
-      ${done.length ? `<p class="note" style="margin-top:12px">${done.length} referral payout${done.length > 1 ? 's' : ''} already paid.</p>` : ''}`;
+      <h2>Referral rewards ($1,000 each)</h2><p class="note" style="margin-top:0">The only referral reward is $1,000 after the referred homeowner completes a verified qualifying installation. Nothing is paid automatically. Verify the installation with the partner's company first, then pay and record the reference.</p>
+      <div class="list">${openRw.map((p) => `<div class="card"><div class="t1" style="font-weight:700">${W.money(p.amount_cents)} · ${esc(W.REWARD_LABEL[p.status])}</div><div class="t2 note">${esc(p.lead_ref || '')} · referrer ${esc(p.referrer_code)}${p.installation_confirmed_at ? ' · installation reported ' + date(p.installation_confirmed_at) : ''}</div>
+        ${p.status === 'installation_confirmed' ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn sm" data-rwverify="${p.id}">Installation verified</button><button class="btn ghost sm" data-rwno="${p.id}">Not eligible</button></div>` : `<div class="row2" style="margin-top:10px;align-items:end"><div><label for="rt-${p.id}">Payment reference</label><input id="rt-${p.id}" maxlength="120" placeholder="Check # or transfer id"></div><div style="display:flex;gap:6px"><button class="btn sm" data-rwpaid="${p.id}">Record payment</button><button class="btn ghost sm" data-rwno="${p.id}">Not eligible</button></div></div>`}</div>`).join('') || '<div class="empty">No referral rewards waiting on you.</div>'}</div>
+      ${doneRw.length ? `<p class="note" style="margin-top:12px">${doneRw.length} referral reward${doneRw.length > 1 ? 's' : ''} already paid.</p>` : ''}`;
   };
   binders.money = () => {
     const mark = (sel, key, extra) => app.querySelectorAll(sel).forEach((b) => (b.onclick = async () => {
       b.disabled = true;
       try { await act({ action: extra, [key]: b.dataset[Object.keys(b.dataset)[0]], paid: !b.dataset.undo }); toast('Updated'); await load(true); } catch (e) { toast(e.message || 'Failed', true); b.disabled = false; }
     }));
-    mark('[data-feepaid]', 'lead_id', 'fee_paid'); mark('[data-paypaid]', 'payout_id', 'payout_paid');
+    mark('[data-feepaid]', 'lead_id', 'fee_paid');
+    const rwAct = (sel, key, action, extra) => app.querySelectorAll(sel).forEach((b) => (b.onclick = async () => {
+      b.disabled = true;
+      try { await act({ action, reward_id: b.dataset[key], ...(extra ? extra(b.dataset[key]) : {}) }); toast('Updated'); await load(true); } catch (e) { toast(e.message || 'Failed', true); b.disabled = false; }
+    }));
+    rwAct('[data-rwverify]', 'rwverify', 'reward_verify');
+    rwAct('[data-rwpaid]', 'rwpaid', 'reward_paid', (id) => ({ transaction_ref: $('#rt-' + id).value.trim() }));
+    rwAct('[data-rwno]', 'rwno', 'reward_ineligible');
     app.querySelectorAll('[data-recpay]').forEach((b) => (b.onclick = async () => {
       const v = $('#rp-' + b.dataset.recpay).value.trim(); if (!v) return toast('Enter the amount you received', true);
       b.disabled = true;

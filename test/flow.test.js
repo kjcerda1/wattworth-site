@@ -36,7 +36,7 @@ function mkRes() {
 const call = async (mod, req) => { const res = mkRes(); await require(mod)(req, res); return res; };
 const A = { authorization: 'Bearer admin-secret' };
 
-const lead = (o = {}) => ({ first_name: 'Dana', last_name: 'Reyes', phone: '(512) 555-0142', email: 'dana@example.com', city: 'Austin', state: 'tx', zip: '78701', monthly_bill: 240, homeowner: true, consent: true, consent_text: 'I agree to be contacted by WattWorth and its partners (test wording).', source: 'wattworth-home', ...o });
+const lead = (o = {}) => ({ first_name: 'Dana', last_name: 'Reyes', phone: '(512) 555-0142', email: 'dana@example.com', city: 'Austin', state: 'tx', zip: '78701', monthly_bill: 240, homeowner: true, consent: true, electric_provider: 'CPS Energy', meter_number: 'M1234567', consent_text: 'I agree to be contacted by WattWorth and its partners (test wording).', source: 'wattworth-home', ...o });
 
 let key, partnerId;
 
@@ -89,8 +89,10 @@ test('intake stores lead + consent, sends email/SMS/webhook, logs deliveries', a
   assert.equal(L0.state, 'TX');
   assert.equal(L0.consent_ip, undefined);
   assert.deepEqual(admin.deliveries.map((d) => d.status).sort(), ['sent', 'sent', 'sent']);
-  assert.equal(admin.payouts.length, 1); // $50 on form submission
-  assert.equal(admin.payouts[0].amount_cents, 5000);
+  assert.equal(admin.rewards.length, 1); // one reward row, tracking only: nothing earned for submitting the form
+  assert.equal(admin.rewards[0].status, 'tracking');
+  assert.equal(admin.rewards[0].amount_cents, 100000);
+  assert.equal(admin.kpis.rewardsDueCents, 0);
   assert.equal(admin.kpis.total, 1);
 });
 
@@ -104,7 +106,7 @@ test('duplicate phone within 30 days is logged but not re-sent', async () => {
 });
 
 let leadId;
-test('partner sees only own leads and can update stage; history + milestones recorded', async () => {
+test('partner sees only own leads and can update stage; history recorded, no referral earnings before install', async () => {
   const H = { authorization: 'Bearer ' + key };
   const g = (await call('../api/partner', mk('GET', { headers: H }))).payload;
   assert.equal(g.leads.length, 1);
@@ -123,7 +125,8 @@ test('partner sees only own leads and can update stage; history + milestones rec
   assert.ok(g2.leads[0].first_contacted_at);
   assert.ok(g2.leads[0].history.some((h) => h.type === 'stage' && h.to === 'contacted' && h.note === 'Left voicemail'));
   const admin = (await call('../api/admin', mk('GET', { headers: A }))).payload;
-  assert.deepEqual(admin.payouts.map((p) => p.milestone).sort(), ['estimate', 'submitted']); // $100 unlocked at proposal
+  assert.equal(admin.rewards.length, 1); // a proposal earns nothing
+  assert.equal(admin.rewards[0].status, 'tracking');
 });
 
 test('another partner cannot touch this partner\'s lead', async () => {
@@ -155,18 +158,38 @@ test('fees: placeholder tiers never invent money; owed only after rate set; paid
   assert.equal(admin.kpis.feesPaidCents, 70000);
 });
 
-test('install schedules the $1,000 referral milestone 30 days out; payout can be marked paid', async () => {
+test('installation moves the single $1,000 reward to installation_confirmed; owner verifies, then records payment; never automatic', async () => {
   const H = { authorization: 'Bearer ' + key };
+  const rw = async () => (await call('../api/admin', mk('GET', { headers: A }))).payload;
   await call('../api/partner', mk('PATCH', { headers: H, body: { lead_id: leadId, stage: 'installed' } }));
-  let admin = (await call('../api/admin', mk('GET', { headers: A }))).payload;
-  const inst = admin.payouts.find((p) => p.milestone === 'installed');
-  assert.equal(inst.amount_cents, 100000);
-  const days = (new Date(inst.due_at) - Date.now()) / 864e5;
-  assert.ok(days > 29.9 && days < 30.1);
-  assert.equal(admin.kpis.payoutsUpcomingCents, 100000);
-  await call('../api/admin', mk('POST', { headers: A, body: { action: 'payout_paid', payout_id: inst.id } }));
-  admin = (await call('../api/admin', mk('GET', { headers: A }))).payload;
-  assert.equal(admin.payouts.find((p) => p.milestone === 'installed').status, 'paid');
+  let admin = await rw();
+  assert.equal(admin.rewards.length, 1);
+  const r0 = admin.rewards[0];
+  assert.equal(r0.amount_cents, 100000);
+  assert.equal(r0.status, 'installation_confirmed');
+  assert.ok(r0.installation_confirmed_at);
+  assert.equal(admin.kpis.rewardsToVerify, 1);
+  assert.equal(admin.kpis.rewardsDueCents, 0, 'not payable until the owner verifies');
+  // repeat status updates never create a second reward or move it forward by themselves
+  await call('../api/partner', mk('PATCH', { headers: H, body: { lead_id: leadId, stage: 'installed', note: 'again' } }));
+  await call('../api/inbound', mk('POST', { headers: { 'x-api-key': key }, body: { updates: [{ ref: r0.lead_ref, stage: 'installed' }] } }));
+  admin = await rw();
+  assert.equal(admin.rewards.length, 1);
+  assert.equal(admin.rewards[0].status, 'installation_confirmed');
+  // order is enforced
+  assert.equal((await call('../api/admin', mk('POST', { headers: A, body: { action: 'reward_paid', reward_id: r0.id, transaction_ref: 'X' } }))).code, 409);
+  assert.equal((await call('../api/admin', mk('POST', { headers: A, body: { action: 'reward_verify', reward_id: r0.id } }))).code, 200);
+  admin = await rw();
+  assert.equal(admin.rewards[0].status, 'reward_pending');
+  assert.equal(admin.kpis.rewardsDueCents, 100000);
+  assert.notEqual(admin.rewards[0].status, 'paid');
+  assert.equal((await call('../api/admin', mk('POST', { headers: A, body: { action: 'reward_paid', reward_id: r0.id } }))).code, 400, 'payment reference required');
+  assert.equal((await call('../api/admin', mk('POST', { headers: A, body: { action: 'reward_paid', reward_id: r0.id, transaction_ref: 'CHK-1042' } }))).code, 200);
+  admin = await rw();
+  assert.equal(admin.rewards.length, 1);
+  assert.equal(admin.rewards[0].status, 'paid');
+  assert.equal(admin.rewards[0].transaction_ref, 'CHK-1042');
+  assert.ok(admin.rewards[0].paid_at);
 });
 
 test('inbound API updates by ref (partner CRM path), batch with partial failure', async () => {

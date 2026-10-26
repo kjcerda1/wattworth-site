@@ -25,7 +25,7 @@ function mkRes() { const r = { code: 200, headers: {}, payload: undefined }; r.s
 const call = async (mod, req) => { const res = mkRes(); await require(mod)(req, res); return res; };
 const A = { authorization: 'Bearer admin-secret' };
 const C = (t) => ({ authorization: 'Bearer ' + t });
-const intake = (o = {}) => ({ first_name: 'Dana', last_name: 'Reyes', phone: '5125550142', email: 'dana@example.com', city: 'Austin', state: 'TX', zip: '78701', monthly_bill: 220, homeowner: true, consent: true, consent_text: 'I agree to be contacted (portal test wording).', source: '/', ...o });
+const intake = (o = {}) => ({ first_name: 'Dana', last_name: 'Reyes', phone: '5125550142', email: 'dana@example.com', city: 'Austin', state: 'TX', zip: '78701', monthly_bill: 220, homeowner: true, consent: true, electric_provider: 'CPS Energy', meter_number: 'M1234567', consent_text: 'I agree to be contacted (portal test wording).', source: '/', ...o });
 
 let pkey, partner, tok, lead, code;
 const pview = async () => (await call('../api/partner', mk('GET', { headers: C(pkey) }))).payload;
@@ -152,10 +152,12 @@ test('referrals: real codes only; friend progress and rewards appear in the refe
   const bogus = await call('../api/leads', mk('POST', { body: intake({ phone: '5125550888', first_name: 'Eve', referrer_code: 'NOPE123' }) }));
   const adm = (await call('../api/admin', mk('GET', { headers: A }))).payload;
   assert.equal(adm.leads.find((l) => l.phone === '+15125550888').referrer_code, null, 'unknown code ignored');
-  assert.equal(adm.payouts.length, 1);
+  assert.equal(adm.rewards.length, 1);
+  assert.equal(adm.rewards[0].status, 'tracking');
   const v = await cview();
   assert.equal(v.referral.friends.length, 1); assert.equal(v.referral.friends[0].status, 'Submitted');
-  assert.equal(v.referral.pending_cents, 5000); assert.equal(v.referral.rewards[0].friend.startsWith('Dana'), true);
+  assert.equal(v.referral.pending_cents, 0, 'nothing is earned before a verified installation'); assert.equal(v.referral.paid_cents, 0);
+  assert.equal(v.referral.rewards[0].friend.startsWith('Dana'), true); assert.equal(v.referral.rewards[0].cents, 100000); assert.equal(v.referral.rewards[0].status, 'tracking');
   assert.ok(!JSON.stringify(v.referral).includes('555'), 'no friend contact details');
   assert.ok(bogus.payload.own_code);
 });

@@ -1,9 +1,11 @@
--- WattWorth lead tracking + partner dashboard
--- Run once in the Supabase SQL editor. All access goes through the Vercel API
--- using the service-role key, so RLS is enabled with NO public policies
--- (anon/authenticated roles can read and write nothing directly).
+-- WattWorth lead tracking + partner dashboard + customer portal
+-- Written for a NEW, dedicated WattWorth Supabase project. Do not run it in any other project.
+-- Run once in the Supabase SQL editor. All access goes through the Vercel API using the
+-- service-role key (server-side only, never in browser code). Every table has RLS enabled with
+-- NO public policies, and anon/authenticated are also stripped of table privileges, so the
+-- browser can read and write nothing directly. Electric bills live in a PRIVATE storage bucket.
 
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 create table if not exists partners (
   id uuid primary key default gen_random_uuid(),
@@ -38,6 +40,14 @@ create table if not exists leads (
   source text,                                 -- funnel page / campaign
   utm jsonb,
   referrer_code text, referrer_name text,
+  -- utility verification: at least one COMPLETE method is required (checked by the API and by leads_verification_chk below)
+  electric_provider text,
+  meter_number text,
+  verification_method text check (verification_method in ('bill','meter','both')),
+  bill_storage_path text,                      -- object path in the PRIVATE 'electric-bills' bucket. Never a URL, never the file itself.
+  bill_filename text,
+  bill_mime_type text check (bill_mime_type in ('application/pdf','image/jpeg','image/png')),
+  bill_sha256 text,
   -- TCPA consent record, stored verbatim as shown to the consumer
   consent boolean not null,
   consent_text text not null,
@@ -89,7 +99,7 @@ create index if not exists deliveries_status_idx on deliveries(status);
 create table if not exists lead_events (
   id uuid primary key default gen_random_uuid(),
   lead_id uuid not null references leads(id) on delete cascade,
-  type text not null,              -- created | stage | size | value | commission | note | delivery | duplicate | fee | payout | dispute
+  type text not null,              -- created | stage | size | value | commission | note | delivery | duplicate | fee | reward | dispute | bill_view
   actor text not null,             -- system | partner:<name> | admin
   from_value text,
   to_value text,
@@ -109,20 +119,25 @@ create table if not exists fee_tiers (
   updated_at timestamptz not null default now()
 );
 
--- Referral program milestones ($50 / $100 / $1,000). Tracking only; payout wording lives in your legal copy.
-create table if not exists referral_payouts (
+-- Referral program: ONE $1,000 reward per referred lead, only after a verified qualifying installation.
+-- Nothing is earned at form submission or estimate. unique(lead_id) makes a second reward for the same
+-- referred installation impossible. Status only moves forward by explicit owner action; nothing is paid automatically.
+create table if not exists referral_rewards (
   id uuid primary key default gen_random_uuid(),
-  lead_id uuid not null references leads(id) on delete cascade,
-  referrer_code text not null,
-  milestone text not null check (milestone in ('submitted','estimate','installed')),
-  amount_cents int not null,
-  status text not null default 'pending' check (status in ('pending','paid')),
-  due_at timestamptz,              -- installed milestone: install date + 30 days
+  lead_id uuid not null unique references leads(id) on delete cascade,   -- the REFERRED lead
+  referrer_code text not null,                                           -- the referring customer's own_code
+  amount_cents int not null default 100000 check (amount_cents = 100000),
+  status text not null default 'tracking'
+    check (status in ('tracking','installation_confirmed','reward_pending','paid','ineligible')),
+  installation_confirmed_at timestamptz,      -- partner reported the installation
+  reward_pending_at timestamptz,              -- owner verified the installation
   paid_at timestamptz,
+  transaction_ref text,                       -- internal payment reference (check number, transfer id)
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (lead_id, milestone)
+  constraint referral_paid_has_ref check (status <> 'paid' or (paid_at is not null and transaction_ref is not null))
 );
+create index if not exists referral_rewards_code_idx on referral_rewards(referrer_code);
 
 -- Ad spend by month, for cost per lead / cost per signed deal
 create table if not exists ad_spend (
@@ -148,7 +163,7 @@ alter table leads enable row level security;
 alter table deliveries enable row level security;
 alter table lead_events enable row level security;
 alter table fee_tiers enable row level security;
-alter table referral_payouts enable row level security;
+alter table referral_rewards enable row level security;
 alter table ad_spend enable row level security;
 alter table alerts enable row level security;
 
@@ -201,3 +216,41 @@ select * from (values
   ('Large system', 11::numeric, null::numeric, null::int)
 ) as v(label, min_kw, max_kw, fee_cents)
 where not exists (select 1 from fee_tiers);
+
+
+-- ===== Utility verification, for databases that already have a leads table =====
+alter table leads add column if not exists electric_provider text;
+alter table leads add column if not exists meter_number text;
+alter table leads add column if not exists verification_method text;
+alter table leads add column if not exists bill_storage_path text;
+alter table leads add column if not exists bill_filename text;
+alter table leads add column if not exists bill_mime_type text;
+alter table leads add column if not exists bill_sha256 text;
+-- NOT VALID: enforced for every new or changed row, without failing on any older rows.
+do $$ begin
+  alter table leads add constraint leads_verification_chk check (
+    verification_method is not null and verification_method in ('bill','meter','both')
+    and ((electric_provider is null) = (meter_number is null))
+    and (verification_method = 'bill' or (nullif(trim(electric_provider), '') is not null and nullif(trim(meter_number), '') is not null))
+    and (verification_method = 'meter' or bill_sha256 is not null)
+    and (bill_storage_path is null or bill_storage_path like 'bills/%')
+  ) not valid;
+exception when duplicate_object then null; end $$;
+
+-- ===== Private storage for electric bills =====
+-- Private bucket, 3 MB limit, PDF/JPG/PNG only. The API uploads and reads with the service role.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('electric-bills', 'electric-bills', false, 3145728, array['application/pdf','image/jpeg','image/png'])
+on conflict (id) do update set public = false, file_size_limit = 3145728,
+  allowed_mime_types = array['application/pdf','image/jpeg','image/png'];
+
+-- storage.objects already has RLS enabled by Supabase. This RESTRICTIVE policy is ANDed with any policy that
+-- anyone adds later: the browser roles can never touch this bucket, even if a broad permissive policy is created.
+drop policy if exists electric_bills_no_client_access on storage.objects;
+create policy electric_bills_no_client_access on storage.objects
+  as restrictive for all to anon, authenticated
+  using (bucket_id <> 'electric-bills') with check (bucket_id <> 'electric-bills');
+
+-- ===== Defense in depth: the browser roles get no table privileges at all =====
+revoke all on all tables in schema public from anon, authenticated;
+alter default privileges in schema public revoke all on tables from anon, authenticated;

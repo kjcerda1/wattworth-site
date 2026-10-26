@@ -12,6 +12,7 @@ const view = (l) => ({
   address: l.address, city: l.city, state: l.state, zip: l.zip, monthly_bill: l.monthly_bill, homeowner: l.homeowner, notes: l.notes,
   stage: l.stage, system_kw: l.system_kw, contract_value: l.contract_value, lost_reason: l.lost_reason, invalid_reason: l.invalid_reason, dispute_status: l.dispute_status, commission_cents: l.commission_cents,
   appointment_at: l.appointment_at || null,
+  verification_method: l.verification_method || null, electric_provider: l.electric_provider || null, meter_number: l.meter_number || null, has_bill: !!l.bill_storage_path, bill_filename: l.bill_storage_path ? l.bill_filename : null,
   created_at: l.created_at, first_contacted_at: l.first_contacted_at, signed_at: l.signed_at, installed_at: l.installed_at,
 });
 
@@ -22,7 +23,7 @@ module.exports = route(async (req, res) => {
   if (req.method === 'GET') {
     const leads = (await db.select('leads', { where: { partner_id: partner.id }, order: ['created_at', 'desc'], limit: 500 })).filter((l) => !l.duplicate_of);
     const ids = new Set(leads.map((l) => l.id));
-    const events = (await db.select('lead_events', { order: ['created_at', 'desc'], limit: 2000 })).filter((e) => ids.has(e.lead_id) && !['delivery', 'confirm', 'privacy'].includes(e.type));
+    const events = (await db.select('lead_events', { order: ['created_at', 'desc'], limit: 2000 })).filter((e) => ids.has(e.lead_id) && !['delivery', 'confirm', 'privacy', 'reward', 'bill_view'].includes(e.type));
     const by = {};
     events.forEach((e) => (by[e.lead_id] = by[e.lead_id] || []).push({ type: e.type, actor: e.actor, from: e.from_value, to: e.to_value, note: e.note, at: e.created_at }));
     const msgs = (await db.select('messages', { order: ['created_at', 'asc'], limit: 5000 })).filter((m) => ids.has(m.lead_id));

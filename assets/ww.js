@@ -30,7 +30,7 @@ window.App = (function () {
   }
 
   // ---------- mock backend (demo mode) ----------
-  const MK = 'ww_mock_v4';
+  const MK = 'ww_mock_v5';
   function seed() {
     const h = 3600000, now = Date.now(), iso = (ago_h) => new Date(now - ago_h * h).toISOString();
     const L = (i, f, l, city, bill, stage, hrs, extra = {}) => ({ id: 'd' + i, ref: 'WW-DEMO' + i + 'A', partner_id: 'p1', first_name: f, last_name: l, phone: '+1512555010' + i, email: f.toLowerCase() + '@example.com', address: i + '12 Oak Lane', city, state: 'TX', zip: '787' + i + '1', monthly_bill: bill, homeowner: true, notes: i === 1 ? 'Prefers calls after 5pm' : null, stage, system_kw: null, contract_value: null, source: '/solar', utm: { utm_source: ['facebook', 'google', 'facebook'][i % 3] }, created_at: iso(hrs), first_contacted_at: stage === 'received' ? null : iso(hrs - 2), signed_at: null, installed_at: null, fee_paid_at: null, commission_cents: null, commission_collected_cents: 0, lost_reason: null, referrer_code: null, ...extra });
@@ -44,7 +44,7 @@ window.App = (function () {
     ];
     return {
       leads, deliveries: leads.flatMap((l) => ['email', 'sms'].map((c, j) => ({ id: l.id + c, lead_id: l.id, partner_id: 'p1', channel: c, status: l.id === 'd8' && c === 'sms' ? 'failed' : 'sent', attempts: 1, last_error: l.id === 'd8' && c === 'sms' ? 'Twilio 400: invalid number' : null, created_at: l.created_at, lead_ref: l.ref, lead_name: l.first_name, partner_name: 'Demo Partner' }))),
-      payouts: [{ id: 'y1', lead_id: 'd5', lead_ref: 'WW-DEMO5A', referrer_code: 'JANE50', milestone: 'submitted', amount_cents: 5000, status: 'paid', due_at: null }, { id: 'y2', lead_id: 'd5', lead_ref: 'WW-DEMO5A', referrer_code: 'JANE50', milestone: 'estimate', amount_cents: 10000, status: 'pending', due_at: null }],
+      rewards: [{ id: 'y1', lead_id: 'd5', lead_ref: 'WW-DEMO5A', referrer_code: 'JANE50', amount_cents: 100000, status: 'installation_confirmed', installation_confirmed_at: iso(24), reward_pending_at: null, paid_at: null, transaction_ref: null }],
       tiers: [{ id: 't1', label: 'Small system', min_kw: 0, max_kw: 7, fee_cents: null }, { id: 't2', label: 'Mid system', min_kw: 7, max_kw: 11, fee_cents: null }, { id: 't3', label: 'Large system', min_kw: 11, max_kw: null, fee_cents: null }],
       partners: [{ id: 'p1', name: 'Demo Partner', company: 'Demo Solar Co.', email: 'partner@example.com', phone: '+15125550199', webhook_url: null, is_default: true, active: true, fee_mode: 'split', split_percent: 30, ads_paid_by: 'partner' }],
       events: [], ad_spend: [{ id: 's1', month: new Date().toISOString().slice(0, 7), source: 'Meta', amount_cents: 45000 }],
@@ -76,8 +76,8 @@ window.App = (function () {
       msave(d); return { ok: true, lead: l };
     }
     if (m === 'GET') {
-      const s = W.buildSummary({ leads: d.leads, deliveries: d.deliveries, payouts: d.payouts, tiers: d.tiers, ad_spend: d.ad_spend || [], partners: d.partners });
-      return { mode: 'demo', setup: {}, ad_spend: d.ad_spend || [], config: { feeTrigger: W.FEE_TRIGGER, stages: W.STAGES }, ...s, leads: d.leads.map((l) => ({ ...l, partner_name: 'Demo Partner', fee: l.fee || W.feeFor(l, d.tiers, undefined, d.partners.find((p) => p.id === l.partner_id)) })), deliveries: d.deliveries, payouts: d.payouts.map((p) => ({ ...p, stage: (d.leads.find((l) => l.id === p.lead_id) || {}).stage })), tiers: d.tiers, partners: d.partners, events: d.events.slice().reverse().slice(0, 30).map((e) => ({ ...e, created_at: e.at, lead_ref: (d.leads.find((l) => l.id === e.lead_id) || {}).ref })) };
+      const s = W.buildSummary({ leads: d.leads, deliveries: d.deliveries, rewards: d.rewards, tiers: d.tiers, ad_spend: d.ad_spend || [], partners: d.partners });
+      return { mode: 'demo', setup: {}, ad_spend: d.ad_spend || [], config: { feeTrigger: W.FEE_TRIGGER, stages: W.STAGES }, ...s, leads: d.leads.map((l) => ({ ...l, partner_name: 'Demo Partner', fee: l.fee || W.feeFor(l, d.tiers, undefined, d.partners.find((p) => p.id === l.partner_id)) })), deliveries: d.deliveries, rewards: d.rewards.map((p) => ({ ...p, stage: (d.leads.find((l) => l.id === p.lead_id) || {}).stage })), tiers: d.tiers, partners: d.partners, events: d.events.slice().reverse().slice(0, 30).map((e) => ({ ...e, created_at: e.at, lead_ref: (d.leads.find((l) => l.id === e.lead_id) || {}).ref })) };
     }
     if (body.action === 'resolve_dispute') { const l = d.leads.find((x) => x.id === body.lead_id); if (body.accept) { l.dispute_status = 'accepted'; } else { l.stage = 'contacted'; l.dispute_status = 'rejected'; } }
     if (body.action === 'add_spend') { d.ad_spend = d.ad_spend || []; d.ad_spend.unshift({ id: 's' + Date.now(), month: body.month, source: body.source || null, amount_cents: Math.round(Number(body.amount_dollars) * 100) }); }
@@ -85,7 +85,9 @@ window.App = (function () {
     if (body.action === 'fee_paid') { const l = d.leads.find((x) => x.id === body.lead_id); const f = W.feeFor(l, d.tiers, undefined, d.partners.find((p) => p.id === l.partner_id)); l.fee_paid_at = body.paid === false ? null : new Date().toISOString(); l.commission_collected_cents = body.paid === false ? 0 : (f.share_cents != null ? f.share_cents : l.commission_collected_cents || 0); }
     if (body.action === 'record_payment') { const l = d.leads.find((x) => x.id === body.lead_id); const amt = Math.round(Number(body.amount_dollars) * 100); if (!(amt > 0)) throw { status: 400, message: 'Enter the dollar amount you received' }; l.commission_collected_cents = (l.commission_collected_cents || 0) + amt; if (W.feeFor(l, d.tiers, undefined, d.partners.find((p) => p.id === l.partner_id)).state === 'paid') l.fee_paid_at = new Date().toISOString(); }
     if (body.action === 'update_partner') { const p = d.partners.find((x) => x.id === body.partner_id); if ('split_percent' in body) { const n = body.split_percent === '' ? null : Number(body.split_percent); if (n !== null && !(n >= 0 && n <= 100)) throw { status: 400, message: 'Your share must be between 0 and 100 percent' }; p.split_percent = n; } if ('ads_paid_by' in body) p.ads_paid_by = body.ads_paid_by || null; if ('public_phone' in body) p.public_phone = String(body.public_phone || '').replace(/\D/g, '') ? '+1' + String(body.public_phone).replace(/\D/g, '').slice(-10) : null; if ('is_default' in body) p.is_default = !!body.is_default; if ('active' in body) p.active = !!body.active; }
-    if (body.action === 'payout_paid') { const p = d.payouts.find((x) => x.id === body.payout_id); p.status = body.paid === false ? 'pending' : 'paid'; }
+    if (body.action === 'reward_verify') { const p = d.rewards.find((x) => x.id === body.reward_id); if (p.status !== 'installation_confirmed') throw { status: 409, message: 'The installation has not been reported yet' }; p.status = 'reward_pending'; p.reward_pending_at = new Date().toISOString(); }
+    if (body.action === 'reward_paid') { const p = d.rewards.find((x) => x.id === body.reward_id); if (p.status !== 'reward_pending') throw { status: 409, message: 'Verify the installation before recording a payment' }; if (!String(body.transaction_ref || '').trim()) throw { status: 400, message: 'Enter a payment reference' }; p.status = 'paid'; p.paid_at = new Date().toISOString(); p.transaction_ref = String(body.transaction_ref).trim(); }
+    if (body.action === 'reward_ineligible') { const p = d.rewards.find((x) => x.id === body.reward_id); if (p.status !== 'paid') p.status = 'ineligible'; }
     if (body.action === 'set_tiers') body.tiers.forEach((t) => { const x = d.tiers.find((y) => y.id === t.id); x.fee_cents = t.fee_dollars === '' || t.fee_dollars == null ? null : Math.round(Number(t.fee_dollars) * 100); });
     if (body.action === 'resend') { const x = d.deliveries.find((y) => y.id === body.delivery_id); x.status = 'sent'; x.last_error = null; x.attempts++; }
     if (body.action === 'erase_lead') { d.leads = d.leads.filter((l) => l.id !== body.lead_id); msave(d); return { ok: true }; }
@@ -115,5 +117,19 @@ window.App = (function () {
     const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
-  return { ls, $, esc, ago, date, when, name, phone, usd, toast, api, download, W };
+  // Opens a customer's electric bill. Fetched with the dashboard's own credentials; there is no public link to it.
+  async function viewBill(role, leadId) {
+    const token = ls.get('ww_' + role + '_token');
+    if (token === 'demo') return toast('Bills are not available in demo mode', true);
+    const w = window.open('', '_blank');
+    try {
+      const res = await fetch('/api/bill?lead_id=' + encodeURIComponent(leadId), { headers: { Authorization: 'Bearer ' + token } });
+      if (!res.ok) { if (w) w.close(); const j = await res.json().catch(() => ({})); return toast(j.error || 'Could not open the bill', true); }
+      const url = URL.createObjectURL(await res.blob());
+      if (w) w.location = url; else window.location = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (_) { if (w) w.close(); toast('Could not open the bill', true); }
+  }
+
+  return { ls, $, esc, ago, date, when, name, phone, usd, toast, api, download, viewBill, W };
 })();

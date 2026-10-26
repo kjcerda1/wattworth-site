@@ -1,6 +1,6 @@
 // Owner dashboard API (auth: Bearer ADMIN_TOKEN)
 //   GET  /api/admin                 -> everything the dashboard renders
-//   POST /api/admin {action,...}    -> resend | fee_paid | payout_paid | set_tiers | create_partner | update_partner | rotate_key | admin_update | record_payment | erase_lead
+//   POST /api/admin {action,...}    -> resend | fee_paid | reward_verify | reward_paid | reward_ineligible | set_tiers | create_partner | update_partner | rotate_key | admin_update | record_payment | erase_lead
 const db = require('../lib/db');
 const W = require('../lib/shared');
 const { route, body, deny } = require('../lib/http');
@@ -21,17 +21,17 @@ module.exports = route(async (req, res) => {
   if (!isAdmin(req)) return deny(res);
 
   if (req.method === 'GET') {
-    const [leads, deliveries, payouts, tiers, partners, events, ad_spend, messages] = await Promise.all([
+    const [leads, deliveries, rewards, tiers, partners, events, ad_spend, messages] = await Promise.all([
       db.select('leads', { order: ['created_at', 'desc'], limit: 2000 }),
       db.select('deliveries', { order: ['created_at', 'desc'], limit: 2000 }),
-      db.select('referral_payouts', { order: ['created_at', 'desc'], limit: 2000 }),
+      db.select('referral_rewards', { order: ['created_at', 'desc'], limit: 2000 }),
       db.select('fee_tiers', { order: ['min_kw', 'asc'] }),
       db.select('partners', { order: ['created_at', 'asc'] }),
       db.select('lead_events', { order: ['created_at', 'desc'], limit: 300 }),
       db.select('ad_spend', { order: ['month', 'desc'], limit: 500 }),
       db.select('messages', { limit: 20000 }),
     ]);
-    const summary = W.buildSummary({ leads, deliveries, payouts, tiers, ad_spend, partners, messages });
+    const summary = W.buildSummary({ leads, deliveries, rewards, tiers, ad_spend, partners, messages });
     const pn = Object.fromEntries(partners.map((p) => [p.id, p.name]));
     const pmap = Object.fromEntries(partners.map((p) => [p.id, p]));
     const ref = Object.fromEntries(leads.map((l) => [l.id, l]));
@@ -40,9 +40,9 @@ module.exports = route(async (req, res) => {
       setup: { database: db.mode() === 'supabase', email: emailReady(), sms: smsReady(), ownerAlerts: !!(process.env.OWNER_EMAIL || process.env.OWNER_PHONE), cron: !!process.env.CRON_SECRET, appUrl: !!process.env.APP_URL },
       config: { feeTrigger: W.FEE_TRIGGER, stages: W.STAGES },
       ...summary,
-      leads: leads.map((l) => ({ ...l, portal_token: undefined, consent_ip: undefined, consent_user_agent: undefined, partner_name: pn[l.partner_id] || null, fee: l.fee || W.feeFor(l, tiers, undefined, pmap[l.partner_id]) })),
+      leads: leads.map((l) => ({ ...l, portal_token: undefined, bill_storage_path: undefined, bill_sha256: undefined, has_bill: !!l.bill_storage_path, consent_ip: undefined, consent_user_agent: undefined, partner_name: pn[l.partner_id] || null, fee: l.fee || W.feeFor(l, tiers, undefined, pmap[l.partner_id]) })),
       deliveries: deliveries.map((d) => ({ ...d, lead_ref: ref[d.lead_id] && ref[d.lead_id].ref, lead_name: ref[d.lead_id] && ref[d.lead_id].first_name, partner_name: pn[d.partner_id] })),
-      payouts: payouts.map((p) => ({ ...p, lead_ref: ref[p.lead_id] && ref[p.lead_id].ref, stage: ref[p.lead_id] && ref[p.lead_id].stage })),
+      rewards: rewards.map((p) => ({ ...p, lead_ref: ref[p.lead_id] && ref[p.lead_id].ref, stage: ref[p.lead_id] && ref[p.lead_id].stage })),
       tiers, ad_spend, partners: partners.map(partnerView),
       events: events.map((e) => ({ ...e, lead_ref: ref[e.lead_id] && ref[e.lead_id].ref })),
     });
@@ -87,12 +87,31 @@ module.exports = route(async (req, res) => {
       await event(lead.id, 'fee', 'admin', null, 'received $' + (amt / 100).toFixed(2), null);
       return res.json({ ok: true });
     }
-    case 'payout_paid': {
-      const p = await db.get('referral_payouts', { id: b.payout_id });
-      if (!p) throw new HttpError(404, 'payout not found');
-      const paid = b.paid !== false;
-      await db.update('referral_payouts', { id: p.id }, { status: paid ? 'paid' : 'pending', paid_at: paid ? new Date().toISOString() : null });
-      await event(p.lead_id, 'payout', 'admin', null, `${p.milestone} ${paid ? 'paid' : 'pending'}`, null);
+    // Referral reward steps. Nothing here is automatic: the owner verifies the installation, then records the payment.
+    case 'reward_verify': {
+      const r = await db.get('referral_rewards', { id: b.reward_id });
+      if (!r) throw new HttpError(404, 'reward not found');
+      if (r.status !== 'installation_confirmed') throw new HttpError(409, 'The installation has not been reported yet');
+      await db.update('referral_rewards', { id: r.id }, { status: 'reward_pending', reward_pending_at: new Date().toISOString() });
+      await event(r.lead_id, 'reward', 'admin', null, 'reward_pending', null);
+      return res.json({ ok: true });
+    }
+    case 'reward_paid': {
+      const r = await db.get('referral_rewards', { id: b.reward_id });
+      if (!r) throw new HttpError(404, 'reward not found');
+      if (r.status !== 'reward_pending') throw new HttpError(409, 'Verify the installation before recording a payment');
+      const ref = String(b.transaction_ref || '').trim().slice(0, 120);
+      if (!ref) throw new HttpError(400, 'Enter a payment reference (check number, transfer id)');
+      await db.update('referral_rewards', { id: r.id }, { status: 'paid', paid_at: new Date().toISOString(), transaction_ref: ref });
+      await event(r.lead_id, 'reward', 'admin', null, 'paid', null);
+      return res.json({ ok: true });
+    }
+    case 'reward_ineligible': {
+      const r = await db.get('referral_rewards', { id: b.reward_id });
+      if (!r) throw new HttpError(404, 'reward not found');
+      if (r.status === 'paid') throw new HttpError(409, 'Already paid');
+      await db.update('referral_rewards', { id: r.id }, { status: 'ineligible' });
+      await event(r.lead_id, 'reward', 'admin', null, 'ineligible', String(b.reason || '').slice(0, 200) || null);
       return res.json({ ok: true });
     }
     case 'set_tiers': {
@@ -158,7 +177,8 @@ module.exports = route(async (req, res) => {
       // Privacy request: remove the person and everything attached to them
       const lead = await db.get('leads', { id: b.lead_id });
       if (!lead) throw new HttpError(404, 'lead not found');
-      for (const t of ['messages', 'push_subscriptions', 'deliveries', 'lead_events', 'referral_payouts']) await db.remove(t, { lead_id: lead.id });
+      await require('../lib/storage').removeBill(lead.bill_storage_path);
+      for (const t of ['messages', 'push_subscriptions', 'deliveries', 'lead_events', 'referral_rewards']) await db.remove(t, { lead_id: lead.id });
       await db.remove('leads', { id: lead.id });
       return res.json({ ok: true });
     }
