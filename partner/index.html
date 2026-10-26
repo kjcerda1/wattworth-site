@@ -103,6 +103,8 @@
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h2 style="margin:0;font-size:26px">${esc(name(l))}</h2><div class="ref note">${esc(l.ref)} · received ${when(l.created_at)}</div></div><button class="btn ghost sm" id="close">Close</button></div>
       <div class="actions"><a href="tel:${esc(l.phone)}">Call</a><a href="sms:${esc(l.phone)}">Text</a>${l.email ? `<a href="mailto:${esc(l.email)}">Email</a>` : '<a style="opacity:.4;pointer-events:none">Email</a>'}</div>
       <div class="card" style="font-size:14px"><b>${esc(phone(l.phone))}</b>${l.email ? '<br>' + esc(l.email) : ''}${addr ? '<br><span class="note">' + esc(addr) + '</span>' : ''}${l.monthly_bill ? '<br><span class="note">Electric bill ' + usd(l.monthly_bill) + '/mo' + (l.homeowner === false ? ' · renter' : l.homeowner ? ' · homeowner' : '') + '</span>' : ''}${l.notes ? '<br><span class="note">“' + esc(l.notes) + '”</span>' : ''}</div>
+      <label>Electric account</label>
+      <div class="card" style="font-size:14px">${l.verification_method === 'bill' ? 'Verified with an uploaded bill' : l.verification_method === 'meter' ? 'Verified with provider and meter number' : l.verification_method === 'both' ? 'Bill uploaded and provider/meter given' : 'Not on file'}${l.electric_provider ? '<br><b>' + esc(l.electric_provider) + '</b> · meter <b>' + esc(l.meter_number) + '</b>' : ''}${l.has_bill ? '<br><button class="btn ghost sm" id="viewbill" style="margin-top:8px">View bill (' + esc(l.bill_filename || 'file') + ')</button>' : ''}</div>
       <label>Messages with ${esc(l.first_name)}</label>
       <div class="card" style="padding:12px"><div id="thr" style="max-height:200px;overflow:auto;display:flex;flex-direction:column;gap:6px">${(l.messages || []).map((m) => `<div style="align-self:${m.from === 'customer' ? 'flex-start' : 'flex-end'};max-width:86%;padding:8px 12px;border-radius:14px;font-size:14px;white-space:pre-wrap;word-wrap:break-word;${m.from === 'customer' ? 'background:var(--cream-2)' : 'background:var(--forest);color:#fff'}">${esc(m.body)}<div style="font-size:11px;opacity:.65;margin-top:2px">${m.from === 'customer' ? esc(l.first_name) : 'You' + (m.via === 'email' ? ' (email)' : '')} · ${ago(m.at)}</div></div>`).join('') || '<div class="note">No messages yet. They can write to you from their app, and you can reply here or by email.</div>'}</div>
         <textarea id="rep" rows="2" maxlength="2000" placeholder="Reply to ${esc(l.first_name)} (they get a notification)" style="margin-top:10px"></textarea>
@@ -134,6 +136,7 @@
       try { await api('partner', '/api/partner', { method: 'PATCH', body: JSON.stringify({ lead_id: l.id, message: t }) }); toast('Sent. They will be notified.'); await load(true); const x = state.data.leads.find((y) => y.id === l.id); if (x) openSheet(x.id); }
       catch (e) { toast(e.message || 'Could not send', true); b.disabled = false; }
     };
+    const vb = $('#viewbill'); if (vb) vb.onclick = () => App.viewBill('partner', l.id);
     sheet.querySelectorAll('[data-s]').forEach((b) => (b.onclick = () => {
       state.draftStage = b.dataset.s;
       sheet.querySelectorAll('[data-s]').forEach((x) => x.classList.toggle('on', x === b));

@@ -26,7 +26,7 @@ Your partner runs every lead start to finish on his own company platform. This s
 ## What it does
 - **Funnel -> `POST /api/leads`**: stores the lead and the exact consent wording shown, then sends it to the partner by email (Resend), SMS (Twilio) and optional webhook. Every send is logged per channel, failures retry every 15 min (max 5).
 - **Partner dashboard `/partner/`**: the partner signs in with a personal access key on his phone, sees his leads, taps one, sets the status, system size, contract value and a note. Full history is kept.
-- **Owner dashboard `/admin/`**: pipeline, deals in place, what was sent and whether it arrived (with Resend button), your percentage share of each deal's commission (with partial payments and an after-ad-spend view), referral payouts ($50 / $100 / $1,000 at +30 days), partner management, CSV export.
+- **Owner dashboard `/admin/`**: pipeline, deals in place, what was sent and whether it arrived (with Resend button), your percentage share of each deal's commission (with partial payments and an after-ad-spend view), referral rewards (one $1,000 reward per referred installation, verified by you before payment), partner management, CSV export.
 - **Works with any partner system**: `POST /api/inbound` lets his CRM, Zapier or Make push status updates by lead ref; the webhook pushes new leads into his CRM; `/api/export` gives CSV.
 
 ## Also included
@@ -38,7 +38,7 @@ Your partner runs every lead start to finish on his own company platform. This s
 - **Intake rate limit**: 5 submissions per IP per hour (add Vercel firewall rules too).
 
 ## Setup (about 15 minutes)
-1. Supabase SQL editor: run `supabase/schema.sql`.
+1. Create a NEW Supabase project for WattWorth (do not reuse another product's project), then in its SQL editor run `supabase/schema.sql`. It enables RLS on every table, creates the private `electric-bills` bucket with a restrictive storage policy, and strips table privileges from the browser roles. The service-role key stays in Vercel env vars only.
 2. Copy this folder's `api/`, `lib/`, `assets/`, `partner/`, `admin/`, `vercel.json` into your WattWorth Vercel project (merge `vercel.json` if you have one).
 3. Vercel env vars:
    - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
@@ -68,9 +68,17 @@ Local run: `ADMIN_TOKEN=dev node dev.js` (in-memory store, no keys needed). Test
 - **Staged payments**: companies often pay commission in stages (signing, install, final). When he updates the total earned so far, your share updates. Use "Add payment" in the Money tab as money reaches you; the balance falls and the deal turns Paid at zero. "Paid in full" settles it in one tap.
 - **Flat-fee mode** still exists per partner (`fee_mode: 'flat'`, rates by system size in Settings) for a partner who prefers a fixed fee per deal.
 - **When your share is owed**: `FEE_TRIGGER` in `lib/shared.js` (default: Signed). Change to `installed` if that's the deal.
-- **Referral stage mapping**: $100 unlocks at "Proposal sent", $1,000 at "Installed" (due +30 days). Adjust `REFERRAL` in `lib/shared.js` if "estimate completed" means a different stage.
-- **TCPA / payout wording**: untouched. The funnel must send `consent: true` and the exact `consent_text` it displayed; intake rejects anything without both.
+- **Referral program**: the only customer reward is **$1,000 after the referred homeowner completes a verified qualifying solar installation**. Nothing is earned at form submission or estimate. Each referred lead gets one `referral_rewards` row (unique per lead), which moves `tracking` -> `installation_confirmed` (partner reports Installed) -> `reward_pending` (you verify the installation, Money tab) -> `paid` (you record a payment reference). Nothing is paid automatically; lost or invalid leads become `ineligible`.
+- **TCPA / referral wording**: the consent text and referral-program terms are yours to have an attorney review; the code does not change them. The funnel must send `consent: true` and the exact `consent_text` it displayed; intake rejects anything without both.
 - Partner access keys are stored hashed. Rotate one from the Partners tab if a phone is lost.
+
+## Required utility verification
+Every homeowner must give at least one complete method: an electric bill upload (PDF, JPG or PNG, max 3 MB) **or** electric provider + meter number, or both. A provider without a meter (or the reverse) is rejected, even with a bill attached. The server enforces this on `POST /api/leads` (size, declared MIME type, file signature, empty or truncated files); the funnel's own checks are only a convenience, and the database has a matching check constraint.
+- Bills are stored in a **private** Supabase Storage bucket (`electric-bills`, created by `schema.sql`). The leads table keeps only the object path, filename, MIME type and SHA-256. There is no public bucket and no permanent URL.
+- Pedro and you open a bill through `GET /api/bill?lead_id=...` (partner key for his own leads, or the admin token). Each view is logged. `&signed=1` returns a 60-second signed URL instead.
+- Customers never see the meter number, the bill, its path or internal notes in their tracker.
+- Deleting a lead (admin Erase) also deletes its stored bill.
+- Request size: bills travel as base64 inside the JSON request, so keep the 3 MB cap (Vercel's request limit is about 4.5 MB).
 
 ## Customer app (`/portal/`)
 - **Access**: a private link (`/portal/#t=<token>`) is shown after the funnel and emailed to the customer. The token sits in the URL fragment so it never reaches server logs. Customers who lose it enter their email on the app's first screen and get a fresh link. Duplicate submissions never get a token; the original email gets the link instead.
@@ -78,4 +86,4 @@ Local run: `ADMIN_TOKEN=dev node dev.js` (in-memory store, no keys needed). Test
 - **Messaging**: customer messages arrive by email to the partner with a reply-to address; replying to that email posts into the customer's thread. Partners can also reply from `/partner/`.
 - **Notifications**: push first (Android and desktop immediately; iPhone only after Add to Home Screen, iOS 16.4+), email fallback only when push is not available. Stage changes, new messages, and consultation reminders (24h and 1h before) are sent once each. Reminders rely on the 15-minute cron (Vercel Pro).
 - **Privacy**: customers can request deletion in the app; their link is revoked immediately and you get an alert; erase from Deals in `/admin/`.
-- **Referrals**: each customer's code is issued by the server; unknown or self-referral codes are ignored.
+- **Referrals**: each customer's code is issued by the server; unknown or self-referral codes are ignored. The customer sees "Earn $1,000 after your referral completes a verified qualifying solar installation" and the status of each friend's reward.

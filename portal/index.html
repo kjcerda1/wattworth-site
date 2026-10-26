@@ -136,7 +136,7 @@ ol.how li{margin:6px 0}
       appointment_at: d.appt, specialist: { name: 'Pedro', company: 'Demo Solar Co.', phone: '+15125550111' },
       messages: d.msgs, unread: d.msgs.filter((m) => m.from === 'partner' && !m.read).length,
       confirm: { state: d.confirm, ask: !d.confirm }, push: { available: false, public_key: null, devices: 0 },
-      referral: { code: 'DANA7K2', friends: [{ name: 'Marcus B.', status: 'In progress', at: new Date(now - 90 * h).toISOString() }, { name: 'Priya S.', status: 'Submitted', at: new Date(now - 20 * h).toISOString() }], rewards: [{ label: 'Friend submitted', friend: 'Marcus B.', cents: 5000, status: 'paid' }, { label: 'Friend submitted', friend: 'Priya S.', cents: 5000, status: 'pending' }], paid_cents: 5000, pending_cents: 5000 } };
+      referral: { code: 'DANA7K2', friends: [{ name: 'Marcus B.', status: 'In progress', at: new Date(now - 90 * h).toISOString() }, { name: 'Priya S.', status: 'Submitted', at: new Date(now - 20 * h).toISOString() }], rewards: [{ friend: 'Marcus B.', cents: 100000, status: 'installation_confirmed', status_label: 'Installation reported' }, { friend: 'Priya S.', cents: 100000, status: 'tracking', status_label: 'Tracking' }], paid_cents: 0, pending_cents: 100000 } };
   }
   function demoApi(method, b) {
     const d = demoState();
@@ -247,12 +247,12 @@ ol.how li{margin:6px 0}
 
   function refer() {
     const r = S.d.referral, link = location.origin + '/r/' + r.code, hasShare = !!navigator.share;
-    return `<div class="card hero"><div class="eyebrow">Refer a friend</div><h1>Share solar, earn rewards</h1><p>Send your link. You earn as your friends move forward. Rewards are subject to program terms.</p></div>
+    return `<div class="card hero"><div class="eyebrow">Refer a friend</div><h1>Earn $1,000 for a referral</h1><p>Earn $1,000 after your referral completes a verified qualifying solar installation. Nothing is earned at earlier steps. Rewards are subject to program terms.</p></div>
       <div class="card" style="margin-top:12px"><div class="fine" style="margin-bottom:4px">Your referral code</div><div class="code">${esc(r.code || '')}</div><div class="keybox light">${esc(link)}</div>
         <div class="btnrow"><button class="btn" id="rshare">${hasShare ? 'Share my link' : 'Copy my link'}</button>${hasShare ? '<button class="btn ghost" id="rcopy">Copy</button>' : ''}</div></div>
       <div class="grid kpis" style="grid-template-columns:1fr 1fr;margin-top:12px"><div class="card kpi"><div class="n">${money(r.paid_cents)}</div><div class="l">Paid to you</div></div><div class="card kpi gold"><div class="n">${money(r.pending_cents)}</div><div class="l">Pending</div></div></div>
       <div class="sect-t">Your friends</div><div class="card">${r.friends.length ? `<div class="list2">${r.friends.map((f) => `<div><span><b>${esc(f.name)}</b> <span class="muted">${esc(day(f.at))}</span></span><span class="chip ${f.status === 'Submitted' ? 'gold' : ''}">${esc(f.status)}</span></div>`).join('')}</div>` : '<p class="muted center" style="margin:6px 0">Nobody yet. Share your link to get started.</p>'}</div>
-      ${r.rewards.length ? `<div class="sect-t">Rewards</div><div class="card"><div class="list2">${r.rewards.map((w) => `<div><span>${esc(w.label)}<br><span class="muted" style="font-size:12px">${esc(w.friend)}</span></span><span><b>${money(w.cents)}</b> <span class="chip ${w.status === 'paid' ? '' : 'gold'}">${w.status === 'paid' ? 'Paid' : 'Pending'}</span></span></div>`).join('')}</div><p class="fine" style="margin:10px 0 0">We will contact you by email to arrange payment when a reward is due.</p></div>` : ''}`;
+      ${r.rewards.length ? `<div class="sect-t">Rewards</div><div class="card"><div class="list2">${r.rewards.map((w) => `<div><span>${esc(w.friend)}<br><span class="muted" style="font-size:12px">$1,000 after a verified installation</span></span><span><b>${money(w.cents)}</b> <span class="chip ${w.status === 'paid' ? '' : 'gold'}">${esc(w.status_label || '')}</span></span></div>`).join('')}</div><p class="fine" style="margin:10px 0 0">We verify each installation first, then contact you by email to arrange payment.</p></div>` : ''}`;
   }
 
   function you() {

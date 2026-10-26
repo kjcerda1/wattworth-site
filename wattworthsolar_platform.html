@@ -1014,7 +1014,7 @@ footer {
 
     <h1>For <em>watt</em><br>it's <span class="gold">worth</span> to you</h1>
 
-    <p class="hero-sub">See your real solar savings in under 60 seconds. No calls, no reps, no obligation — and earn up to $1,000 every time you refer a friend who goes solar.</p>
+    <p class="hero-sub">See your real solar savings in under 60 seconds. No calls, no reps, no obligation — and earn $1,000 when a friend you refer completes a verified solar installation.</p>
 
     <div class="trust-pills">
       <div class="trust-pill">
@@ -1069,7 +1069,7 @@ footer {
       <div class="rt-icon">💸</div>
       <div class="rt-text">
         <div class="rt-label">Referral program</div>
-        <div class="rt-value">Earn up to $1,000</div>
+        <div class="rt-value">Earn $1,000</div>
         <div class="rt-sub">Per homeowner who installs solar</div>
       </div>
     </div>
@@ -1145,51 +1145,35 @@ footer {
 <!-- ── REFERRAL SECTION ──────────────────────────── -->
 <section class="referral-section" id="referral">
   <div class="sec-tag">Referral program</div>
-  <h2>Turn your network into<br><em>passive income</em></h2>
-  <p class="sec-sub">Every homeowner you refer earns you real cash — no selling, no pitching. Just share your link and watch the rewards add up.</p>
+  <h2>Refer a homeowner,<br><em>earn $1,000</em></h2>
+  <p class="sec-sub">Earn $1,000 after your referral completes a verified qualifying solar installation. Share your link; there is nothing to sell.</p>
 
   <div class="referral-grid">
     <div>
       <div class="ref-rewards">
-        <div class="reward-card r1">
-          <div class="rc-icon">📨</div>
-          <div class="rc-text">
-            <div class="rc-trigger">When they submit</div>
-            <div class="rc-desc">Referral fills out the funnel</div>
-          </div>
-          <div class="rc-amount">$50</div>
-        </div>
-        <div class="reward-card r2">
-          <div class="rc-icon">📊</div>
-          <div class="rc-text">
-            <div class="rc-trigger">When they complete estimate</div>
-            <div class="rc-desc">Referral views their full quote</div>
-          </div>
-          <div class="rc-amount">$100</div>
-        </div>
         <div class="reward-card r3">
           <div class="rc-icon">⚡</div>
           <div class="rc-text">
-            <div class="rc-trigger">When they install solar</div>
-            <div class="rc-desc">System fully installed & live</div>
+            <div class="rc-trigger">When your referral installs solar</div>
+            <div class="rc-desc">After a verified, qualifying installation</div>
           </div>
           <div class="rc-amount">$1,000</div>
         </div>
       </div>
-      <p style="font-size:0.78rem;color:var(--ink-dim);margin-top:16px;line-height:1.6;">Rewards are cumulative — earn all three milestones per referral. Paid via bank transfer or check within 30 days of each trigger event. Terms apply.</p>
+      <p style="font-size:0.78rem;color:var(--ink-dim);margin-top:16px;line-height:1.6;">One $1,000 reward per referred homeowner whose qualifying solar installation is completed and verified. Nothing is earned when someone only submits a form or views an estimate. We confirm the installation, then contact you to arrange payment. Program terms apply.</p>
     </div>
 
     <!-- Dashboard Preview -->
     <div class="ref-dashboard-preview">
       <div class="rdp-header">
-        <div class="rdp-title">Your Referral Dashboard</div>
-        <div class="rdp-badge">3 Active Referrals</div>
+        <div class="rdp-title">Example referral tracker</div>
+        <div class="rdp-badge">Sample data</div>
       </div>
       <div class="rdp-earnings">
         <div>
-          <div class="rde-label">Total Earned</div>
-          <div class="rde-value">$1,200</div>
-          <div class="rde-sub">+$1,000 pending install</div>
+          <div class="rde-label">Reward after install</div>
+          <div class="rde-value">$1,000</div>
+          <div class="rde-sub">per verified installation</div>
         </div>
         <button class="btn-hero" style="padding:10px 20px;font-size:0.82rem;" onclick="openFunnel()">
           Add referral →
@@ -1208,9 +1192,9 @@ footer {
           <div class="rdb-avatar" style="background:var(--blue)">TR</div>
           <div>
             <div class="rdb-name">Tom Reynolds</div>
-            <div class="rdb-status s-estimated"><span class="status-dot"></span>Completed estimate</div>
+            <div class="rdb-status s-estimated"><span class="status-dot"></span>Getting an estimate</div>
           </div>
-          <div class="rdb-earn" style="color:var(--green-dark)">+$100</div>
+          <div class="rdb-earn" style="color:var(--ink-dim)">Tracking</div>
         </div>
         <div class="rdb-item">
           <div class="rdb-avatar" style="background:var(--blue)" style="background:#C4714A">SK</div>
@@ -1218,7 +1202,7 @@ footer {
             <div class="rdb-name">Sara Kim</div>
             <div class="rdb-status s-submitted"><span class="status-dot"></span>Submitted</div>
           </div>
-          <div class="rdb-earn" style="color:var(--ink-dim)">+$50</div>
+          <div class="rdb-earn" style="color:var(--ink-dim)">Tracking</div>
         </div>
       </div>
     </div>
@@ -1439,17 +1423,6 @@ footer {
         </div>
       </div>
 
-      <!-- Optional upload -->
-      <div style="margin-top:16px">
-        <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-dim);margin-bottom:8px;">Optional — Upload a bill for a more accurate estimate</div>
-        <div class="upload-area" onclick="simulateUpload()">
-          <div class="ua-icon">📄</div>
-          <div class="ua-label">Click to upload your utility bill</div>
-          <div class="ua-sub">PDF or image · Marks you as high-intent</div>
-        </div>
-        <div class="upload-skip" id="uploadStatus">Skip this step</div>
-      </div>
-
       <button class="btn-next" id="btn-bill" disabled onclick="goStep(3)">Continue →</button>
     </div>
 
@@ -1532,6 +1505,30 @@ footer {
       <input type="text" id="inp-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0">
       <label id="consentLabel" style="display:flex;gap:10px;align-items:flex-start;font-size:0.72rem;line-height:1.5;color:var(--ink-dim);margin:6px 0 4px;text-transform:none;letter-spacing:0;font-weight:400;cursor:pointer;"><input type="checkbox" id="inp-consent" onchange="document.getElementById('formErr').style.display='none'" style="width:20px;height:20px;min-height:0;margin-top:2px;flex:none"><span id="consentText">I agree that WattWorth and a local solar partner may contact me about my solar estimate by phone, text message and email, including with automated technology. Consent is not a condition of any purchase. Message and data rates may apply. Reply STOP to opt out. We never sell your data.</span></label>
       <div id="formErr" role="alert" style="display:none;color:#C62828;font-size:0.8rem;font-weight:600;margin:6px 0"></div>
+      <button class="btn-next" onclick="goVerify()">Continue →</button>
+    </div>
+
+    <!-- STEP 6: Verify electric account (required: bill upload OR provider + meter number) -->
+    <div class="fstep" id="fs6">
+      <button class="btn-back" onclick="goStep(5)">← Back</button>
+      <div class="fstep-tag">⚡ Last step</div>
+      <div class="fstep-title">Verify your electric account</div>
+      <div class="fstep-desc">Your specialist needs this to size your system accurately. Give us either option below, or both.</div>
+
+      <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-dim);margin:4px 0 8px;">Option A · Upload a recent electric bill</div>
+      <input type="file" id="inp-bill" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" style="display:none" onchange="onBillPicked(this)">
+      <div class="upload-area" id="billArea" onclick="document.getElementById('inp-bill').click()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+        <div class="ua-icon">📄</div>
+        <div class="ua-label" id="billLabel">Tap to choose your bill</div>
+        <div class="ua-sub" id="billSub">PDF, JPG or PNG · up to 3 MB · stored privately</div>
+      </div>
+      <div class="upload-skip" id="billRemove" style="display:none" onclick="clearBill()">Remove file</div>
+
+      <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-dim);margin:10px 0 8px;">Option B · Provider and meter number</div>
+      <div class="field"><label for="inp-provider">Electric provider</label><input type="text" id="inp-provider" maxlength="80" placeholder="e.g. CPS Energy, Oncor" autocomplete="off"></div>
+      <div class="field"><label for="inp-meter">Meter number</label><input type="text" id="inp-meter" maxlength="30" placeholder="Printed on your meter and your bill" autocomplete="off" inputmode="text"></div>
+      <div style="font-size:0.72rem;color:var(--ink-dim);line-height:1.5;margin:-4px 0 10px">Your bill and meter number are only shared with your solar specialist. Meter and bill details are never shown in your public tracker.</div>
+      <div id="verifyErr" role="alert" style="display:none;color:#C62828;font-size:0.8rem;font-weight:600;margin:6px 0"></div>
       <button class="btn-next" onclick="submitLead()">Generate my free estimate →</button>
     </div>
 
@@ -1541,14 +1538,12 @@ footer {
     <!-- STEP: REFERRAL -->
     <div class="fstep" id="fs-referral">
       <div class="ref-screen">
-        <div class="fstep-tag">💸 Earn up to $1,000</div>
+        <div class="fstep-tag">💸 Earn $1,000</div>
         <div class="ref-headline">Refer a homeowner,<br>earn real cash</div>
-        <div class="ref-sub">You've seen how much solar can save you. Share that same opportunity with friends and family — and get paid when they take action.</div>
+        <div class="ref-sub">You've seen how much solar can save you. Share it with friends and family. You earn $1,000 after your referral completes a verified qualifying solar installation.</div>
 
         <div class="ref-tiers">
-          <div class="ref-tier"><div class="ref-tier-icon">📨</div><div class="ref-tier-text">They submit the form</div><div class="ref-tier-amt">$50</div></div>
-          <div class="ref-tier"><div class="ref-tier-icon">📊</div><div class="ref-tier-text">They complete their estimate</div><div class="ref-tier-amt">$100</div></div>
-          <div class="ref-tier"><div class="ref-tier-icon">⚡</div><div class="ref-tier-text">They install solar</div><div class="ref-tier-amt">$1,000</div></div>
+          <div class="ref-tier"><div class="ref-tier-icon">⚡</div><div class="ref-tier-text">Your referral completes a verified solar installation</div><div class="ref-tier-amt">$1,000</div></div>
         </div>
 
         <div class="ref-link-box">
@@ -1622,7 +1617,7 @@ const lead = {
   address:'', city:'', state:'',
   bill:'', ownership:'', roof:'',
   firstName:'', lastName:'', email:'', phone:'',
-  billUploaded: false,
+  billFile: null,
   estimate: null,
   qualScore: 0,
   refCode: '',
@@ -1631,8 +1626,8 @@ const lead = {
   refBy: new URLSearchParams(location.search).get('ref') || ((/^\/r\/([A-Za-z0-9]+)/.exec(location.pathname) || [])[1] || '')
 };
 
-const stepLabels = ['Monthly Bill','Ownership','Roof Type','Your Address','Your Details'];
-const STEP_POS = { 2:1, 3:2, 4:3, 1:4, 5:5 };   // funnel order: bill, ownership, roof, address, details (address is never asked first)
+const stepLabels = ['Monthly Bill','Ownership','Roof Type','Your Address','Your Details','Verify Account'];
+const STEP_POS = { 2:1, 3:2, 4:3, 1:4, 5:5, 6:6 };   // funnel order: bill, ownership, roof, address, details (address is never asked first)
 
 /* ── ADDRESS INTELLIGENCE ─────────────────── */
 const utilityData = {
@@ -1685,8 +1680,8 @@ function goStep(n) {
   document.getElementById('fs' + n).classList.add('active');
   const pos = STEP_POS[n];
   document.getElementById('funnelStepLabel').textContent = stepLabels[pos-1];
-  document.getElementById('funnelStepCount').textContent = pos + ' / 5';
-  document.getElementById('funnelFill').style.width = (pos / 5 * 100) + '%';
+  document.getElementById('funnelStepCount').textContent = pos + ' / 6';
+  document.getElementById('funnelFill').style.width = (pos / 6 * 100) + '%';
 }
 
 /* ── OPTION PICKING ──────────────────────── */
@@ -1697,15 +1692,6 @@ function pick(el, field, val) {
   lead[field] = val;
   const btns = { bill:'btn-bill', ownership:'btn-own', roof:'btn-roof' };
   if (btns[field]) document.getElementById(btns[field]).disabled = false;
-}
-
-/* ── BILL UPLOAD SIMULATION ──────────────── */
-function simulateUpload() {
-  const status = document.getElementById('uploadStatus');
-  lead.billUploaded = true;
-  status.textContent = '✅ Bill uploaded — tagged as high-intent';
-  status.style.color = 'var(--green-dark)';
-  status.style.fontWeight = '600';
 }
 
 /* ── CALCULATE ESTIMATE ──────────────────── */
@@ -1747,7 +1733,7 @@ function calcEstimate() {
   score += sMap[lead.bill] || 10;
   score += lead.ownership === 'own' ? 40 : 10;
   score += ['asphalt','metal','tile'].includes(lead.roof) ? 20 : 10;
-  if (lead.billUploaded) score = Math.min(score + 5, 100);
+  if (lead.verifyMethod === 'both') score = Math.min(score + 5, 100);
   lead.qualScore = Math.min(score, 100);
 
   const tier = score >= 80 ? 'HOT 🔴' : score >= 50 ? 'WARM 🟡' : 'COOL 🔵';
@@ -1756,7 +1742,8 @@ function calcEstimate() {
 }
 
 /* ── SUBMIT + SHOW QUOTE ──────────────────── */
-async function submitLead() {
+/* ── STEP 5 → 6: contact details ─────────── */
+function readContact() {
   lead.firstName = document.getElementById('inp-first').value.trim();
   lead.lastName  = document.getElementById('inp-last').value.trim();
   lead.email     = document.getElementById('inp-email').value.trim();
@@ -1765,13 +1752,69 @@ async function submitLead() {
   lead.city      = document.getElementById('inp-city').value.trim();
   lead.state     = document.getElementById('inp-state').value;
   lead.zip       = document.getElementById('inp-zip').value.trim();
+}
+function contactError() {
+  if (!lead.firstName) return 'Please enter your first name.';
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(lead.email)) return 'Please enter a valid email address.';
+  if (lead.phone.replace(/\D/g, '').replace(/^1/, '').length !== 10) return 'Please enter a 10-digit mobile number so your solar specialist can reach you.';
+  if (!document.getElementById('inp-consent').checked) return 'Please tick the box to agree to be contacted.';
+  return '';
+}
+function goVerify() {
+  readContact();
+  const m = contactError(), b = document.getElementById('formErr');
+  b.textContent = m; b.style.display = m ? 'block' : 'none';
+  if (!m) goStep(6);
+}
 
-  const err = (m) => { const b = document.getElementById('formErr'); b.textContent = m; b.style.display = m ? 'block' : 'none'; return false; };
-  err('');
-  if (!lead.firstName) return err('Please enter your first name.');
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(lead.email)) return err('Please enter a valid email address.');
-  if (lead.phone.replace(/\D/g, '').replace(/^1/, '').length !== 10) return err('Please enter a 10-digit mobile number so your solar specialist can reach you.');
-  if (!document.getElementById('inp-consent').checked) return err('Please tick the box to agree to be contacted.');
+/* ── ELECTRIC BILL (real upload, checked again on the server) ── */
+const BILL_MAX = 3 * 1024 * 1024;
+function verifyErr(m) { const b = document.getElementById('verifyErr'); b.textContent = m; b.style.display = m ? 'block' : 'none'; return false; }
+function clearBill() {
+  lead.billFile = null; document.getElementById('inp-bill').value = '';
+  document.getElementById('billLabel').textContent = 'Tap to choose your bill';
+  document.getElementById('billSub').textContent = 'PDF, JPG or PNG · up to 3 MB · stored privately';
+  document.getElementById('billArea').style.borderColor = ''; document.getElementById('billRemove').style.display = 'none';
+}
+function onBillPicked(inp) {
+  verifyErr('');
+  const f = inp.files && inp.files[0];
+  if (!f) return;
+  const ext = (f.name.split('.').pop() || '').toLowerCase();
+  const okType = ['application/pdf', 'image/jpeg', 'image/png'].includes(f.type) && ['pdf', 'jpg', 'jpeg', 'png'].includes(ext);
+  if (!okType) { clearBill(); return verifyErr('Please choose a PDF, JPG or PNG file.'); }
+  if (f.size === 0) { clearBill(); return verifyErr('That file is empty. Please choose another.'); }
+  if (f.size > BILL_MAX) { clearBill(); return verifyErr('That file is over 3 MB. Please choose a smaller one or a photo of the bill.'); }
+  const rd = new FileReader();
+  rd.onload = () => {
+    lead.billFile = { filename: f.name, mime: f.type, data: String(rd.result).split(',')[1] || '' };
+    document.getElementById('billLabel').textContent = '✅ ' + f.name;
+    document.getElementById('billSub').textContent = (f.size / 1024 < 1024 ? Math.round(f.size / 1024) + ' KB' : (f.size / 1048576).toFixed(1) + ' MB') + ' · tap to change';
+    document.getElementById('billArea').style.borderColor = 'var(--green)'; document.getElementById('billRemove').style.display = 'block';
+  };
+  rd.onerror = () => { clearBill(); verifyErr('We could not read that file. Please try again.'); };
+  rd.readAsDataURL(f);
+}
+// At least one COMPLETE method: bill, or provider + meter. A half-filled pair is never accepted.
+function verifyError() {
+  const p = document.getElementById('inp-provider').value.trim(), m = document.getElementById('inp-meter').value.replace(/[\s-]/g, '');
+  if (p && !m) return 'Enter your meter number along with your electric provider.';
+  if (m && !p) return 'Enter your electric provider along with your meter number.';
+  if (m && !/^[A-Za-z0-9]{5,20}$/.test(m)) return 'Meter numbers are 5 to 20 letters and numbers. Check your meter or bill.';
+  if (!lead.billFile && !(p && m)) return 'Please upload a recent bill, or enter your electric provider and meter number.';
+  lead.provider = p; lead.meter = m;
+  lead.verifyMethod = lead.billFile && p && m ? 'both' : lead.billFile ? 'bill' : 'meter';
+  return '';
+}
+
+async function submitLead() {
+  readContact();
+  const cerr = contactError();
+  if (cerr) { goStep(5); const b = document.getElementById('formErr'); b.textContent = cerr; b.style.display = 'block'; return; }
+  const verr = verifyError();
+  if (verr) return verifyErr(verr);
+  verifyErr('');
+  const err = (m) => { verifyErr(m); return false; };
   const sending = sendLead();   // runs while the estimate animation plays
 
   // Loading sequence
@@ -1967,13 +2010,15 @@ async function sendLead() {
   const intel = [];
   if (lead.bill) intel.push('Bill range: ' + lead.bill);
   if (lead.roof) intel.push('Roof: ' + lead.roof);
-  if (lead.billUploaded) intel.push('Offered a bill upload');
+
   const payload = {
     first_name: lead.firstName, last_name: lead.lastName, phone: lead.phone, email: lead.email,
     address: lead.address, city: lead.city, state: lead.state, zip: lead.zip,
     monthly_bill: BILL_MID[lead.bill] || null,
     homeowner: lead.ownership === 'own' ? true : lead.ownership === 'rent' ? false : null,
     notes: intel.join('. ') || null,
+    electric_provider: lead.provider || null, meter_number: lead.meter || null,
+    bill: lead.billFile ? { filename: lead.billFile.filename, mime: lead.billFile.mime, data: lead.billFile.data } : null,
     consent: true,
     consent_text: document.getElementById('consentText').textContent.trim(),   // exact wording the visitor saw
     referrer_code: lead.refBy || null,
@@ -1985,7 +2030,7 @@ async function sendLead() {
     const res = await fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const j = await res.json().catch(() => ({}));
     if (res.ok) return { ok: true, ref: j.ref, portal_token: j.portal_token || null, own_code: j.own_code || null, existing_tracker: !!j.existing_tracker };
-    return { ok: false, error: res.status === 429 ? 'Too many submissions from this connection. Please try again later.' : (j.error && /phone/i.test(j.error) ? 'Please check your phone number.' : 'We could not submit your request. Please check your details and try again.') };
+    return { ok: false, error: res.status === 429 ? 'Too many submissions from this connection. Please try again later.' : (j.error && /phone/i.test(j.error) ? 'Please check your phone number.' : (res.status === 400 || res.status === 503) && j.error && !/required/.test(j.error) ? j.error : 'We could not submit your request. Please check your details and try again.') };
   } catch (e) {
     return { ok: false, error: 'Network problem. Please check your connection and try again.' };
   }

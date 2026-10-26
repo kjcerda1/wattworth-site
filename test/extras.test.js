@@ -22,7 +22,7 @@ const mk = (method, { headers = {}, body, query = {} } = {}) => ({ method, heade
 function mkRes() { const r = { code: 200 }; r.setHeader = () => {}; r.status = (c) => ((r.code = c), r); r.json = (o) => ((r.payload = o), r); r.send = (s) => ((r.payload = s), r); r.end = () => r; return r; }
 const call = async (mod, req) => { const res = mkRes(); await require(mod)(req, res); return res; };
 const A = { authorization: 'Bearer admin-secret' };
-const lead = (o = {}) => ({ first_name: 'Dana', last_name: 'Reyes', phone: '5125550' + String(100 + ++n), city: 'Austin', state: 'TX', consent: true, consent_text: 'consent wording', ...o });
+const lead = (o = {}) => ({ first_name: 'Dana', last_name: 'Reyes', phone: '5125550' + String(100 + ++n), city: 'Austin', state: 'TX', consent: true, electric_provider: 'CPS Energy', meter_number: 'M1234567', consent_text: 'consent wording', ...o });
 const db = require('../lib/db');
 const adminGet = async () => (await call('../api/admin', mk('GET', { headers: A }))).payload;
 
