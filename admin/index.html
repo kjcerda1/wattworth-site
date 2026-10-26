@@ -76,6 +76,9 @@
     if (k.deliveryFailures) heads.push(['Some leads did not reach your partner. Failed sends retry automatically.', k.deliveryFailures, 'deliveries', 'failed']);
     if (k.unreported) heads.push(['Leads over a week old with no status from your partner', k.unreported, 'deals', 'skipped']);
     if (k.feesNeedingSetup) heads.push(['Signed deals waiting on details from your partner (commission amount or your share %) before your cut can be calculated', k.feesNeedingSetup, 'money', 'skipped']);
+    if (k.erasureRequests) heads.push(['Customers asked to have their data deleted. Review and erase in Deals.', k.erasureRequests, 'deals', 'failed']);
+    if (k.contactConfirmedNo) heads.push(['Customers say they have not been reached by your partner', k.contactConfirmedNo, 'deals', 'failed']);
+    if (k.messagesUnanswered) heads.push(['Customer messages still waiting on a reply from your partner' + (k.replyMedianHours != null ? ' (typical wait ' + hours(k.replyMedianHours) + ')' : ''), k.messagesUnanswered, 'deals', 'skipped']);
     const pst = d.partnerStats || [];
     return `<div class="grid kpis">
       ${kpi(k.thisMonth, 'Leads this month')}${kpi(k.deliveryRate + '%', 'Sent to your partner')}${kpi(k.contactRate + '%', 'Contacted by your partner')}
@@ -117,7 +120,8 @@
     const shown = real.filter((l) => (S.filter === 'all' || (S.filter === 'inplace' ? W.IN_PLACE.includes(l.stage) : l.stage === S.filter)) && (!q || (name(l) + l.ref + (l.city || '')).toLowerCase().includes(q)));
     const opts = [['all', 'All'], ['inplace', 'In place'], ...W.STAGES.map((s) => [s.key, s.label])];
     const sentBy = {}; d.deliveries.forEach((x) => { (sentBy[x.lead_id] = sentBy[x.lead_id] || []).push(x); });
-    return `<input id="q" type="search" placeholder="Search name, city, reference" value="${esc(S.q)}" style="margin-top:12px">
+    const priv = real.filter((l) => l.deletion_requested_at);
+    return `${priv.length ? `<h2>Data deletion requests</h2><div class="list">${priv.map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} <span class="note">${esc(l.ref)}</span></div><div class="t2">Asked ${ago(l.deletion_requested_at)}. Their app link is already switched off. Erasing removes the lead, messages and history for good. Make sure your partner has deleted their copy too.</div></div><button class="btn ghost sm" data-erase="${l.id}">Erase</button></div>`).join('')}</div>` : ''}<input id="q" type="search" placeholder="Search name, city, reference" value="${esc(S.q)}" style="margin-top:12px">
       <div class="pills">${opts.map(([k, l]) => `<button class="pill ${S.filter === k ? 'on' : ''}" data-f="${k}">${l}<b>${k === 'all' ? real.length : k === 'inplace' ? real.filter((x) => W.IN_PLACE.includes(x.stage)).length : real.filter((x) => x.stage === k).length}</b></button>`).join('')}</div>
       <div class="list">${shown.map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} <span class="badge ${l.stage}">${W.LABEL[l.stage]}</span></div>
         <div class="t2">${esc(l.ref)} · ${esc([l.city, l.state].filter(Boolean).join(', '))} · ${ago(l.created_at)}${l.system_kw ? ' · ' + l.system_kw + ' kW' : ''}${l.contract_value ? ' · ' + usd(l.contract_value) : ''}${l.partner_name ? ' · ' + esc(l.partner_name) : ''}</div>
@@ -132,6 +136,10 @@
   binders.deals = () => {
     $('#q').oninput = (e) => { S.q = e.target.value; const p = e.target.selectionStart; render(); const el = $('#q'); el.focus(); el.setSelectionRange(p, p); };
     app.querySelectorAll('[data-f]').forEach((b) => (b.onclick = () => { S.filter = b.dataset.f; render(); }));
+    app.querySelectorAll('[data-erase]').forEach((b) => (b.onclick = async () => {
+      if (!confirm('Permanently erase this person and all their messages and history? This cannot be undone.')) return;
+      try { await act({ action: 'erase_lead', lead_id: b.dataset.erase }); toast('Erased'); await load(true); } catch (e) { toast(e.message || 'Failed', true); }
+    }));
   };
 
   /* ---------- Sent to partner ---------- */
@@ -241,13 +249,15 @@
       ${S.secret ? `<div class="card" style="margin-top:12px;border-color:var(--gold)"><div class="t1" style="font-weight:700">Save this now. It is shown only once.</div><div class="note">Access key for ${esc(S.secret.who)}</div><div class="keybox">${esc(S.secret.key)}</div>${S.secret.hook ? `<div class="note">Webhook signing secret (verify the X-WattWorth-Signature header)</div><div class="keybox">${esc(S.secret.hook)}</div>` : ''}<button class="btn gold sm" id="copykey">Copy key</button> <button class="btn ghost sm" id="hidekey">I saved it</button></div>` : ''}
       <h2>Partners</h2><div class="list">${d.partners.map((p) => `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><div><div class="t1" style="font-weight:700">${esc(p.name)} ${p.is_default ? '<span class="badge paid">Gets new leads</span>' : ''} ${p.active ? '' : '<span class="badge failed">Inactive</span>'}</div><div class="t2 note">${esc(p.company || '')}</div></div></div>
         <div class="t2 note" style="margin-top:8px">${p.email ? 'Email ' + esc(p.email) : 'No email'} · ${p.phone ? 'SMS ' + esc(phone(p.phone)) : 'No SMS number'} · ${p.webhook_url ? 'Webhook on' : 'No webhook'}</div>
+        <div class="row2" style="margin-top:12px;align-items:end"><div><label for="pp-${p.id}">Phone customers see him call from</label><input id="pp-${p.id}" type="tel" inputmode="tel" placeholder="(512) 555-0100" value="${esc(p.public_phone ? phone(p.public_phone) : '')}"></div><div><button class="btn sm" data-savephone="${p.id}">Save phone</button></div></div>
         ${termsBlock(p)}
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" data-rotate="${p.id}">Issue new access key</button>${p.is_default ? '' : `<button class="btn ghost sm" data-default="${p.id}">Send new leads here</button>`}<button class="btn ghost sm" data-toggle="${p.id}" data-active="${p.active ? 1 : 0}">${p.active ? 'Deactivate' : 'Reactivate'}</button></div></div>`).join('') || '<div class="empty">Add your first partner below.</div>'}</div>
       <h2>Add a partner</h2><form class="card" id="newp" autocomplete="off">
         <label>Name</label><input name="name" required maxlength="80" placeholder="Pedro">
         <label>Company</label><input name="company" maxlength="120">
         <label>Email for lead alerts</label><input name="email" type="email" inputmode="email">
-        <label>Mobile for text alerts</label><input name="phone" type="tel" inputmode="tel" placeholder="(512) 555-0100">
+        <label>Phone customers will see him call from</label><input name="public_phone" type="tel" inputmode="tel" placeholder="(512) 555-0100">
+        <label>Mobile for text alerts (optional)</label><input name="phone" type="tel" inputmode="tel" placeholder="(512) 555-0100">
         <label>Your share of their commission (%)</label><input name="split_percent" inputmode="decimal" placeholder="Leave blank until agreed with them">
         <div class="note" style="margin-top:6px">Common setup: 30% for you if they pay for ads, 40% if you do. Confirm it in writing first.</div>
         <label>Who pays for ads</label><select name="ads_paid_by"><option value="">Not decided</option><option value="partner">Partner pays</option><option value="owner">I pay</option></select>
@@ -264,6 +274,10 @@
     }));
     app.querySelectorAll('[data-default]').forEach((b) => (b.onclick = async () => { try { await act({ action: 'update_partner', partner_id: b.dataset.default, is_default: true }); toast('Updated'); await load(true); } catch (e) { toast(e.message, true); } }));
     app.querySelectorAll('[data-toggle]').forEach((b) => (b.onclick = async () => { try { await act({ action: 'update_partner', partner_id: b.dataset.toggle, active: b.dataset.active !== '1' }); await load(true); } catch (e) { toast(e.message, true); } }));
+    app.querySelectorAll('[data-savephone]').forEach((b) => (b.onclick = async () => {
+      const id = b.dataset.savephone;
+      try { await act({ action: 'update_partner', partner_id: id, public_phone: $('#pp-' + id).value.trim() }); toast('Saved'); await load(true); } catch (e) { toast(e.message || 'Enter a valid phone number', true); }
+    }));
     app.querySelectorAll('[data-saveterms]').forEach((b) => (b.onclick = async () => {
       const id = b.dataset.saveterms;
       try { await act({ action: 'update_partner', partner_id: id, split_percent: $('#sp-' + id).value.trim(), ads_paid_by: $('#ap-' + id).value }); toast('Terms saved'); await load(true); } catch (e) { toast(e.message || 'Enter a number from 0 to 100', true); }

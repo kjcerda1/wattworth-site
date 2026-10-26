@@ -152,6 +152,47 @@ alter table referral_payouts enable row level security;
 alter table ad_spend enable row level security;
 alter table alerts enable row level security;
 
+
+-- ===== Customer portal (PWA) =====
+alter table partners add column if not exists public_phone text;        -- number the customer will see Pedro call from
+alter table leads add column if not exists portal_token text unique;     -- private link token (sent only to the customer)
+alter table leads add column if not exists own_code text unique;         -- this customer's own referral code
+alter table leads add column if not exists appointment_at timestamptz;   -- consultation time set by the partner
+alter table leads add column if not exists contact_confirmed text check (contact_confirmed in ('yes','no'));
+alter table leads add column if not exists contact_confirmed_at timestamptz;
+alter table leads add column if not exists deletion_requested_at timestamptz;
+alter table leads add column if not exists portal_link_sent_at timestamptz;
+
+-- Two-way thread between the customer and their solar specialist
+create table if not exists messages (
+  id uuid primary key default gen_random_uuid(),
+  lead_id uuid not null references leads(id) on delete cascade,
+  sender text not null check (sender in ('customer','partner')),
+  body text not null,
+  via text not null default 'portal' check (via in ('portal','email','dashboard')),
+  read_by_customer_at timestamptz,
+  read_by_partner_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists messages_lead_idx on messages (lead_id, created_at);
+
+-- Web push subscriptions (one row per installed device)
+create table if not exists push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  lead_id uuid not null references leads(id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  failures int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists push_lead_idx on push_subscriptions (lead_id);
+
+alter table messages enable row level security;
+alter table push_subscriptions enable row level security;
+
 -- Starter tier bands. Amounts intentionally NULL: set them in the admin dashboard once agreed with the partner.
 insert into fee_tiers (label, min_kw, max_kw, fee_cents)
 select * from (values

@@ -4,6 +4,7 @@ Solar lead-gen funnel plus the lead system behind it, deployed together on Verce
 
 - `/` serves `wattworthsolar_platform.html`: the SunLoop funnel (bill, ownership, roof, then address and contact details, then the quote). The visitor must tick the consent box. The lead is POSTed to `/api/leads` on the same origin.
 - `/api`, `/lib`: lead intake, delivery to your solar partner (email, text, webhook), partner updates, owner analytics, commission split, cron retries.
+- `/portal/`: the customer app (installable PWA). Each customer gets a private link, sees where their project is, messages their specialist, gets push notifications and appointment reminders, and has their own referral link. Try it at `/portal/#t=demo`.
 - `/partner/`: your partner's phone dashboard. `/admin/`: your follow-along dashboard. Try either with the access key `demo`.
 - `wattworth*.zip` are the older funnel drafts and strategy notes. They are excluded from the deployed site (`.vercelignore`).
 
@@ -47,10 +48,14 @@ Your partner runs every lead start to finish on his own company platform. This s
    - `ALLOWED_ORIGINS` (comma list of funnel origins that post to /api/leads)
    - `OWNER_EMAIL`, `OWNER_PHONE` (your alerts)
    - `RESEND_API_KEY`, `MAIL_FROM`
-   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`
-4. Deploy. Open `/admin/`, sign in with `ADMIN_TOKEN`, Partners tab -> add Pedro -> copy his access key (shown once) -> send him `/partner/` plus the key.
-5. Partners tab -> set your share (%) for each partner and who pays for ads. Leave it blank until you've agreed it in writing; nothing is counted until it's set.
-6. Funnel: add the snippet from `funnel-snippet.js` to your form submit.
+   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` (optional; not needed while your partner is email-only)
+   - Customer app: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (run `npm install && npm run vapid` once and paste the output; keep the private key secret and never change it later or every customer has to re-enable notifications)
+   - Customer replies by email: `INBOUND_EMAIL_DOMAIN` (a domain or subdomain you verified for receiving in Resend), `RESEND_WEBHOOK_SECRET` (signing secret of the webhook below)
+   - `DISPLAY_TZ` (default `America/Chicago`, used in reminder wording)
+4. Resend inbound (so Pedro can answer a customer just by replying to the email): add your receiving domain in Resend, add its MX record, then create a webhook for the `email.received` event pointing to `https://YOUR-DOMAIN/api/emailin` and copy its signing secret into `RESEND_WEBHOOK_SECRET`. Replies only count when they come from the partner's own email address; quoted text is stripped.
+5. Deploy. Open `/admin/`, sign in with `ADMIN_TOKEN`, Partners tab -> add Pedro -> copy his access key (shown once) -> send him `/partner/` plus the key.
+6. Partners tab -> add the phone customers will see him call from, and set your share (%) for each partner and who pays for ads. Leave it blank until you've agreed it in writing; nothing is counted until it's set.
+7. The funnel already posts to `/api/leads`; no snippet needed.
 
 Local run: `ADMIN_TOKEN=dev node dev.js` (in-memory store, no keys needed). Tests: `npm test`. Enter `demo` as the key on either sign-in screen for sample data.
 
@@ -66,3 +71,11 @@ Local run: `ADMIN_TOKEN=dev node dev.js` (in-memory store, no keys needed). Test
 - **Referral stage mapping**: $100 unlocks at "Proposal sent", $1,000 at "Installed" (due +30 days). Adjust `REFERRAL` in `lib/shared.js` if "estimate completed" means a different stage.
 - **TCPA / payout wording**: untouched. The funnel must send `consent: true` and the exact `consent_text` it displayed; intake rejects anything without both.
 - Partner access keys are stored hashed. Rotate one from the Partners tab if a phone is lost.
+
+## Customer app (`/portal/`)
+- **Access**: a private link (`/portal/#t=<token>`) is shown after the funnel and emailed to the customer. The token sits in the URL fragment so it never reaches server logs. Customers who lose it enter their email on the app's first screen and get a fresh link. Duplicate submissions never get a token; the original email gets the link instead.
+- **What customers see**: progress steps, consultation time, their specialist's name, company and phone, messages, referral link and earnings status. They never see notes, commission, fees, consent records or the partner's email.
+- **Messaging**: customer messages arrive by email to the partner with a reply-to address; replying to that email posts into the customer's thread. Partners can also reply from `/partner/`.
+- **Notifications**: push first (Android and desktop immediately; iPhone only after Add to Home Screen, iOS 16.4+), email fallback only when push is not available. Stage changes, new messages, and consultation reminders (24h and 1h before) are sent once each. Reminders rely on the 15-minute cron (Vercel Pro).
+- **Privacy**: customers can request deletion in the app; their link is revoked immediately and you get an alert; erase from Deals in `/admin/`.
+- **Referrals**: each customer's code is issued by the server; unknown or self-referral codes are ignored.

@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WattWorth: Your solar project</title>
+<meta name="description" content="Follow your solar project and message your solar specialist.">
+<meta name="theme-color" content="#1F4D3A">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="WattWorth">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/portal/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/portal/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/portal/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/ww.css">
+<style>
+html,body{height:100%}
+body{overscroll-behavior:none;padding-bottom:0}
+#root{height:100dvh;display:flex;flex-direction:column;max-width:560px;margin:0 auto;background:var(--cream)}
+.hdr{flex:none;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line);background:rgba(246,241,231,.94);backdrop-filter:blur(10px)}
+.hdr .brand{font-size:21px}
+.main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 24px}
+.tabbar{flex:none;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--white);padding-bottom:env(safe-area-inset-bottom)}
+.tabbar button{border:0;background:none;padding:9px 4px 8px;font-size:11px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px;position:relative}
+.tabbar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button.on{color:var(--forest)}
+.dot{position:absolute;top:6px;left:calc(50% + 8px);min-width:17px;height:17px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;line-height:17px;text-align:center;padding:0 4px}
+.hero{background:linear-gradient(150deg,var(--forest),var(--forest-2));color:#fff;border:0}
+.hero h1{color:#fff;font-size:27px;line-height:1.15;margin:4px 0 6px}
+.hero p{margin:0;color:rgba(255,255,255,.82);font-size:14.5px}
+.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--gold)}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{position:relative;display:flex;gap:14px;padding:0 0 18px}
+.steps li:last-child{padding-bottom:0}
+.steps li::before{content:'';position:absolute;left:13px;top:28px;bottom:-2px;width:2px;background:var(--line)}
+.steps li:last-child::before{display:none}
+.steps li.done::before{background:var(--forest)}
+.sdot{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);background:var(--white);display:grid;place-items:center;z-index:1}
+.done .sdot{background:var(--forest);border-color:var(--forest)}
+.done .sdot svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.next .sdot{border-color:var(--gold);box-shadow:0 0 0 4px var(--gold-soft)}
+.st{font-weight:700;font-size:15px;padding-top:3px}
+.future .st{color:var(--muted);font-weight:500}
+.sh{font-size:13px;color:var(--muted);margin-top:2px}
+.sw{font-size:12px;color:var(--forest);margin-top:2px;font-weight:600}
+.avatar{flex:none;width:46px;height:46px;border-radius:50%;background:var(--forest-soft);color:var(--forest);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:19px}
+.rowf{display:flex;gap:12px;align-items:center}
+.btnrow{display:flex;gap:8px;margin-top:12px}
+.btnrow .btn{flex:1;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center}
+.card+.card,.card+.sect{margin-top:12px}
+.grid>.card{margin-top:0!important}
+.sect{margin-top:12px}
+.sect-t{font-family:var(--serif);font-size:19px;margin:20px 2px 8px;color:var(--forest-2)}
+.chip{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;background:var(--forest-soft);color:var(--forest)}
+.chip.gold{background:var(--gold-soft);color:var(--gold-ink)}
+.thread{display:flex;flex-direction:column;gap:8px;padding-bottom:6px}
+.bub{max-width:82%;padding:10px 13px;border-radius:18px;font-size:15px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
+.bub.me{align-self:flex-end;background:var(--forest);color:#fff;border-bottom-right-radius:6px}
+.bub.them{align-self:flex-start;background:var(--white);border:1px solid var(--line);border-bottom-left-radius:6px}
+.bub small{display:block;font-size:11px;opacity:.65;margin-top:3px}
+.chatwrap{min-height:100%;display:flex;flex-direction:column}.chatwrap .thread{flex:1}.main.chatmain{padding-bottom:0}
+.composer{position:sticky;bottom:0;margin:12px -16px 0;padding:10px 16px 10px;background:rgba(246,241,231,.96);border-top:1px solid var(--line);display:flex;gap:8px;align-items:flex-end}
+.composer textarea{min-height:44px;max-height:120px;resize:none;border-radius:22px;padding:11px 16px}
+.composer .btn{min-height:44px;padding:0 18px}
+.sugg{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.sugg button{border:1.5px solid var(--line);background:var(--white);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:600;color:var(--forest)}
+.code{font-family:ui-monospace,Menlo,monospace;font-size:22px;letter-spacing:.12em;font-weight:700;color:var(--forest-2)}
+.keybox.light{background:var(--forest-soft);color:var(--forest-2);font-size:13px}
+.banner{background:var(--gold-soft);color:var(--gold-ink);font-size:12.5px;font-weight:700;text-align:center;padding:7px 12px}
+.banner.off{background:var(--red-soft);color:var(--red)}
+.list2>div{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.list2>div:first-child{border-top:0}
+.muted{color:var(--muted)}
+.fine{font-size:12px;color:var(--muted);line-height:1.5}
+.link{background:none;border:0;color:var(--forest);font-weight:700;padding:6px 0;text-decoration:underline;font-size:14px}
+.link.red{color:var(--red)}
+.center{text-align:center}
+.gate{padding:calc(40px + env(safe-area-inset-top)) 22px 40px}
+.gate h1{font-size:30px;margin:8px 0}
+ol.how{padding-left:20px;margin:8px 0;font-size:14px}
+ol.how li{margin:6px 0}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<noscript><p style="padding:24px">WattWorth needs JavaScript to show your project tracker.</p></noscript>
+<script>
+(function () {
+  'use strict';
+  const $ = (s, r) => (r || document).querySelector(s);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ls = {
+    get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} },
+    del(k) { try { localStorage.removeItem(k); } catch (_) {} },
+  };
+  const TK = 'ww_portal_token', VK = 'ww_portal_view';
+  const root = $('#root');
+  const S = { tab: 'home', d: null, offline: false, prompt: null, deviceOn: false, toast: '', draft: '', busy: false };
+  const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const phone = (p) => String(p || '').replace(/^\+1(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3');
+  const money = (c) => '$' + (Number(c || 0) / 100).toLocaleString('en-US', { maximumFractionDigits: 0 });
+  const tz = () => (S.d && S.d.tz) || undefined;
+  const when = (iso) => new Date(iso).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: tz() });
+  const day = (iso) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: tz() });
+  const ago = (iso) => { const m = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000)); return m < 1 ? 'just now' : m < 60 ? m + 'm' : m < 1440 ? Math.round(m / 60) + 'h' : day(iso); };
+
+  /* ---------- toast ---------- */
+  let tt;
+  function toast(m) { S.toast = m; const t = $('#toast'); if (t) { t.textContent = m; t.className = 'toast on'; } clearTimeout(tt); tt = setTimeout(() => { const x = $('#toast'); if (x) x.className = 'toast'; }, 2600); }
+
+  /* ---------- demo mode (token "demo"): nothing leaves this device ---------- */
+  const DM = 'ww_portal_demo';
+  function demoState() {
+    try { const v = JSON.parse(ls.get(DM)); if (v) return v; } catch (_) {}
+    const now = Date.now(), h = 3600e3, iso = (x) => new Date(now - x * h).toISOString();
+    const v = { stage: 'appointment_set', appt: new Date(now + 26 * h).toISOString(), confirm: null, msgs: [
+      { id: 'm1', from: 'partner', body: 'Hi Dana, this is Pedro with Demo Solar. I will call you from (512) 555-0111 this afternoon.', at: iso(30), read: true },
+      { id: 'm2', from: 'customer', body: 'Sounds good. Thursday after 5 works best for me.', at: iso(29), read: true },
+      { id: 'm3', from: 'partner', body: 'Thursday at 5:30 it is. I will bring a sample proposal for your roof.', at: iso(2), read: false }] };
+    ls.set(DM, JSON.stringify(v)); return v;
+  }
+  function demoView() {
+    const d = demoState(), KEYS = ['received', 'contacted', 'appointment_set', 'proposal_sent', 'signed', 'installed'];
+    const idx = KEYS.indexOf(d.stage), now = Date.now(), h = 3600e3;
+    const L = ['Request received', 'Specialist reached out', 'Consultation scheduled', 'Proposal ready', 'Agreement signed', 'System installed'];
+    const H = ['We have your details and passed them to your solar specialist.', 'Your specialist introduces themselves and answers your first questions.', 'A time to go over your home, your bills and your options.', 'Your custom system design and pricing.', 'Paperwork, permits and scheduling begin.', 'Your system is on the roof and ready to go.'];
+    return { lead: { ref: 'WW-DEMO', first_name: 'Dana', city: 'Austin', state: 'TX', stage: d.stage, closed: false }, tz: 'America/Chicago',
+      steps: KEYS.map((k, i) => ({ key: k, label: L[i], hint: H[i], done: i <= idx, current: i === idx, at: i <= idx ? new Date(now - (60 - i * 14) * h).toISOString() : null })),
+      appointment_at: d.appt, specialist: { name: 'Pedro', company: 'Demo Solar Co.', phone: '+15125550111' },
+      messages: d.msgs, unread: d.msgs.filter((m) => m.from === 'partner' && !m.read).length,
+      confirm: { state: d.confirm, ask: !d.confirm }, push: { available: false, public_key: null, devices: 0 },
+      referral: { code: 'DANA7K2', friends: [{ name: 'Marcus B.', status: 'In progress', at: new Date(now - 90 * h).toISOString() }, { name: 'Priya S.', status: 'Submitted', at: new Date(now - 20 * h).toISOString() }], rewards: [{ label: 'Friend submitted', friend: 'Marcus B.', cents: 5000, status: 'paid' }, { label: 'Friend submitted', friend: 'Priya S.', cents: 5000, status: 'pending' }], paid_cents: 5000, pending_cents: 5000 } };
+  }
+  function demoApi(method, b) {
+    const d = demoState();
+    if (method === 'GET') return demoView();
+    if (b.action === 'message') { const id = 'm' + Date.now(); d.msgs.push({ id, from: 'customer', body: b.body, at: new Date().toISOString(), read: true }); ls.set(DM, JSON.stringify(d));
+      setTimeout(() => { const x = demoState(); x.msgs.push({ id: 'r' + Date.now(), from: 'partner', body: 'Got it. I will follow up shortly.', at: new Date().toISOString(), read: false }); ls.set(DM, JSON.stringify(x)); load(true); }, 3500); return demoView(); }
+    if (b.action === 'read') d.msgs.forEach((m) => (m.read = true));
+    if (b.action === 'confirm_contact') d.confirm = b.answer;
+    ls.set(DM, JSON.stringify(d)); return { ok: true };
+  }
+
+  /* ---------- api ---------- */
+  async function api(method, body) {
+    const t = ls.get(TK); if (!t) throw { status: 401 };
+    if (t === 'demo') return demoApi(method, body || {});
+    let res;
+    try { res = await fetch('/api/portal', { method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: body ? JSON.stringify(body) : undefined }); }
+    catch (_) { throw { status: 0, message: 'You appear to be offline.' }; }
+    if (res.status === 401) { ls.del(TK); ls.del(VK); throw { status: 401 }; }
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) throw { status: res.status, message: j.error || 'Something went wrong' };
+    return j;
+  }
+
+  /* ---------- icons ---------- */
+  const I = {
+    home: '<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>',
+    chat: '<svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.7A8 8 0 1 1 21 12z"/></svg>',
+    gift: '<svg viewBox="0 0 24 24"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-2.5 0-4-1-4-2.5S9.5 2 12 7zm0 0c2.5 0 4-1 4-2.5S14.5 2 12 7z"/></svg>',
+    user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>',
+    check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  };
+
+  /* ---------- views ---------- */
+  function gate(msg) {
+    root.innerHTML = `<div class="main gate"><div class="brand">Watt<i>Worth</i></div><h1>Find your solar tracker</h1>
+      <p class="muted">Open the private link we emailed you, or enter your email and we will send it again.</p>
+      <form id="gf" class="card" style="margin-top:16px"><label for="ge">Email address</label><input id="ge" type="email" inputmode="email" autocomplete="email" required placeholder="you@example.com">
+      <button class="btn" style="width:100%;margin-top:14px">Email me my link</button></form>
+      <p class="fine center" id="gm" style="margin-top:12px">${esc(msg || '')}</p>
+      <form id="pf" class="card" style="margin-top:14px"><label for="pl">Already have your link? Paste it here</label><input id="pl" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the link from your email"><button class="btn ghost" style="width:100%;margin-top:12px">Open my tracker</button></form>
+      <p class="fine center" style="margin-top:28px">New here? Get your free estimate at the WattWorth site and your tracker is created for you.</p></div><div id="toast" class="toast"></div>`;
+    $('#gf').onsubmit = async (e) => {
+      e.preventDefault(); const b = $('#gf button'); b.disabled = true;
+      try { await fetch('/api/magiclink', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('#ge').value.trim() }) }); } catch (_) {}
+      $('#gm').textContent = 'If that email is on a request, a new link is on its way. Check your inbox and spam folder.'; b.disabled = false;
+    };
+    pasteBind();
+  }
+
+  function pasteBind() {
+    const f = $('#pf'); if (!f) return;
+    f.onsubmit = (e) => { e.preventDefault(); const m = /(wc_[a-f0-9]{48})/.exec($('#pl').value); if (!m) { $('#gm').textContent = 'That does not look like a WattWorth tracker link. Copy the full link from your email.'; return; } ls.set(TK, m[1]); ls.del(VK); load(); };
+  }
+  function heroCopy(d) {
+    const who = d.specialist ? d.specialist.name : 'Your specialist', co = d.specialist && d.specialist.company ? ' at ' + d.specialist.company : '';
+    if (d.lead.closed) return ['This request is closed', 'If that is a surprise, send a message below and we will look into it.'];
+    return ({
+      received: ['We have your request', `${who}${co} will reach out soon. You can message them here any time.`],
+      contacted: [`${who} has reached out`, 'Next up: a consultation to go over your home and options.'],
+      appointment_set: ['Your consultation is booked', d.appointment_at ? 'It is on the calendar for ' + when(d.appointment_at) + '.' : 'Check below for the time.'],
+      proposal_sent: ['Your proposal is ready', `Review it with ${who}. Ask anything in Messages.`],
+      signed: ['You are signed up', 'Permits and installation scheduling come next.'],
+      installed: ['Your system is installed', 'Welcome to solar. Your tracker stays here for questions.'],
+    })[d.lead.stage] || ['Your solar project', 'Follow along here.'];
+  }
+
+  function installCard() {
+    if (isStandalone() || ls.get('ww_inst_dismiss') > Date.now()) return '';
+    const body = S.prompt
+      ? `<p class="muted" style="margin:6px 0 0;font-size:14px">One tap to add WattWorth to your home screen.</p><div class="btnrow"><button class="btn" id="inst">Install app</button><button class="btn ghost" id="instx">Not now</button></div>`
+      : isIOS()
+        ? `<ol class="how"><li>Tap the <b>Share</b> button in Safari</li><li>Choose <b>Add to Home Screen</b></li><li>Open WattWorth from your home screen</li></ol><p class="fine" style="margin:0">On iPhone, notifications work once the app is on your home screen.</p><div class="btnrow"><button class="btn ghost" id="instx">Got it</button></div>`
+        : `<p class="muted" style="margin:6px 0 0;font-size:14px">Open your browser menu and choose <b>Install app</b> or <b>Add to Home screen</b>.</p><div class="btnrow"><button class="btn ghost" id="instx">Got it</button></div>`;
+    return `<div class="card"><div class="eyebrow" style="color:var(--gold-ink)">Get the app</div><div style="font-weight:700;font-size:16px;margin-top:2px">Keep your tracker on your home screen</div>${body}</div>`;
+  }
+  const canPush = () => S.d && S.d.push && S.d.push.available && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  function notifCard(compact) {
+    if (!S.d.push || !S.d.push.available) return '';
+    if (isIOS() && !isStandalone()) return compact ? '' : `<div class="card"><div style="font-weight:700">Notifications</div><p class="fine" style="margin:6px 0 0">Add the app to your home screen first, then come back here to turn notifications on.</p></div>`;
+    if (!canPush()) return '';
+    const perm = Notification.permission;
+    if (perm === 'granted' && S.deviceOn) return compact ? '' : `<div class="card rowf" style="justify-content:space-between"><div><div style="font-weight:700">Notifications</div><div class="fine">Updates and messages reach this device.</div></div><span class="chip">On</span></div>`;
+    if (perm === 'denied') return compact ? '' : `<div class="card"><div style="font-weight:700">Notifications are blocked</div><p class="fine" style="margin:6px 0 0">Turn them on for WattWorth in your device or browser settings, then reopen the app.</p></div>`;
+    return `<div class="card"><div class="eyebrow" style="color:var(--gold-ink)">Stay in the loop</div><div style="font-weight:700;font-size:16px;margin-top:2px">Get a ping when something changes</div><p class="muted" style="margin:6px 0 0;font-size:14px">Status updates, new messages and appointment reminders. Nothing else.</p><div class="btnrow"><button class="btn" id="push">Turn on notifications</button></div></div>`;
+  }
+
+  function home() {
+    const d = S.d, [h1, p] = heroCopy(d), sp = d.specialist, nextIdx = d.steps.findIndex((s) => !s.done);
+    const stepsHtml = d.lead.closed ? '' : `<div class="sect-t">Your progress</div><div class="card"><ul class="steps">${d.steps.map((s, i) => `<li class="${s.done ? 'done' : 'future'} ${i === nextIdx ? 'next' : ''}"><div class="sdot">${s.done ? I.check : ''}</div><div><div class="st">${esc(s.label)}</div>${s.done && s.at ? `<div class="sw">${esc(day(s.at))}</div>` : ''}${i === nextIdx || (s.current && !s.done) ? `<div class="sh">${esc(s.hint)}</div>` : ''}</div></li>`).join('')}</ul></div>`;
+    const appt = d.appointment_at && !d.lead.closed ? `<div class="card rowf" style="margin-top:12px"><div class="avatar" style="border-radius:14px">${'&#128197;'}</div><div><div class="eyebrow" style="color:var(--gold-ink)">Consultation</div><div style="font-weight:700;font-size:16px">${esc(when(d.appointment_at))}</div><div class="fine">Need to change it? Message ${esc(sp ? sp.name : 'your specialist')}.</div></div></div>` : '';
+    const spec = sp ? `<div class="sect-t">Your solar specialist</div><div class="card"><div class="rowf"><div class="avatar">${esc(sp.name.slice(0, 1))}</div><div><div style="font-weight:700;font-size:17px">${esc(sp.name)}</div><div class="muted" style="font-size:14px">${esc(sp.company || '')}</div></div></div>
+      <p class="fine" style="margin:12px 0 0">${esc(sp.company || 'Their company')} designs and installs your system. WattWorth connects you and keeps this tracker.${sp.phone ? ' ' + esc(sp.name) + ' may call you from ' + esc(phone(sp.phone)) + '.' : ''}</p>
+      <div class="btnrow"><button class="btn" data-go="chat">Message ${esc(sp.name)}</button>${sp.phone ? `<a class="btn ghost" href="tel:${esc(sp.phone)}">Call</a>` : ''}</div></div>` : '';
+    const ask = d.confirm.ask ? `<div class="card" style="border-color:var(--gold)"><div style="font-weight:700">Has ${esc(sp ? sp.name : 'your specialist')} reached out to you?</div><p class="fine" style="margin:4px 0 0">This helps us make sure everyone is getting a quick, friendly response.</p><div class="btnrow"><button class="btn" data-conf="yes">Yes</button><button class="btn ghost" data-conf="no">Not yet</button></div></div>` : '';
+    return `<div class="card hero"><div class="eyebrow">${esc(d.lead.city || 'Your')} solar project</div><h1>${esc(h1)}</h1><p>${esc(p)}</p></div>
+      ${ask ? '<div class="sect"></div>' + ask : ''}${appt}${notifCard(true) ? '<div class="sect"></div>' + notifCard(true) : ''}${installCard() ? '<div class="sect"></div>' + installCard() : ''}${stepsHtml}${spec}`;
+  }
+
+  function chat() {
+    const d = S.d, sp = d.specialist, name = sp ? sp.name : 'your specialist';
+    const msgs = d.messages.map((m) => `<div class="bub ${m.from === 'customer' ? 'me' : 'them'}">${esc(m.body)}<small>${m.from === 'customer' ? 'You' : esc(name)} · ${esc(ago(m.at))}</small></div>`).join('');
+    return `<div class="chatwrap"><div class="thread" id="thread">${msgs || `<div class="card center"><div style="font-weight:700;font-size:16px">Say hello to ${esc(name)}</div><p class="muted" style="margin:6px 0 0;font-size:14px">Ask about timing, pricing, or what to have ready. ${esc(name)} replies by email or phone and you will see it here.</p></div>`}</div>
+      ${!d.messages.length ? `<div class="sugg">${['When can we talk?', 'What should I have ready?', 'Can you call me?'].map((t) => `<button data-sugg="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
+      ${sp && sp.phone ? `<p class="fine center" style="margin:8px 0 0">${esc(name)} may also call you from ${esc(phone(sp.phone))}.</p>` : ''}
+      <div class="composer"><textarea id="mtext" rows="1" maxlength="2000" placeholder="Message ${esc(name)}">${esc(S.draft)}</textarea><button class="btn" id="msend">Send</button></div></div>`;
+  }
+
+  function refer() {
+    const r = S.d.referral, link = location.origin + '/r/' + r.code, hasShare = !!navigator.share;
+    return `<div class="card hero"><div class="eyebrow">Refer a friend</div><h1>Share solar, earn rewards</h1><p>Send your link. You earn as your friends move forward. Rewards are subject to program terms.</p></div>
+      <div class="card" style="margin-top:12px"><div class="fine" style="margin-bottom:4px">Your referral code</div><div class="code">${esc(r.code || '')}</div><div class="keybox light">${esc(link)}</div>
+        <div class="btnrow"><button class="btn" id="rshare">${hasShare ? 'Share my link' : 'Copy my link'}</button>${hasShare ? '<button class="btn ghost" id="rcopy">Copy</button>' : ''}</div></div>
+      <div class="grid kpis" style="grid-template-columns:1fr 1fr;margin-top:12px"><div class="card kpi"><div class="n">${money(r.paid_cents)}</div><div class="l">Paid to you</div></div><div class="card kpi gold"><div class="n">${money(r.pending_cents)}</div><div class="l">Pending</div></div></div>
+      <div class="sect-t">Your friends</div><div class="card">${r.friends.length ? `<div class="list2">${r.friends.map((f) => `<div><span><b>${esc(f.name)}</b> <span class="muted">${esc(day(f.at))}</span></span><span class="chip ${f.status === 'Submitted' ? 'gold' : ''}">${esc(f.status)}</span></div>`).join('')}</div>` : '<p class="muted center" style="margin:6px 0">Nobody yet. Share your link to get started.</p>'}</div>
+      ${r.rewards.length ? `<div class="sect-t">Rewards</div><div class="card"><div class="list2">${r.rewards.map((w) => `<div><span>${esc(w.label)}<br><span class="muted" style="font-size:12px">${esc(w.friend)}</span></span><span><b>${money(w.cents)}</b> <span class="chip ${w.status === 'paid' ? '' : 'gold'}">${w.status === 'paid' ? 'Paid' : 'Pending'}</span></span></div>`).join('')}</div><p class="fine" style="margin:10px 0 0">We will contact you by email to arrange payment when a reward is due.</p></div>` : ''}`;
+  }
+
+  function you() {
+    const d = S.d, sp = d.specialist;
+    return `<div class="card"><div style="font-weight:700;font-size:17px">${esc(d.lead.first_name)}</div><div class="fine">Reference ${esc(d.lead.ref)}${d.lead.city ? ' · ' + esc(d.lead.city) + (d.lead.state ? ', ' + esc(d.lead.state) : '') : ''}</div></div>
+      <div class="sect"></div>${notifCard(false) || '<div class="card"><div style="font-weight:700">Notifications</div><p class="fine" style="margin:6px 0 0">Updates also arrive by email at the address you gave us.</p></div>'}
+      ${installCard() ? '<div class="sect"></div>' + installCard() : ''}
+      <div class="sect-t">Your data</div><div class="card"><p class="fine" style="margin:0 0 8px">${esc(sp && sp.company ? sp.company : 'Your solar specialist')} is your installer. WattWorth shares your request details with them so they can help you, and never sells your data.</p>
+        <button class="link" id="mail">Email me a fresh copy of my link</button><br>
+        <button class="link red" id="del">Delete my data</button><br>
+        <button class="link" id="out">Sign out on this device</button></div>
+      <p class="fine center" style="margin-top:18px">WattWorth connects homeowners with local solar installers. Estimates are not guarantees of savings.</p>`;
+  }
+
+  function shell() {
+    const d = S.d, tabs = [['home', 'Home', I.home], ['chat', 'Messages', I.chat], ['refer', 'Refer', I.gift], ['you', 'You', I.user]];
+    const body = S.tab === 'chat' ? chat() : S.tab === 'refer' ? refer() : S.tab === 'you' ? you() : home();
+    root.innerHTML = `${ls.get(TK) === 'demo' ? '<div class="banner">Demo mode: sample data stored on this device only</div>' : ''}${S.offline ? '<div class="banner off">You are offline. Showing your last update.</div>' : ''}
+      <div class="hdr"><div class="brand">Watt<i>Worth</i></div><div class="spacer"></div><span class="chip">${esc(d.lead.ref)}</span></div>
+      <div class="main ${S.tab === 'chat' ? 'chatmain' : ''}" id="main">${body}</div>
+      <nav class="tabbar" aria-label="Sections">${tabs.map(([k, l, ic]) => `<button data-tab="${k}" class="${S.tab === k ? 'on' : ''}" aria-label="${l}">${ic}<span>${l}</span>${k === 'chat' && d.unread ? `<span class="dot">${d.unread}</span>` : ''}</button>`).join('')}</nav><div id="toast" class="toast"></div>`;
+    bind();
+    if (S.tab === 'chat') { const m = $('#main'); m.scrollTop = m.scrollHeight; if (d.unread) markRead(); }
+    try { if (navigator.setAppBadge) (d.unread ? navigator.setAppBadge(d.unread) : navigator.clearAppBadge()); } catch (_) {}
+  }
+
+  /* ---------- actions ---------- */
+  async function markRead() { try { await api('POST', { action: 'read' }); S.d.unread = 0; S.d.messages.forEach((m) => (m.read = true)); const dot = $('.tabbar .dot'); if (dot) dot.remove(); try { navigator.clearAppBadge && navigator.clearAppBadge(); } catch (_) {} } catch (_) {} }
+  async function send(text) {
+    text = String(text || '').trim(); if (!text || S.busy) return; S.busy = true;
+    const btn = $('#msend'); if (btn) btn.disabled = true;
+    try { S.d = await api('POST', { action: 'message', body: text }); S.draft = ''; ls.set(VK, JSON.stringify(S.d)); shell(); }
+    catch (e) { toast(e.status === 0 ? 'You are offline. Try again when you have a connection.' : e.message || 'Could not send'); if (btn) btn.disabled = false; }
+    S.busy = false;
+  }
+  const b64 = (s) => { const p = '='.repeat((4 - (s.length % 4)) % 4), r = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from([...r].map((c) => c.charCodeAt(0))); };
+  async function enablePush() {
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { shell(); return; }
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(S.d.push.public_key) });
+      await api('POST', { action: 'subscribe', subscription: sub.toJSON() });
+      S.deviceOn = true; toast('Notifications are on'); shell();
+    } catch (e) { toast('Could not turn on notifications on this device.'); }
+  }
+  async function checkDevice() {
+    try { if ('serviceWorker' in navigator && 'PushManager' in window) { const reg = await navigator.serviceWorker.ready; S.deviceOn = !!(await reg.pushManager.getSubscription()) && Notification.permission === 'granted'; } } catch (_) {}
+  }
+  function bind() {
+    document.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => { S.tab = b.dataset.tab; shell(); }));
+    document.querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => { S.tab = b.dataset.go; shell(); }));
+    document.querySelectorAll('[data-conf]').forEach((b) => (b.onclick = async () => { try { await api('POST', { action: 'confirm_contact', answer: b.dataset.conf }); S.d.confirm = { state: b.dataset.conf, ask: false }; toast(b.dataset.conf === 'yes' ? 'Thanks for letting us know' : 'Thanks. We will follow up.'); shell(); } catch (e) { toast(e.message || 'Try again'); } }));
+    const inst = $('#inst'); if (inst) inst.onclick = async () => { const p = S.prompt; S.prompt = null; if (p) { p.prompt(); await p.userChoice.catch(() => {}); } shell(); };
+    const instx = $('#instx'); if (instx) instx.onclick = () => { ls.set('ww_inst_dismiss', String(Date.now() + 7 * 864e5)); shell(); };
+    const push = $('#push'); if (push) push.onclick = enablePush;
+    const ta = $('#mtext'); if (ta) {
+      const fit = () => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; };
+      ta.oninput = () => { S.draft = ta.value; fit(); }; fit();
+      ta.onkeydown = (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(ta.value); } };
+    }
+    const ms = $('#msend'); if (ms) ms.onclick = () => send($('#mtext').value);
+    document.querySelectorAll('[data-sugg]').forEach((b) => (b.onclick = () => send(b.dataset.sugg)));
+    const link = () => location.origin + '/r/' + S.d.referral.code;
+    const rs = $('#rshare'); if (rs) rs.onclick = async () => { const msg = 'Check your solar savings for free with WattWorth: ' + link(); try { if (navigator.share) await navigator.share({ title: 'WattWorth', text: 'Check your solar savings for free', url: link() }); else { await navigator.clipboard.writeText(link()); toast('Link copied'); } } catch (_) {} };
+    const rc = $('#rcopy'); if (rc) rc.onclick = async () => { try { await navigator.clipboard.writeText(link()); toast('Link copied'); } catch (_) { toast(link()); } };
+    const ml = $('#mail'); if (ml) ml.onclick = async () => { toast('If we have your email, a new link is on its way.'); };
+    const dl = $('#del'); if (dl) dl.onclick = async () => { if (!confirm('Delete your data? Your tracker will stop working and your request will be removed.')) return; try { await api('POST', { action: 'delete_request' }); ls.del(TK); ls.del(VK); gate('Your deletion request was received.'); } catch (e) { toast(e.message || 'Try again'); } };
+    const out = $('#out'); if (out) out.onclick = () => { ls.del(TK); ls.del(VK); S.d = null; gate('You are signed out on this device.'); };
+  }
+
+  /* ---------- load ---------- */
+  async function load(quiet) {
+    if (!ls.get(TK)) return gate();
+    try {
+      const prev = S.d, typing = $('#mtext') && document.activeElement === $('#mtext');
+      S.d = await api('GET'); S.offline = false; ls.set(VK, JSON.stringify(S.d));
+      await checkDevice();
+      if (quiet && typing && S.tab === 'chat' && prev && prev.messages.length === S.d.messages.length) return;   // do not disturb typing
+      shell();
+    } catch (e) {
+      if (e.status === 401) return gate('That link is no longer valid. Enter your email and we will send a new one.');
+      if (!S.d) { try { S.d = JSON.parse(ls.get(VK)); } catch (_) {} }
+      if (S.d) { S.offline = true; shell(); } else root.innerHTML = '<div class="main gate"><h1>No connection</h1><p class="muted">Connect to the internet and try again.</p><button class="btn" onclick="location.reload()">Retry</button></div>';
+    }
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); S.prompt = e; if (S.d) shell(); });
+  window.addEventListener('appinstalled', () => { S.prompt = null; toast('Installed. Open it from your home screen.'); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) load(true); });
+  setInterval(() => { if (!document.hidden && ls.get(TK) && ls.get(TK) !== 'demo') load(true); }, 20000);
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/portal/sw.js', { scope: '/portal/' }).catch(() => {});
+    navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.type === 'refresh') load(true); });
+  }
+
+  // The private link carries the token after "#", so it never reaches server logs or referrers.
+  const m = /[#&]t=(wc_[a-f0-9]{48}|demo)/.exec(location.hash);
+  if (m) { ls.set(TK, m[1]); ls.del(VK); history.replaceState(null, '', location.pathname); }
+  S.tab = new URLSearchParams(location.search).get('tab') || 'home';
+  load();
+})();
+</script>
+</body>
+</html>

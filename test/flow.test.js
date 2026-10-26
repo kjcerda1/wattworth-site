@@ -69,20 +69,25 @@ test('intake validates consent, phone, and honeypot', async () => {
 });
 
 test('intake stores lead + consent, sends email/SMS/webhook, logs deliveries', async () => {
+  // a real earlier customer who owns the referral code (kept out of the counts below)
+  await require('../lib/db').insert('leads', { ref: 'WW-JANE00', first_name: 'Jane', last_name: 'M', phone: '+15125559999', stage: 'received', own_code: 'JANE50', portal_token: 'wc_' + 'a'.repeat(48), duplicate_of: 'seed', consent: true, consent_text: 'seed' });
   calls.length = 0;
   const r = await call('../api/leads', mk('POST', { body: lead({ referrer_code: 'JANE50' }), headers: { 'user-agent': 'UA', origin: 'https://funnel.example.test' } }));
   assert.equal(r.code, 201);
   assert.match(r.payload.ref, /^WW-[A-Z0-9]{6}$/);
   assert.equal(r.headers['Access-Control-Allow-Origin'], 'https://funnel.example.test');
-  assert.deepEqual(Object.keys(r.payload).sort(), ['ok', 'ref']); // nothing internal leaks to the browser
-  assert.equal(calls.length, 3);
+  assert.deepEqual(Object.keys(r.payload).sort(), ['existing_tracker', 'ok', 'own_code', 'portal_token', 'ref']); // only the customer's own token and code
+  assert.match(r.payload.portal_token, /^wc_[a-f0-9]{48}$/);
+  assert.equal(calls.length, 4); // email + sms + webhook to the partner, plus the customer's tracker link
   const hook = calls.find((c) => c.url.includes('hooks.partner'));
   assert.ok(hook.opts.headers['X-WattWorth-Signature'].startsWith('sha256='));
   const admin = (await call('../api/admin', mk('GET', { headers: A }))).payload;
-  assert.equal(admin.leads.length, 1);
-  assert.equal(admin.leads[0].phone, '+15125550142');
-  assert.equal(admin.leads[0].state, 'TX');
-  assert.equal(admin.leads[0].consent_ip, undefined);
+  const L0 = admin.leads.find((l) => !l.duplicate_of);
+  assert.equal(admin.leads.filter((l) => !l.duplicate_of).length, 1);
+  assert.equal(L0.portal_token, undefined); // admin never sees customer tokens
+  assert.equal(L0.phone, '+15125550142');
+  assert.equal(L0.state, 'TX');
+  assert.equal(L0.consent_ip, undefined);
   assert.deepEqual(admin.deliveries.map((d) => d.status).sort(), ['sent', 'sent', 'sent']);
   assert.equal(admin.payouts.length, 1); // $50 on form submission
   assert.equal(admin.payouts[0].amount_cents, 5000);

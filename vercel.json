@@ -15,12 +15,20 @@
       "destination": "/wattworthsolar_platform.html"
     },
     {
+      "source": "/r/:code",
+      "destination": "/wattworthsolar_platform.html"
+    },
+    {
       "source": "/partner",
       "destination": "/partner/index.html"
     },
     {
       "source": "/admin",
       "destination": "/admin/index.html"
+    },
+    {
+      "source": "/portal",
+      "destination": "/portal/index.html"
     }
   ],
   "headers": [
@@ -34,6 +42,41 @@
         {
           "key": "Referrer-Policy",
           "value": "no-referrer"
+        }
+      ]
+    },
+    {
+      "source": "/portal(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    },
+    {
+      "source": "/portal/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/portal/"
+        }
+      ]
+    },
+    {
+      "source": "/portal/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
         }
       ]
     }

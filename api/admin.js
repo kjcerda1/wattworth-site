@@ -1,6 +1,6 @@
 // Owner dashboard API (auth: Bearer ADMIN_TOKEN)
 //   GET  /api/admin                 -> everything the dashboard renders
-//   POST /api/admin {action,...}    -> resend | fee_paid | payout_paid | set_tiers | create_partner | update_partner | rotate_key | admin_update | record_payment
+//   POST /api/admin {action,...}    -> resend | fee_paid | payout_paid | set_tiers | create_partner | update_partner | rotate_key | admin_update | record_payment | erase_lead
 const db = require('../lib/db');
 const W = require('../lib/shared');
 const { route, body, deny } = require('../lib/http');
@@ -8,7 +8,7 @@ const { isAdmin, newKey, sha } = require('../lib/auth');
 const { retryDelivery, applyUpdate, resolveDispute, event, HttpError, clean, normPhone } = require('../lib/leads');
 const { emailReady, smsReady } = require('../lib/mail');
 
-const partnerView = (p) => ({ fee_mode: p.fee_mode === 'flat' ? 'flat' : 'split', split_percent: p.split_percent == null ? null : Number(p.split_percent), ads_paid_by: p.ads_paid_by || null, id: p.id, name: p.name, company: p.company, email: p.email, phone: p.phone, webhook_url: p.webhook_url, has_webhook_secret: !!p.webhook_secret, is_default: p.is_default, active: p.active, created_at: p.created_at });
+const partnerView = (p) => ({ public_phone: p.public_phone || null, fee_mode: p.fee_mode === 'flat' ? 'flat' : 'split', split_percent: p.split_percent == null ? null : Number(p.split_percent), ads_paid_by: p.ads_paid_by || null, id: p.id, name: p.name, company: p.company, email: p.email, phone: p.phone, webhook_url: p.webhook_url, has_webhook_secret: !!p.webhook_secret, is_default: p.is_default, active: p.active, created_at: p.created_at });
 
 function pctOrNull(v) {
   if (v === '' || v === null || v === undefined) return null;
@@ -21,7 +21,7 @@ module.exports = route(async (req, res) => {
   if (!isAdmin(req)) return deny(res);
 
   if (req.method === 'GET') {
-    const [leads, deliveries, payouts, tiers, partners, events, ad_spend] = await Promise.all([
+    const [leads, deliveries, payouts, tiers, partners, events, ad_spend, messages] = await Promise.all([
       db.select('leads', { order: ['created_at', 'desc'], limit: 2000 }),
       db.select('deliveries', { order: ['created_at', 'desc'], limit: 2000 }),
       db.select('referral_payouts', { order: ['created_at', 'desc'], limit: 2000 }),
@@ -29,8 +29,9 @@ module.exports = route(async (req, res) => {
       db.select('partners', { order: ['created_at', 'asc'] }),
       db.select('lead_events', { order: ['created_at', 'desc'], limit: 300 }),
       db.select('ad_spend', { order: ['month', 'desc'], limit: 500 }),
+      db.select('messages', { limit: 20000 }),
     ]);
-    const summary = W.buildSummary({ leads, deliveries, payouts, tiers, ad_spend, partners });
+    const summary = W.buildSummary({ leads, deliveries, payouts, tiers, ad_spend, partners, messages });
     const pn = Object.fromEntries(partners.map((p) => [p.id, p.name]));
     const pmap = Object.fromEntries(partners.map((p) => [p.id, p]));
     const ref = Object.fromEntries(leads.map((l) => [l.id, l]));
@@ -39,7 +40,7 @@ module.exports = route(async (req, res) => {
       setup: { database: db.mode() === 'supabase', email: emailReady(), sms: smsReady(), ownerAlerts: !!(process.env.OWNER_EMAIL || process.env.OWNER_PHONE), cron: !!process.env.CRON_SECRET, appUrl: !!process.env.APP_URL },
       config: { feeTrigger: W.FEE_TRIGGER, stages: W.STAGES },
       ...summary,
-      leads: leads.map((l) => ({ ...l, consent_ip: undefined, consent_user_agent: undefined, partner_name: pn[l.partner_id] || null, fee: l.fee || W.feeFor(l, tiers, undefined, pmap[l.partner_id]) })),
+      leads: leads.map((l) => ({ ...l, portal_token: undefined, consent_ip: undefined, consent_user_agent: undefined, partner_name: pn[l.partner_id] || null, fee: l.fee || W.feeFor(l, tiers, undefined, pmap[l.partner_id]) })),
       deliveries: deliveries.map((d) => ({ ...d, lead_ref: ref[d.lead_id] && ref[d.lead_id].ref, lead_name: ref[d.lead_id] && ref[d.lead_id].first_name, partner_name: pn[d.partner_id] })),
       payouts: payouts.map((p) => ({ ...p, lead_ref: ref[p.lead_id] && ref[p.lead_id].ref, stage: ref[p.lead_id] && ref[p.lead_id].stage })),
       tiers, ad_spend, partners: partners.map(partnerView),
@@ -109,6 +110,7 @@ module.exports = route(async (req, res) => {
       const p = await db.insert('partners', {
         name: clean(b.name, 80) || 'Partner', company: clean(b.company, 120), email: clean(b.email, 200), phone: b.phone ? normPhone(b.phone) : null,
         webhook_url: clean(b.webhook_url, 500), webhook_secret: b.webhook_url ? newKey().slice(3) : null,
+        public_phone: b.public_phone ? normPhone(b.public_phone) : null,
         fee_mode: b.fee_mode === 'flat' ? 'flat' : 'split', split_percent: pctOrNull(b.split_percent), ads_paid_by: ['partner', 'owner'].includes(b.ads_paid_by) ? b.ads_paid_by : null,
         key_hash: sha(key), is_default: all.length === 0 || b.is_default === true, active: true,
       });
@@ -123,6 +125,7 @@ module.exports = route(async (req, res) => {
       ['name', 'company', 'email', 'webhook_url'].forEach((k) => { if (b[k] !== undefined) set[k] = clean(b[k], 500); });
       if (b.phone !== undefined) set.phone = b.phone ? normPhone(b.phone) : null;
       if (b.active !== undefined) set.active = !!b.active;
+      if (b.public_phone !== undefined) set.public_phone = b.public_phone ? normPhone(b.public_phone) : null;
       if (b.fee_mode !== undefined) set.fee_mode = b.fee_mode === 'flat' ? 'flat' : 'split';
       if (b.split_percent !== undefined) set.split_percent = pctOrNull(b.split_percent);
       if (b.ads_paid_by !== undefined) set.ads_paid_by = ['partner', 'owner'].includes(b.ads_paid_by) ? b.ads_paid_by : null;
@@ -149,6 +152,14 @@ module.exports = route(async (req, res) => {
     }
     case 'delete_spend': {
       await db.remove('ad_spend', { id: b.id });
+      return res.json({ ok: true });
+    }
+    case 'erase_lead': {
+      // Privacy request: remove the person and everything attached to them
+      const lead = await db.get('leads', { id: b.lead_id });
+      if (!lead) throw new HttpError(404, 'lead not found');
+      for (const t of ['messages', 'push_subscriptions', 'deliveries', 'lead_events', 'referral_payouts']) await db.remove(t, { lead_id: lead.id });
+      await db.remove('leads', { id: lead.id });
       return res.json({ ok: true });
     }
     case 'admin_update': {

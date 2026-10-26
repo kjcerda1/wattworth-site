@@ -92,8 +92,9 @@
       <div class="meta">${esc([l.city, l.state].filter(Boolean).join(', '))}${l.monthly_bill ? ' · ' + usd(l.monthly_bill) + '/mo bill' : ''}${l.system_kw ? ' · ' + l.system_kw + ' kW' : ''}</div>
       <div class="ref">${esc(l.ref)} · ${ago(l.created_at)}</div>
       ${waiting(l) ? `<span class="flag">Waiting ${ago(l.created_at).replace(' ago', '')}</span>` : ''}</div>
-    <span class="badge ${l.stage}">${stageText(l)}</span></button>`;
+    <span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="badge ${l.stage}">${stageText(l)}</span>${l.unread ? `<span class="badge" style="background:var(--red);color:#fff">${l.unread} new message${l.unread > 1 ? 's' : ''}</span>` : ''}</span></button>`;
 
+  const toLocalInput = (iso) => { const d = new Date(iso), p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
   function openSheet(id) {
     const l = state.data.leads.find((x) => x.id === id); if (!l) return;
     state.open = id; state.draftStage = l.stage; state.openStage = l.stage; state.shownReasonFor = l.stage;
@@ -102,6 +103,13 @@
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h2 style="margin:0;font-size:26px">${esc(name(l))}</h2><div class="ref note">${esc(l.ref)} · received ${when(l.created_at)}</div></div><button class="btn ghost sm" id="close">Close</button></div>
       <div class="actions"><a href="tel:${esc(l.phone)}">Call</a><a href="sms:${esc(l.phone)}">Text</a>${l.email ? `<a href="mailto:${esc(l.email)}">Email</a>` : '<a style="opacity:.4;pointer-events:none">Email</a>'}</div>
       <div class="card" style="font-size:14px"><b>${esc(phone(l.phone))}</b>${l.email ? '<br>' + esc(l.email) : ''}${addr ? '<br><span class="note">' + esc(addr) + '</span>' : ''}${l.monthly_bill ? '<br><span class="note">Electric bill ' + usd(l.monthly_bill) + '/mo' + (l.homeowner === false ? ' · renter' : l.homeowner ? ' · homeowner' : '') + '</span>' : ''}${l.notes ? '<br><span class="note">“' + esc(l.notes) + '”</span>' : ''}</div>
+      <label>Messages with ${esc(l.first_name)}</label>
+      <div class="card" style="padding:12px"><div id="thr" style="max-height:200px;overflow:auto;display:flex;flex-direction:column;gap:6px">${(l.messages || []).map((m) => `<div style="align-self:${m.from === 'customer' ? 'flex-start' : 'flex-end'};max-width:86%;padding:8px 12px;border-radius:14px;font-size:14px;white-space:pre-wrap;word-wrap:break-word;${m.from === 'customer' ? 'background:var(--cream-2)' : 'background:var(--forest);color:#fff'}">${esc(m.body)}<div style="font-size:11px;opacity:.65;margin-top:2px">${m.from === 'customer' ? esc(l.first_name) : 'You' + (m.via === 'email' ? ' (email)' : '')} · ${ago(m.at)}</div></div>`).join('') || '<div class="note">No messages yet. They can write to you from their app, and you can reply here or by email.</div>'}</div>
+        <textarea id="rep" rows="2" maxlength="2000" placeholder="Reply to ${esc(l.first_name)} (they get a notification)" style="margin-top:10px"></textarea>
+        <button class="btn sm" id="repbtn" style="margin-top:8px">Send reply</button></div>
+      <label for="appt">Consultation time</label>
+      <input id="appt" type="datetime-local" value="${l.appointment_at ? toLocalInput(l.appointment_at) : ''}">
+      <div class="note" style="margin-top:6px">Setting this notifies the customer and sends them reminders.</div>
       <label>Deal status</label>
       <div class="stages" id="stages">${W.STAGES.map((s) => `<button class="stage ${s.key} ${s.key === l.stage ? 'on' : ''}" data-s="${s.key}">${s.label}</button>`).join('')}</div>
       <div id="lostbox" ${['lost', 'invalid'].includes(l.stage) ? '' : 'hidden'}><label for="lr" id="lrl"></label><input id="lr" maxlength="300" value="${esc(l.stage === 'invalid' ? l.invalid_reason || '' : l.lost_reason || '')}"><div class="note" id="lrn" style="margin-top:6px"></div></div>
@@ -118,6 +126,14 @@
       ${l.history && l.history.length ? `<h3 style="margin:24px 0 10px;font-size:18px">History</h3><ul class="tl">${l.history.map((h) => `<li>${h.type === 'stage' ? `Moved <b>${esc(W.LABEL[h.from] || h.from)}</b> to <b>${esc(W.LABEL[h.to] || h.to)}</b>` : h.type === 'size' ? `System size set to <b>${esc(h.to)} kW</b>` : h.type === 'value' ? `Contract value set to <b>${usd(h.to)}</b>` : h.type === 'commission' ? `Commission set to <b>${usd(h.to)}</b>` : h.type === 'created' ? 'Lead received' : h.type === 'dispute' ? `Kacy ${esc(h.to)} the invalid flag` : 'Note'}${h.note && h.type !== 'created' ? `<br>“${esc(h.note)}”` : ''}<div class="t">${when(h.at)}${h.actor && h.actor.startsWith('admin') ? ' · Kacy' : ''}</div></li>`).join('')}</ul>` : ''}`;
     sheet.classList.add('on'); scrim.classList.add('on');
     $('#close').onclick = closeSheet;
+    const thr = $('#thr'); if (thr) thr.scrollTop = thr.scrollHeight;
+    if (l.unread) api('partner', '/api/partner', { method: 'PATCH', body: JSON.stringify({ lead_id: l.id, read: true }) }).then(() => { l.unread = 0; (l.messages || []).forEach((m) => (m.unread = false)); }).catch(() => {});
+    $('#repbtn').onclick = async () => {
+      const t = $('#rep').value.trim(); if (!t) return toast('Write a reply first', true);
+      const b = $('#repbtn'); b.disabled = true;
+      try { await api('partner', '/api/partner', { method: 'PATCH', body: JSON.stringify({ lead_id: l.id, message: t }) }); toast('Sent. They will be notified.'); await load(true); const x = state.data.leads.find((y) => y.id === l.id); if (x) openSheet(x.id); }
+      catch (e) { toast(e.message || 'Could not send', true); b.disabled = false; }
+    };
     sheet.querySelectorAll('[data-s]').forEach((b) => (b.onclick = () => {
       state.draftStage = b.dataset.s;
       sheet.querySelectorAll('[data-s]').forEach((x) => x.classList.toggle('on', x === b));
@@ -132,7 +148,7 @@
     $('#cm').oninput = cmCalc; cmCalc();
     $('#save').onclick = async () => {
       const b = $('#save'); b.disabled = true;
-      const body = { lead_id: l.id, system_kw: $('#kw').value.trim(), contract_value: $('#cv').value.trim(), commission_dollars: $('#cm').value.trim(), note: $('#nt').value.trim() };
+      const body = { lead_id: l.id, system_kw: $('#kw').value.trim(), contract_value: $('#cv').value.trim(), appointment_at: $('#appt').value ? new Date($('#appt').value).toISOString() : '', commission_dollars: $('#cm').value.trim(), note: $('#nt').value.trim() };
       if (state.draftStage !== l.stage) body.stage = state.draftStage;
       if (state.draftStage === 'lost') body.lost_reason = $('#lr').value.trim();
       if (state.draftStage === 'invalid') body.invalid_reason = $('#lr').value.trim();

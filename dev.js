@@ -5,11 +5,12 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
 
 function shim(req, res, body) {
   const u = new URL(req.url, 'http://x');
   req.query = Object.fromEntries(u.searchParams);
+  req.rawBody = body || '';
   try { req.body = body ? JSON.parse(body) : {}; } catch (_) { req.body = {}; }
   res.status = (c) => { res.statusCode = c; return res; };
   res.json = (o) => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(o)); };
@@ -28,7 +29,8 @@ http.createServer((req, res) => {
     return;
   }
   let p = u.pathname.replace(/\/$/, '') || '/wattworthsolar_platform.html';
-  if (p === '/partner' || p === '/admin') p += '/index.html';
+  if (p === '/partner' || p === '/admin' || p === '/portal') p += '/index.html';
+  if (/^\/r\/[A-Za-z0-9]+$/.test(p)) p = '/wattworthsolar_platform.html';
   if (p.endsWith('/')) p += 'index.html';
   const f = path.join(__dirname, p);
   if (!f.startsWith(__dirname) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.statusCode = 404; return res.end('Not found'); }
