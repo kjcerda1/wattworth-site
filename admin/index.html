@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F6F1E7">
+<title>WattWorth Owner Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/ww.css">
+</head>
+<body>
+<div id="demo" class="demo" hidden>Demo mode: sample data stored on this device only</div>
+<header class="top"><div class="wrap">
+  <div><div class="brand">Watt<i>Worth</i></div><div class="sub">Owner dashboard</div></div>
+  <div class="spacer"></div>
+  <button class="btn ghost sm" id="csv" hidden>Export CSV</button>
+  <button class="btn ghost sm" id="out" hidden>Sign out</button>
+</div></header>
+<main class="wrap" id="app"></main>
+
+<script src="/lib/shared.js"></script>
+<script src="/assets/ww.js"></script>
+<script>
+(function () {
+  const { $, esc, ago, date, when, name, phone, usd, toast, api, ls, W } = App;
+  const S = { d: null, tab: 'overview', filter: 'all', q: '', secret: null, stMonth: new Date().toISOString().slice(0, 7) };
+  const app = $('#app');
+  const act = (body) => api('admin', '/api/admin', { method: 'POST', body: JSON.stringify(body) });
+  const hours = (h) => (h == null ? 'n/a' : h < 1 ? Math.round(h * 60) + ' min' : h < 48 ? h.toFixed(1) + ' hrs' : Math.round(h / 24) + ' days');
+
+  function signIn(msg) {
+    $('#out').hidden = $('#csv').hidden = true; $('#demo').hidden = true;
+    app.innerHTML = `<div class="card stack" style="max-width:460px;margin:48px auto 0"><h1 style="font-size:28px">Owner sign in</h1>
+      <p class="note" style="margin:0">Use your ADMIN_TOKEN from Vercel.</p>
+      <div><label for="k">Admin token</label><input id="k" type="password" autocomplete="off" spellcheck="false"></div>
+      ${msg ? `<div class="flag red">${esc(msg)}</div>` : ''}
+      <button class="btn" id="go" style="width:100%">Open dashboard</button>
+      <button class="btn ghost" id="try" style="width:100%">Preview with sample data</button></div>`;
+    const go = (k) => { ls.set('ww_admin_token', k); load(); };
+    $('#go').onclick = () => { const v = $('#k').value.trim(); if (v) go(v); };
+    $('#k').onkeydown = (e) => { if (e.key === 'Enter') $('#go').click(); };
+    $('#try').onclick = () => go('demo');
+  }
+
+  async function load(silent) {
+    try {
+      S.d = await api('admin', '/api/admin');
+      $('#out').hidden = $('#csv').hidden = false; $('#demo').hidden = ls.get('ww_admin_token') !== 'demo';
+      render();
+    } catch (e) {
+      if (e.status === 401) return signIn(silent ? 'Session ended.' : (S.d ? '' : ''));
+      if (!silent) toast(e.message || 'Could not load', true);
+      if (!S.d) app.innerHTML = `<div class="empty">Couldn't load the dashboard.<br><br><button class="btn" onclick="location.reload()">Try again</button></div>`;
+    }
+  }
+
+  const TABS = [['overview', 'Overview'], ['deals', 'Leads'], ['deliveries', 'Sent'], ['money', 'Commission'], ['partners', 'Partners'], ['settings', 'Settings']];
+  function render() {
+    const d = S.d;
+    app.innerHTML = `<div class="tabs" role="tablist">${TABS.map(([k, l]) => `<button class="tab ${S.tab === k ? 'on' : ''}" data-t="${k}">${l}${k === 'deliveries' && d.kpis.deliveryFailures ? ' <span class="badge failed">' + d.kpis.deliveryFailures + '</span>' : ''}</button>`).join('')}</div><div id="pane">${views[S.tab]()}</div>`;
+    app.querySelectorAll('[data-t]').forEach((b) => (b.onclick = () => { S.tab = b.dataset.t; render(); window.scrollTo(0, 0); }));
+    (binders[S.tab] || (() => {}))();
+  }
+
+  /* ---------- Overview ---------- */
+  const kpi = (n, l, cls) => `<div class="card kpi ${cls || ''}"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+  const views = {};
+  const binders = {};
+
+  views.overview = () => {
+    const d = S.d, k = d.kpis, ac = d.acquisition, max = Math.max(1, ...d.funnel.map((f) => f.count));
+    const wmax = Math.max(1, ...ac.weeks.map((w) => w.count));
+    const heads = [];
+    if (k.deliveryFailures) heads.push(['Some leads did not reach your partner. Failed sends retry automatically.', k.deliveryFailures, 'deliveries', 'failed']);
+    if (k.unreported) heads.push(['Leads over a week old with no status from your partner', k.unreported, 'deals', 'skipped']);
+    if (k.feesNeedingSetup) heads.push(['Signed deals waiting on details from your partner (commission amount or your share %) before your cut can be calculated', k.feesNeedingSetup, 'money', 'skipped']);
+    if (k.erasureRequests) heads.push(['Customers asked to have their data deleted. Review and erase in Deals.', k.erasureRequests, 'deals', 'failed']);
+    if (k.contactConfirmedNo) heads.push(['Customers say they have not been reached by your partner', k.contactConfirmedNo, 'deals', 'failed']);
+    if (k.messagesUnanswered) heads.push(['Customer messages still waiting on a reply from your partner' + (k.replyMedianHours != null ? ' (typical wait ' + hours(k.replyMedianHours) + ')' : ''), k.messagesUnanswered, 'deals', 'skipped']);
+    const pst = d.partnerStats || [];
+    return `<div class="grid kpis">
+      ${kpi(k.thisMonth, 'Leads this month')}${kpi(k.deliveryRate + '%', 'Sent to your partner')}${kpi(k.contactRate + '%', 'Contacted by your partner')}
+      ${kpi(k.inPlace, 'Deals in place (signed or installed)', 'gold')}${kpi(W.money(k.feesOwedCents), 'Commission owed to you')}</div>
+      <h2>Heads up</h2>
+      <div class="list">${heads.length ? heads.map(([t, n, tab, c]) => `<button class="item" data-go="${tab}" style="width:100%;text-align:left;cursor:pointer"><div class="l"><div class="t1">${t}</div></div><span class="badge ${c}">${n}</span></button>`).join('') : '<div class="item"><div class="l"><div class="t1">Everything is flowing</div><div class="t2">Every lead reached your partner and nothing needs you.</div></div><span class="badge paid">Good</span></div>'}</div>
+      <h2>Leads per week</h2><div class="card"><div class="wk" role="img" aria-label="Leads per week, last 8 weeks">${ac.weeks.map((w, i) => `<div class="${i === ac.weeks.length - 1 ? 'now' : ''}"><b>${w.count}</b><i style="height:${Math.max(3, (w.count / wmax) * 90)}px"></i><span>${new Date(w.start + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', timeZone: 'UTC' })}</span></div>`).join('')}</div><p class="note" style="margin:10px 0 0">Weeks start Monday. The last bar is this week so far.${ac.avgBill ? ' Average electric bill: ' + usd(ac.avgBill) + '/mo.' : ''}</p></div>
+      <div class="grid two" style="margin-top:12px">
+        <div class="card"><div class="t1" style="font-weight:700;margin-bottom:6px">Where leads come from</div>${ac.sources.length ? `<table style="width:100%;border-collapse:collapse;font-size:14px"><tr style="text-align:left;color:var(--muted)"><th style="padding:4px 0">Source</th><th>Leads</th><th>Signed</th></tr>${ac.sources.map((r) => `<tr style="border-top:1px solid var(--line)"><td style="padding:8px 0;word-break:break-word">${esc(r.name)}</td><td>${r.count}</td><td>${r.signed}</td></tr>`).join('')}</table>` : '<div class="note">Appears once leads arrive.</div>'}</div>
+        <div class="card"><div class="t1" style="font-weight:700;margin-bottom:6px">Top cities</div>${ac.cities.length ? `<table style="width:100%;border-collapse:collapse;font-size:14px"><tr style="text-align:left;color:var(--muted)"><th style="padding:4px 0">City</th><th>Leads</th><th>Signed</th></tr>${ac.cities.map((r) => `<tr style="border-top:1px solid var(--line)"><td style="padding:8px 0">${esc(r.name)}</td><td>${r.count}</td><td>${r.signed}</td></tr>`).join('')}</table>` : '<div class="note">Appears once leads arrive.</div>'}</div></div>
+      <h2>What happened to them</h2><div class="card">${d.funnel.map((f) => `<div class="bar"><i style="width:${(f.count / max) * 100}%"></i><span>${f.label}</span><b>${f.count}</b></div>`).join('')}<p class="note" style="margin:8px 0 0">As reported by your partner. Each bar counts every lead that reached that stage or later. ${k.lost} lost${k.invalid ? ', ' + k.invalid + ' invalid' : ''}.${k.medianHoursToContact != null ? ' Median time to first contact: ' + hours(k.medianHoursToContact) + '.' : ''}</p></div>
+      ${pst.length ? `<h2>By partner</h2><div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px;min-width:420px"><tr style="text-align:left;color:var(--muted)"><th style="padding:4px 0">Partner</th><th>Leads</th><th>Contacted</th><th>Deals</th><th>Commission</th></tr>${pst.map((r) => `<tr style="border-top:1px solid var(--line)"><td style="padding:8px 0"><b>${esc(r.name)}</b></td><td>${r.leads}</td><td>${r.contacted}</td><td>${r.inPlace}</td><td>${W.money(r.owedCents + r.paidCents)}</td></tr>`).join('')}</table><p class="note" style="margin:10px 0 0">Adding another rep later shows up here side by side.</p></div>` : ''}
+      ${marketingCard()}
+      <h2>Recent activity</h2><div class="list">${d.events.filter((e) => e.type !== 'delivery').slice(0, 8).map((e) => `<div class="item"><div class="l"><div class="t1">${esc(e.lead_ref || '')} · ${evText(e)}</div><div class="t2">${esc((e.actor || '').replace('partner:', '').replace(' (api)', ' via API'))} · ${when(e.created_at)}</div></div></div>`).join('') || '<div class="empty">Activity shows up here as your partner updates deals.</div>'}</div>`;
+  };
+  function setupCard() {
+    const u = S.d.setup || {}; const todo = [];
+    if (!u.database) todo.push('Connect Supabase (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY). Data is not being saved permanently.');
+    if (!u.email) todo.push('Email is off (RESEND_API_KEY, MAIL_FROM). Partner and owner emails will not send.');
+    if (!u.sms) todo.push('Text messages are off (Twilio keys). Texts to your partner and you will not send.');
+    if (!u.ownerAlerts) todo.push('Set OWNER_EMAIL and OWNER_PHONE to get alerts and the daily summary.');
+    if (!u.cron) todo.push('Set CRON_SECRET so failed sends retry and daily nudges run.');
+    if (!u.appUrl) todo.push('Set APP_URL so emails link to the dashboards.');
+    if (!todo.length || ls.get('ww_admin_token') === 'demo') return '';
+    return `<h2 style="margin-top:12px">Finish setup</h2><div class="card"><ul style="margin:0;padding-left:18px">${todo.map((t) => `<li style="margin:6px 0">${esc(t)}</li>`).join('')}</ul></div>`;
+  }
+  function marketingCard() {
+    const m = S.d.marketing; if (!m || !m.months.length || !m.totalSpendCents) return '';
+    return `<h2>Ad spend</h2><div class="card"><div class="grid" style="grid-template-columns:1fr 1fr;gap:16px"><div class="kpi"><div class="n">${m.cplCents == null ? 'n/a' : W.money(m.cplCents)}</div><div class="l">Cost per lead</div></div><div class="kpi"><div class="n">${m.cpsCents == null ? 'n/a' : W.money(m.cpsCents)}</div><div class="l">Cost per signed deal</div></div></div>
+      <div style="overflow-x:auto;margin-top:12px"><table style="width:100%;border-collapse:collapse;font-size:14px"><tr style="text-align:left;color:var(--muted)"><th style="padding:6px 4px">Month</th><th>Spend</th><th>Leads</th><th>Signed</th></tr>${m.months.map((r) => `<tr style="border-top:1px solid var(--line)"><td style="padding:8px 4px">${esc(r.month)}</td><td>${W.money(r.spendCents)}</td><td>${r.leads}</td><td>${r.signed}</td></tr>`).join('')}</table></div></div>`;
+  }
+  const evText = (e) => ({ created: 'Lead received', stage: `${esc(W.LABEL[e.from_value] || e.from_value)} → <b>${esc(W.LABEL[e.to_value] || e.to_value)}</b>`, size: `Size set: ${esc(e.to_value)} kW`, value: `Value set: ${usd(e.to_value)}`, note: 'Note: ' + esc(e.note || ''), duplicate: 'Duplicate (not re-sent)', fee: 'Fee ' + esc(e.to_value), payout: 'Payout ' + esc(e.to_value), dispute: 'Invalid flag ' + esc(e.to_value) }[e.type] || esc(e.type));
+  binders.overview = () => app.querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => { S.tab = b.dataset.go; render(); }));
+
+  /* ---------- Deals ---------- */
+  views.deals = () => {
+    const d = S.d, q = S.q.toLowerCase();
+    const real = d.leads.filter((l) => !l.duplicate_of);
+    const shown = real.filter((l) => (S.filter === 'all' || (S.filter === 'inplace' ? W.IN_PLACE.includes(l.stage) : l.stage === S.filter)) && (!q || (name(l) + l.ref + (l.city || '')).toLowerCase().includes(q)));
+    const opts = [['all', 'All'], ['inplace', 'In place'], ...W.STAGES.map((s) => [s.key, s.label])];
+    const sentBy = {}; d.deliveries.forEach((x) => { (sentBy[x.lead_id] = sentBy[x.lead_id] || []).push(x); });
+    const priv = real.filter((l) => l.deletion_requested_at);
+    return `${priv.length ? `<h2>Data deletion requests</h2><div class="list">${priv.map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} <span class="note">${esc(l.ref)}</span></div><div class="t2">Asked ${ago(l.deletion_requested_at)}. Their app link is already switched off. Erasing removes the lead, messages and history for good. Make sure your partner has deleted their copy too.</div></div><button class="btn ghost sm" data-erase="${l.id}">Erase</button></div>`).join('')}</div>` : ''}<input id="q" type="search" placeholder="Search name, city, reference" value="${esc(S.q)}" style="margin-top:12px">
+      <div class="pills">${opts.map(([k, l]) => `<button class="pill ${S.filter === k ? 'on' : ''}" data-f="${k}">${l}<b>${k === 'all' ? real.length : k === 'inplace' ? real.filter((x) => W.IN_PLACE.includes(x.stage)).length : real.filter((x) => x.stage === k).length}</b></button>`).join('')}</div>
+      <div class="list">${shown.map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} <span class="badge ${l.stage}">${W.LABEL[l.stage]}</span></div>
+        <div class="t2">${esc(l.ref)} · ${esc([l.city, l.state].filter(Boolean).join(', '))} · ${ago(l.created_at)}${l.system_kw ? ' · ' + l.system_kw + ' kW' : ''}${l.contract_value ? ' · ' + usd(l.contract_value) : ''}${l.partner_name ? ' · ' + esc(l.partner_name) : ''}</div>
+        <div class="t2">${sentLine(sentBy[l.id], l)} · ${l.first_contacted_at ? 'Contacted ' + ago(l.first_contacted_at) : 'Not contacted yet'}${l.referrer_code ? ' · Referred by ' + esc(l.referrer_name || l.referrer_code) : ''}</div></div>
+        <div style="text-align:right">${feeBadge(l)}</div></div>`).join('') || '<div class="empty">No deals match.</div>'}</div>`;
+  };
+  const sentLine = (ds, l) => l.duplicate_of ? 'Duplicate, not sent' : !ds || !ds.length ? '<b style="color:var(--red)">Not sent</b>' : ds.some((x) => x.status === 'sent') ? 'Sent to ' + esc(l.partner_name || 'partner') + ' (' + ds.filter((x) => x.status === 'sent').map((x) => x.channel).join(', ') + ')' : '<b style="color:var(--red)">Send failed</b>';
+  const feeBadge = (l) => {
+    const f = l.fee || { state: 'not_yet' };
+    return ({ not_yet: '', needs_commission: '<span class="badge skipped">Awaiting commission</span>', split_unset: '<span class="badge skipped">Set your %</span>', needs_size: '<span class="badge skipped">Needs size</span>', no_tier: '<span class="badge skipped">No tier</span>', rate_unset: '<span class="badge skipped">Set rate</span>', on_hold: '<span class="badge on_hold">Disputed</span>', waived: '<span class="badge waived">Credited</span>', credit_due: `<span class="badge credit_due">${W.money(f.cents)} credit due</span>`, owed: `<span class="badge owed">${W.money(f.cents)} owed${f.collected_cents ? ' (part paid)' : ''}</span>`, paid: `<span class="badge paid">${W.money(f.share_cents != null ? f.share_cents : f.cents)} paid</span>` })[f.state] || '';
+  };
+  binders.deals = () => {
+    $('#q').oninput = (e) => { S.q = e.target.value; const p = e.target.selectionStart; render(); const el = $('#q'); el.focus(); el.setSelectionRange(p, p); };
+    app.querySelectorAll('[data-f]').forEach((b) => (b.onclick = () => { S.filter = b.dataset.f; render(); }));
+    app.querySelectorAll('[data-erase]').forEach((b) => (b.onclick = async () => {
+      if (!confirm('Permanently erase this person and all their messages and history? This cannot be undone.')) return;
+      try { await act({ action: 'erase_lead', lead_id: b.dataset.erase }); toast('Erased'); await load(true); } catch (e) { toast(e.message || 'Failed', true); }
+    }));
+  };
+
+  /* ---------- Sent to partner ---------- */
+  views.deliveries = () => {
+    const d = S.d;
+    const byLead = {};
+    d.deliveries.forEach((x) => (byLead[x.lead_id] = byLead[x.lead_id] || []).push(x));
+    const dup = d.leads.filter((l) => l.duplicate_of);
+    const groups = Object.values(byLead);
+    return `<p class="note" style="margin-top:14px">Every lead sent to your partner, by channel. Failed sends retry automatically every 15 minutes (up to 5 tries). “Skipped” means that channel isn't set up yet.</p>
+      <div class="list">${groups.map((g) => { const x = g[0]; return `<div class="card"><div class="t1" style="font-weight:700">${esc(x.lead_name || '')} <span class="ref note">${esc(x.lead_ref || '')}</span></div><div class="t2 note">${esc(x.partner_name || '')} · ${when(x.created_at)}</div>
+        <div class="list" style="margin-top:10px">${g.map((y) => `<div class="item"><div class="l"><div class="t1" style="text-transform:capitalize">${y.channel} <span class="badge ${y.status}">${y.status}</span></div>${y.last_error ? `<div class="t2">${esc(y.last_error)}</div>` : y.sent_at ? `<div class="t2">Delivered ${when(y.sent_at)}</div>` : ''}</div>${y.status !== 'sent' ? `<button class="btn sm" data-resend="${y.id}">Resend</button>` : `<span class="note">${y.attempts} attempt${y.attempts === 1 ? '' : 's'}</span>`}</div>`).join('')}</div></div>`; }).join('') || '<div class="empty">Nothing sent yet.</div>'}</div>
+      ${dup.length ? `<h2>Held back as duplicates</h2><div class="list">${dup.map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))}</div><div class="t2">${esc(l.ref)} · same phone as an earlier lead inside 30 days · ${when(l.created_at)}</div></div><span class="badge skipped">Not re-sent</span></div>`).join('')}</div>` : ''}`;
+  };
+  binders.deliveries = () => app.querySelectorAll('[data-resend]').forEach((b) => (b.onclick = async () => {
+    b.disabled = true;
+    try { const r = await act({ action: 'resend', delivery_id: b.dataset.resend }); toast(r.delivery && r.delivery.status === 'sent' ? 'Sent' : 'Still not delivered: ' + ((r.delivery && r.delivery.last_error) || 'check settings'), !(r.delivery && r.delivery.status === 'sent')); await load(true); }
+    catch (e) { toast(e.message || 'Failed', true); b.disabled = false; }
+  }));
+
+  /* ---------- Money ---------- */
+  const dealLine = (l) => {
+    const f = l.fee || {}, pct = f.pct;
+    const bits = [esc(l.ref), W.LABEL[l.stage]];
+    if (f.state === 'split_unset') bits.push('set your share % under Partners');
+    else if (f.state === 'needs_commission') bits.push("waiting for your partner's commission amount" + (pct != null ? ' (your share ' + pct + '%)' : ''));
+    else if (l.commission_cents != null && pct != null) bits.push(W.money(l.commission_cents) + ' commission × ' + pct + '% = ' + W.money(f.share_cents) + (f.collected_cents ? ' · received ' + W.money(f.collected_cents) : ''));
+    else if (l.system_kw) bits.push(l.system_kw + ' kW'); else if (!f.state || f.state === 'needs_size') bits.push('size not entered by partner yet');
+    return `<div class="item" style="border:0;padding:0"><div class="l"><div class="t1">${esc(name(l))} ${feeBadge(l)}</div><div class="t2">${bits.join(' · ')}</div></div></div>`;
+  };
+  const afterAds = () => {
+    const d = S.d, spend = (d.marketing && d.marketing.totalSpendCents) || 0; if (!spend) return '';
+    const earned = d.kpis.feesOwedCents + d.kpis.feesPaidCents, net = earned - spend;
+    return `<div class="card" style="margin-top:12px"><div class="t1" style="font-weight:700">After ad spend</div><div class="t2 note">Your share (collected plus owed) ${W.money(earned)} minus ${W.money(spend)} ad spend entered</div><div class="kpi" style="margin-top:6px"><div class="n" style="color:${net < 0 ? 'var(--red)' : 'var(--forest-2)'}">${net < 0 ? '-' : ''}${W.money(Math.abs(net))}</div></div></div>`;
+  };
+  views.money = () => {
+    const d = S.d, k = d.kpis;
+    const owed = d.leads.filter((l) => l.fee && ['owed', 'needs_size', 'no_tier', 'rate_unset', 'needs_commission', 'split_unset'].includes(l.fee.state));
+    const paid = d.leads.filter((l) => l.fee && l.fee.state === 'paid');
+    const pend = d.payouts.filter((p) => p.status === 'pending'), done = d.payouts.filter((p) => p.status === 'paid');
+    return `<div class="grid kpis" style="margin-top:12px">${kpi(W.money(k.feesOwedCents), 'Commission owed to you', 'gold')}${kpi(W.money(k.feesPaidCents), 'Commission collected')}${kpi(W.money(k.payoutsDueCents), 'Referral payouts due now', k.payoutsDueCents ? 'alert' : '')}${kpi(W.money(k.payoutsUpcomingCents), 'Referral payouts scheduled')}${k.creditsDueCents ? kpi(W.money(k.creditsDueCents), 'Credits owed for invalid leads', 'alert') : ''}</div>
+      <h2>Monthly statement</h2><div class="card"><p class="note" style="margin-top:0">Optional. A statement lists every deal that reached <b>${W.LABEL[d.config.feeTrigger]}</b> in the month, with credits for invalid leads. Open it to review or save as PDF, or email it to your partner.</p>
+        <div class="row2"><div><label for="stm">Month</label><input id="stm" type="month" value="${S.stMonth}"></div><div><label for="stp">Partner</label><select id="stp">${d.partners.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" id="stopen">Open statement</button><button class="btn ghost" id="stmail">Email to partner</button></div></div>
+      ${afterAds()}
+      <h2>Commission to collect</h2><div class="list">${owed.map((l) => `<div class="card">${dealLine(l)}${l.fee.state === 'owed' ? `<div class="row2" style="margin-top:10px;align-items:end"><div><label for="rp-${l.id}">Received so far? Add a payment ($)</label><input id="rp-${l.id}" inputmode="decimal" placeholder="e.g. 500"></div><div style="display:flex;gap:6px"><button class="btn sm" data-recpay="${l.id}">Add payment</button><button class="btn ghost sm" data-feepaid="${l.id}">Paid in full</button></div></div>` : ''}</div>`).join('') || '<div class="empty">Nothing to collect yet.</div>'}</div>
+      ${paid.length ? `<h2>Collected</h2><div class="list">${paid.map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} ${feeBadge(l)}</div><div class="t2">${esc(l.ref)} · settled ${date(l.fee_paid_at)}${l.commission_cents != null && l.fee.pct != null ? ' · ' + W.money(l.commission_cents) + ' commission × ' + l.fee.pct + '%' : ''}</div></div><button class="btn ghost sm" data-feepaid="${l.id}" data-undo="1">Undo</button></div>`).join('')}</div>` : ''}
+      <h2>Referral payouts</h2><div class="list">${pend.map((p) => { const due = !p.due_at || new Date(p.due_at) <= Date.now(); return `<div class="item"><div class="l"><div class="t1">${W.money(p.amount_cents)} · ${esc(W.REFERRAL[p.milestone].label)}</div><div class="t2">${esc(p.lead_ref || '')} · referrer ${esc(p.referrer_code)}${p.due_at ? ' · due ' + date(p.due_at) : ''}</div></div>${due ? `<button class="btn sm" data-paypaid="${p.id}">Mark paid</button>` : '<span class="badge pending">Scheduled</span>'}</div>`; }).join('') || '<div class="empty">No referral payouts pending.</div>'}</div>
+      ${done.length ? `<p class="note" style="margin-top:12px">${done.length} referral payout${done.length > 1 ? 's' : ''} already paid.</p>` : ''}`;
+  };
+  binders.money = () => {
+    const mark = (sel, key, extra) => app.querySelectorAll(sel).forEach((b) => (b.onclick = async () => {
+      b.disabled = true;
+      try { await act({ action: extra, [key]: b.dataset[Object.keys(b.dataset)[0]], paid: !b.dataset.undo }); toast('Updated'); await load(true); } catch (e) { toast(e.message || 'Failed', true); b.disabled = false; }
+    }));
+    mark('[data-feepaid]', 'lead_id', 'fee_paid'); mark('[data-paypaid]', 'payout_id', 'payout_paid');
+    app.querySelectorAll('[data-recpay]').forEach((b) => (b.onclick = async () => {
+      const v = $('#rp-' + b.dataset.recpay).value.trim(); if (!v) return toast('Enter the amount you received', true);
+      b.disabled = true;
+      try { await act({ action: 'record_payment', lead_id: b.dataset.recpay, amount_dollars: v }); toast('Payment recorded'); await load(true); } catch (e) { toast(e.message || 'Failed', true); b.disabled = false; }
+    }));
+    const stq = () => ({ month: $('#stm').value, partner_id: $('#stp').value });
+    $('#stopen').onclick = () => { const q = stq(); if (!q.month) return toast('Pick a month', true); if (ls.get('ww_admin_token') === 'demo') return toast('Statements need a live backend', true); window.open('/admin/statement.html?month=' + q.month + '&partner_id=' + q.partner_id, '_blank'); };
+    $('#stmail').onclick = async (ev) => { const q = stq(); if (!q.month) return toast('Pick a month', true); ev.target.disabled = true;
+      try { const r = await api('admin', '/api/statement', { method: 'POST', body: JSON.stringify(q) }); toast('Statement sent to ' + r.sent_to); } catch (e) { toast(e.message || 'Could not send', true); } ev.target.disabled = false; };
+  };
+
+  /* ---------- Settings (optional, nothing here is required day to day) ---------- */
+  views.settings = () => {
+    const d = S.d;
+    return `<p class="note" style="margin-top:14px">Everything here is optional. The dashboard runs on its own once your partner is added.</p>
+      ${setupCard() || '<div class="item" style="margin-top:12px"><div class="l"><div class="t1">Setup complete</div><div class="t2">Email, texts, alerts and retries are all connected.</div></div><span class="badge paid">Good</span></div>'}
+      ${d.partners.some((p) => p.fee_mode === 'flat') ? `<h2>Flat commission (partners on a flat rate)</h2><div class="card"><p class="note" style="margin-top:0">Flat commission per signed deal, set by system size. A fee becomes owed when a deal reaches <b>${W.LABEL[d.config.feeTrigger]}</b>. Leave a rate blank until it's agreed in writing; blank rates are never counted.</p>
+      <div id="tiers">${d.tiers.map((t) => `<div class="row2" style="align-items:end;margin-bottom:8px" data-tier="${t.id}"><div><label>${esc(t.label)} (${t.min_kw}${t.max_kw == null ? '+' : '–' + t.max_kw} kW)</label><input data-fee inputmode="decimal" placeholder="Not set" value="${t.fee_cents == null ? '' : t.fee_cents / 100}"></div><div class="note" style="padding-bottom:14px">dollars per signed deal</div></div>`).join('')}</div>
+      <button class="btn" id="savetiers">Save rates</button></div>` : '<div class="note" style="margin-top:14px">Your partners are on a percentage split. Set each partner\'s share under Partners.</div>'}
+      <h2>Ad spend</h2><div class="card"><p class="note" style="margin-top:0">Enter what you spend on ads each month to see cost per lead and per signed deal on the Overview.</p>
+        <form id="spendf" class="row2" autocomplete="off"><div><label for="sm">Month</label><input id="sm" type="month" required value="${S.stMonth}"></div><div><label for="ss">Amount ($)</label><input id="ss" inputmode="decimal" required placeholder="500"></div>
+        <div><label for="sc">Source</label><input id="sc" maxlength="60" placeholder="Meta, Google…"></div><div style="align-self:end"><button class="btn" style="width:100%">Add</button></div></form>
+        <div class="list" style="margin-top:12px">${(d.ad_spend || []).map((x) => `<div class="item"><div class="l"><div class="t1">${W.money(x.amount_cents)} · ${esc(x.month)}</div><div class="t2">${esc(x.source || 'No source')}</div></div><button class="btn ghost sm" data-delspend="${x.id}">Remove</button></div>`).join('')}</div></div>
+      <h2>Invalid-lead flags</h2><div class="card"><p class="note" style="margin-top:0">If your partner flags a lead invalid (wrong number, renter), it is accepted automatically after 5 days with no commission impact. You can decide sooner here.</p>
+        <div class="list">${S.d.leads.filter((l) => l.stage === 'invalid' && l.dispute_status === 'pending').map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} <span class="note">${esc(l.ref)}</span></div><div class="t2">${esc(l.invalid_reason || '')}</div></div><div style="display:flex;gap:6px"><button class="btn sm" data-dispute="${l.id}" data-accept="1">Accept</button><button class="btn ghost sm" data-dispute="${l.id}" data-accept="0">Decline</button></div></div>`).join('') || '<div class="note">Nothing waiting.</div>'}</div></div>
+      <h2>Your data</h2><div class="card"><button class="btn ghost" id="csv2">Export all leads (CSV)</button></div>`;
+  };
+  binders.settings = () => {
+    if ($('#savetiers')) $('#savetiers').onclick = async () => {
+      const tiers = [...app.querySelectorAll('[data-tier]')].map((r) => { const t = S.d.tiers.find((x) => x.id === r.dataset.tier); return { id: t.id, label: t.label, min_kw: t.min_kw, max_kw: t.max_kw, fee_dollars: r.querySelector('[data-fee]').value.trim() }; });
+      try { await act({ action: 'set_tiers', tiers }); toast('Rates saved'); await load(true); } catch (e) { toast(e.message || 'Failed', true); }
+    };
+    $('#spendf').onsubmit = async (e) => { e.preventDefault(); try { await act({ action: 'add_spend', month: $('#sm').value, amount_dollars: $('#ss').value.trim(), source: $('#sc').value.trim() }); toast('Added'); await load(true); } catch (er) { toast(er.message || 'Enter a month and amount', true); } };
+    app.querySelectorAll('[data-delspend]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { await act({ action: 'delete_spend', id: b.dataset.delspend }); toast('Removed'); await load(true); } catch (er) { toast(er.message, true); b.disabled = false; } }));
+    app.querySelectorAll('[data-dispute]').forEach((b) => (b.onclick = async () => {
+      b.disabled = true;
+      try { await act({ action: 'resolve_dispute', lead_id: b.dataset.dispute, accept: b.dataset.accept === '1' }); toast(b.dataset.accept === '1' ? 'Accepted. No fee for this lead.' : 'Declined. Lead is active again.'); await load(true); }
+      catch (e) { toast(e.message || 'Failed', true); b.disabled = false; }
+    }));
+    $('#csv2').onclick = () => App.download('admin', '/api/export', 'wattworth-deals.csv');
+  };
+
+  /* ---------- Partners ---------- */
+  const termsBlock = (p) => p.fee_mode === 'flat' ? '<div class="note" style="margin-top:8px">Flat rate by system size (see Settings).</div>' : `<div class="row2" style="margin-top:12px;align-items:end" data-terms="${p.id}">
+      <div><label for="sp-${p.id}">Your share of their commission (%)</label><input id="sp-${p.id}" data-sp inputmode="decimal" placeholder="Leave blank until agreed" value="${p.split_percent == null ? '' : p.split_percent}"></div>
+      <div><label for="ap-${p.id}">Who pays for ads</label><select id="ap-${p.id}" data-ap><option value="">Not decided</option><option value="partner" ${p.ads_paid_by === 'partner' ? 'selected' : ''}>Partner pays</option><option value="owner" ${p.ads_paid_by === 'owner' ? 'selected' : ''}>I pay</option></select></div>
+      <div style="grid-column:1/-1"><button class="btn sm" data-saveterms="${p.id}">Save terms</button> <span class="note">${p.split_percent == null ? 'Nothing is counted until you set this.' : 'You keep ' + p.split_percent + '% and ' + esc(p.name) + ' keeps ' + (100 - p.split_percent) + '%.'}</span></div></div>`;
+  views.partners = () => {
+    const d = S.d, link = location.origin + '/partner/';
+    return `<div class="card" style="margin-top:12px"><div class="t1" style="font-weight:700">Partner dashboard link</div><div class="keybox">${esc(link)}</div><button class="btn ghost sm" id="copylink">Copy link</button><p class="note" style="margin-bottom:0">Send this link plus their personal access key. They sign in once on their phone and it stays signed in.</p></div>
+      ${S.secret ? `<div class="card" style="margin-top:12px;border-color:var(--gold)"><div class="t1" style="font-weight:700">Save this now. It is shown only once.</div><div class="note">Access key for ${esc(S.secret.who)}</div><div class="keybox">${esc(S.secret.key)}</div>${S.secret.hook ? `<div class="note">Webhook signing secret (verify the X-WattWorth-Signature header)</div><div class="keybox">${esc(S.secret.hook)}</div>` : ''}<button class="btn gold sm" id="copykey">Copy key</button> <button class="btn ghost sm" id="hidekey">I saved it</button></div>` : ''}
+      <h2>Partners</h2><div class="list">${d.partners.map((p) => `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><div><div class="t1" style="font-weight:700">${esc(p.name)} ${p.is_default ? '<span class="badge paid">Gets new leads</span>' : ''} ${p.active ? '' : '<span class="badge failed">Inactive</span>'}</div><div class="t2 note">${esc(p.company || '')}</div></div></div>
+        <div class="t2 note" style="margin-top:8px">${p.email ? 'Email ' + esc(p.email) : 'No email'} · ${p.phone ? 'SMS ' + esc(phone(p.phone)) : 'No SMS number'} · ${p.webhook_url ? 'Webhook on' : 'No webhook'}</div>
+        <div class="row2" style="margin-top:12px;align-items:end"><div><label for="pp-${p.id}">Phone customers see him call from</label><input id="pp-${p.id}" type="tel" inputmode="tel" placeholder="(512) 555-0100" value="${esc(p.public_phone ? phone(p.public_phone) : '')}"></div><div><button class="btn sm" data-savephone="${p.id}">Save phone</button></div></div>
+        ${termsBlock(p)}
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" data-rotate="${p.id}">Issue new access key</button>${p.is_default ? '' : `<button class="btn ghost sm" data-default="${p.id}">Send new leads here</button>`}<button class="btn ghost sm" data-toggle="${p.id}" data-active="${p.active ? 1 : 0}">${p.active ? 'Deactivate' : 'Reactivate'}</button></div></div>`).join('') || '<div class="empty">Add your first partner below.</div>'}</div>
+      <h2>Add a partner</h2><form class="card" id="newp" autocomplete="off">
+        <label>Name</label><input name="name" required maxlength="80" placeholder="Pedro">
+        <label>Company</label><input name="company" maxlength="120">
+        <label>Email for lead alerts</label><input name="email" type="email" inputmode="email">
+        <label>Phone customers will see him call from</label><input name="public_phone" type="tel" inputmode="tel" placeholder="(512) 555-0100">
+        <label>Mobile for text alerts (optional)</label><input name="phone" type="tel" inputmode="tel" placeholder="(512) 555-0100">
+        <label>Your share of their commission (%)</label><input name="split_percent" inputmode="decimal" placeholder="Leave blank until agreed with them">
+        <div class="note" style="margin-top:6px">Common setup: 30% for you if they pay for ads, 40% if you do. Confirm it in writing first.</div>
+        <label>Who pays for ads</label><select name="ads_paid_by"><option value="">Not decided</option><option value="partner">Partner pays</option><option value="owner">I pay</option></select>
+        <label>Webhook URL (optional, pushes each lead into their CRM)</label><input name="webhook_url" type="url" placeholder="https://…">
+        <button class="btn" style="width:100%;margin-top:16px">Create partner and access key</button></form>`;
+  };
+  binders.partners = () => {
+    const secret = S.secret;
+    $('#copylink').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(location.origin + '/partner/'); toast('Link copied'); };
+    if (secret) { $('#copykey').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(secret.key); toast('Key copied'); }; $('#hidekey').onclick = () => { S.secret = null; render(); }; }
+    app.querySelectorAll('[data-rotate]').forEach((b) => (b.onclick = async () => {
+      if (!confirm('This signs the partner out everywhere and replaces their key. Continue?')) return;
+      try { const r = await act({ action: 'rotate_key', partner_id: b.dataset.rotate }); S.secret = { key: r.access_key, who: S.d.partners.find((p) => p.id === b.dataset.rotate).name }; render(); window.scrollTo(0, 0); } catch (e) { toast(e.message || 'Failed', true); }
+    }));
+    app.querySelectorAll('[data-default]').forEach((b) => (b.onclick = async () => { try { await act({ action: 'update_partner', partner_id: b.dataset.default, is_default: true }); toast('Updated'); await load(true); } catch (e) { toast(e.message, true); } }));
+    app.querySelectorAll('[data-toggle]').forEach((b) => (b.onclick = async () => { try { await act({ action: 'update_partner', partner_id: b.dataset.toggle, active: b.dataset.active !== '1' }); await load(true); } catch (e) { toast(e.message, true); } }));
+    app.querySelectorAll('[data-savephone]').forEach((b) => (b.onclick = async () => {
+      const id = b.dataset.savephone;
+      try { await act({ action: 'update_partner', partner_id: id, public_phone: $('#pp-' + id).value.trim() }); toast('Saved'); await load(true); } catch (e) { toast(e.message || 'Enter a valid phone number', true); }
+    }));
+    app.querySelectorAll('[data-saveterms]').forEach((b) => (b.onclick = async () => {
+      const id = b.dataset.saveterms;
+      try { await act({ action: 'update_partner', partner_id: id, split_percent: $('#sp-' + id).value.trim(), ads_paid_by: $('#ap-' + id).value }); toast('Terms saved'); await load(true); } catch (e) { toast(e.message || 'Enter a number from 0 to 100', true); }
+    }));
+    $('#newp').onsubmit = async (e) => {
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(e.target).entries());
+      try { const r = await act({ action: 'create_partner', ...f }); S.secret = { key: r.access_key, hook: r.webhook_secret, who: f.name }; await load(true); window.scrollTo(0, 0); } catch (er) { toast(er.message || 'Failed', true); }
+    };
+  };
+
+  $('#out').onclick = () => { ls.del('ww_admin_token'); S.d = null; signIn(); };
+  $('#csv').onclick = () => App.download('admin', '/api/export', 'wattworth-deals.csv');
+  setInterval(() => { if (S.d && !document.hidden && !['partners', 'settings', 'money'].includes(S.tab)) load(true); }, 60000);
+  if (ls.get('ww_admin_token')) load(); else signIn();
+})();
+</script>
+</body>
+</html>

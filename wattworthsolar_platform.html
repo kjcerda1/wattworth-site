@@ -996,7 +996,7 @@ footer {
   <div class="nav-right">
     <a href="#how" class="nav-link">How it works</a>
     <a href="#referral" class="nav-link">Earn $1,000</a>
-    <a href="#" class="nav-link" onclick="openDash(event)">My Dashboard</a>
+    <a href="/portal/" class="nav-link">My Tracker</a>
     <button class="nav-cta" onclick="openFunnel()">Check my savings</button>
   </div>
 </nav>
@@ -1019,11 +1019,11 @@ footer {
     <div class="trust-pills">
       <div class="trust-pill">
         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        No calls required
+        No obligation
       </div>
       <div class="trust-pill">
         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        Free PDF proposal
+        Free savings estimate
       </div>
       <div class="trust-pill">
         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -1128,8 +1128,8 @@ footer {
       <div class="step-ico">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
       </div>
-      <h3>Receive your proposal</h3>
-      <p>A branded PDF proposal lands in your inbox with a shareable link. Your saved quote stays live — review it any time.</p>
+      <h3>Meet your solar specialist</h3>
+      <p>A local specialist reaches out to go over your options. Follow progress and message them any time in your private tracker app.</p>
     </div>
     <div class="step-card">
       <div class="step-num">04</div>
@@ -1340,23 +1340,28 @@ footer {
   <!-- progress bar -->
   <div class="modal-progress" id="funnelProgress">
     <div class="mp-top">
-      <span class="mp-label" id="funnelStepLabel">Your address</span>
-      <span class="mp-count" id="funnelStepCount">1 / 6</span>
+      <span class="mp-label" id="funnelStepLabel">Monthly Bill</span>
+      <span class="mp-count" id="funnelStepCount">1 / 5</span>
     </div>
-    <div class="mp-track"><div class="mp-fill" id="funnelFill" style="width:16.6%"></div></div>
+    <div class="mp-track"><div class="mp-fill" id="funnelFill" style="width:20%"></div></div>
   </div>
 
   <div class="modal-body">
 
     <!-- STEP 1: Address -->
     <div class="fstep active" id="fs1">
-      <div class="fstep-tag">Step 1 — Location</div>
+      <button class="btn-back" onclick="goStep(4)">← Back</button>
+      <div class="fstep-tag">Step 4 — Location</div>
       <div class="fstep-title">What's your home address?</div>
       <div class="fstep-desc">We use your address to look up local utility rates, solar potential, and customize your estimate.</div>
 
       <div class="field">
         <label>Street Address</label>
         <input type="text" id="inp-addr" placeholder="123 Maple Street" oninput="checkAddressIntel()">
+      </div>
+      <div class="field">
+        <label>ZIP Code</label>
+        <input type="text" id="inp-zip" inputmode="numeric" maxlength="10" autocomplete="postal-code" placeholder="78701">
       </div>
       <div class="fcols">
         <div class="field">
@@ -1403,13 +1408,12 @@ footer {
         </div>
       </div>
 
-      <button class="btn-next" onclick="goStep(2)">Continue →</button>
+      <button class="btn-next" onclick="goStep(5)">Continue →</button>
     </div>
 
     <!-- STEP 2: Bill -->
     <div class="fstep" id="fs2">
-      <button class="btn-back" onclick="goStep(1)">← Back</button>
-      <div class="fstep-tag">Step 2 — Usage</div>
+      <div class="fstep-tag">Step 1 — Usage</div>
       <div class="fstep-title">Average monthly electric bill?</div>
       <div class="fstep-desc">This is the single biggest factor in your savings estimate.</div>
       <div class="choices">
@@ -1452,7 +1456,7 @@ footer {
     <!-- STEP 3: Ownership -->
     <div class="fstep" id="fs3">
       <button class="btn-back" onclick="goStep(2)">← Back</button>
-      <div class="fstep-tag">Step 3 — Property</div>
+      <div class="fstep-tag">Step 2 — Property</div>
       <div class="fstep-title">Do you own or rent your home?</div>
       <div class="fstep-desc">Ownership determines which financing options you can access.</div>
       <div class="choices two">
@@ -1473,7 +1477,7 @@ footer {
     <!-- STEP 4: Roof -->
     <div class="fstep" id="fs4">
       <button class="btn-back" onclick="goStep(3)">← Back</button>
-      <div class="fstep-tag">Step 4 — Roof</div>
+      <div class="fstep-tag">Step 3 — Roof</div>
       <div class="fstep-title">What type of roof do you have?</div>
       <div class="fstep-desc">Optional — helps refine installation cost estimates.</div>
       <div class="choices two">
@@ -1503,12 +1507,12 @@ footer {
           <div class="ch-radio"></div>
         </div>
       </div>
-      <button class="btn-next" id="btn-roof" disabled onclick="goStep(5)">Continue →</button>
+      <button class="btn-next" id="btn-roof" disabled onclick="goStep(1)">Continue →</button>
     </div>
 
     <!-- STEP 5: Soft Commit + Contact -->
     <div class="fstep" id="fs5">
-      <button class="btn-back" onclick="goStep(4)">← Back</button>
+      <button class="btn-back" onclick="goStep(1)">← Back</button>
       <div class="soft-commit">
         <div class="sc-icon">📊</div>
         <div class="sc-text">
@@ -1524,8 +1528,10 @@ footer {
         <div class="field"><label>Last Name</label><input type="text" id="inp-last" placeholder="Johnson"></div>
       </div>
       <div class="field"><label>Email Address</label><input type="email" id="inp-email" placeholder="alex@example.com"></div>
-      <div class="field"><label>Phone (optional — for SMS updates)</label><input type="tel" id="inp-phone" placeholder="(555) 000-0000"></div>
-      <p style="font-size:0.7rem;color:var(--ink-dim);line-height:1.55;margin-bottom:4px;">By submitting you agree to receive your free solar estimate and optional follow-up from WattWorth. We never sell your data. No spam. Unsubscribe anytime. Powered by SunLoop.</p>
+      <div class="field"><label>Mobile Phone</label><input type="tel" id="inp-phone" inputmode="tel" autocomplete="tel" placeholder="(555) 000-0000"></div>
+      <input type="text" id="inp-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0">
+      <label id="consentLabel" style="display:flex;gap:10px;align-items:flex-start;font-size:0.72rem;line-height:1.5;color:var(--ink-dim);margin:6px 0 4px;text-transform:none;letter-spacing:0;font-weight:400;cursor:pointer;"><input type="checkbox" id="inp-consent" onchange="document.getElementById('formErr').style.display='none'" style="width:20px;height:20px;min-height:0;margin-top:2px;flex:none"><span id="consentText">I agree that WattWorth and a local solar partner may contact me about my solar estimate by phone, text message and email, including with automated technology. Consent is not a condition of any purchase. Message and data rates may apply. Reply STOP to opt out. We never sell your data.</span></label>
+      <div id="formErr" role="alert" style="display:none;color:#C62828;font-size:0.8rem;font-weight:600;margin:6px 0"></div>
       <button class="btn-next" onclick="submitLead()">Generate my free estimate →</button>
     </div>
 
@@ -1566,8 +1572,8 @@ footer {
           <button class="share-btn" onclick="shareVia('whatsapp')">💬 WhatsApp</button>
         </div>
 
-        <button class="btn-next" onclick="submitReferral()">Send Referral Invite →</button>
-        <button class="btn-secondary" onclick="goStep('confirm')">Skip for now — go to dashboard</button>
+        <button class="btn-next" onclick="submitReferral()">Share my link →</button>
+        <button class="btn-secondary" onclick="goStep('confirm')">Skip for now</button>
       </div>
     </div>
 
@@ -1576,14 +1582,15 @@ footer {
       <div class="confirm-body">
         <div class="confirm-icon">🎉</div>
         <div class="confirm-title">You're all set, <span id="confirm-name">friend</span>!</div>
-        <div class="confirm-desc">Your proposal is on its way to your inbox. Here's what happens next:</div>
+        <div class="confirm-desc" id="confirm-desc">Your private tracker is ready. Here's what happens next:</div>
         <div class="confirm-steps">
-          <div class="cs-item"><div class="cs-num">1</div><div class="cs-text">📧 Proposal PDF emailed within 2 minutes</div></div>
-          <div class="cs-item"><div class="cs-num">2</div><div class="cs-text">🔗 Your saved quote link is ready to revisit anytime</div></div>
-          <div class="cs-item"><div class="cs-num">3</div><div class="cs-text">💸 Your referral link is active — share it and earn</div></div>
-          <div class="cs-item"><div class="cs-num">4</div><div class="cs-text">👋 A solar advisor will reach out only if you request it</div></div>
+          <div class="cs-item"><div class="cs-num">1</div><div class="cs-text">📱 Open your tracker to follow progress and message your specialist</div></div>
+          <div class="cs-item"><div class="cs-num">2</div><div class="cs-text">📧 We emailed you your private tracker link</div></div>
+          <div class="cs-item"><div class="cs-num">3</div><div class="cs-text">👋 A local solar specialist will reach out by phone, text or email</div></div>
+          <div class="cs-item"><div class="cs-num">4</div><div class="cs-text">💸 Your referral link is active, and you can track your friends in the app</div></div>
         </div>
-        <button class="btn-view-referral" onclick="openDash()">View my referral dashboard →</button>
+        <a class="btn-view-referral" id="trackerBtn" href="/portal/" style="display:block;text-align:center;text-decoration:none">Open my tracker →</a>
+        <div id="installNote" style="font-size:0.75rem;color:var(--ink-dim);text-align:center;margin:8px 0 0">Tip: add the tracker to your home screen to get notifications.</div>
         <button class="btn-close-done" onclick="closeModal('funnelOverlay')">Close</button>
       </div>
     </div>
@@ -1591,101 +1598,6 @@ footer {
   </div><!-- /modal-body -->
 </div><!-- /modal -->
 </div><!-- /overlay -->
-
-
-<!-- ════════════════════════════════════════════════
-     REFERRAL DASHBOARD MODAL
-════════════════════════════════════════════════ -->
-<div class="overlay" id="dashOverlay" onclick="overlayClick(event,'dashOverlay')">
-<div class="modal" id="dashModal">
-  <div class="ref-dash">
-    <div class="rd-header">
-      <div class="rd-header-top">
-        <div class="rdh-title">My Referral Dashboard</div>
-        <button class="rdh-close" onclick="closeModal('dashOverlay')">✕</button>
-      </div>
-      <div class="rd-earnings-row">
-        <div class="rde-stat">
-          <div class="rdes-val gold">$1,200</div>
-          <div class="rdes-label">Total Earned</div>
-        </div>
-        <div class="rde-stat">
-          <div class="rdes-val green">3</div>
-          <div class="rdes-label">Active Referrals</div>
-        </div>
-        <div class="rde-stat">
-          <div class="rdes-val" style="color:#fff">$1,000</div>
-          <div class="rdes-label">Pending (install)</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="rd-body">
-      <!-- Referral link -->
-      <div class="rd-link-section">
-        <div class="rd-section-title" style="margin-top:0">Your referral link</div>
-        <div class="ref-link-box">
-          <div style="flex:1">
-            <div class="rlb-label">Share this link</div>
-            <div class="rlb-url" id="dashRefLink">wattworthsolar.com/r/</div>
-          </div>
-          <button class="rlb-copy" id="dashCopyBtn" onclick="copyDashLink()">Copy</button>
-        </div>
-        <div class="ref-share" style="margin-top:10px">
-          <button class="share-btn" onclick="shareVia('sms')">📱 SMS</button>
-          <button class="share-btn" onclick="shareVia('email')">📧 Email</button>
-          <button class="share-btn" onclick="shareVia('whatsapp')">💬 WhatsApp</button>
-        </div>
-      </div>
-
-      <!-- Referrals list -->
-      <div class="rd-section-title">Your referrals</div>
-
-      <div class="rd-referral-item">
-        <div class="rdi-avatar" style="background:var(--green)">MJ</div>
-        <div class="rdi-info">
-          <div class="rdi-name">Maria Johnson</div>
-          <div class="rdi-date">Referred Jan 12 · Austin, TX</div>
-        </div>
-        <div class="rdi-status installed">Installed</div>
-        <div class="rdi-earn">+$1,000</div>
-      </div>
-
-      <div class="rd-referral-item">
-        <div class="rdi-avatar" style="background:var(--blue)">TR</div>
-        <div class="rdi-info">
-          <div class="rdi-name">Tom Reynolds</div>
-          <div class="rdi-date">Referred Feb 3 · Denver, CO</div>
-        </div>
-        <div class="rdi-status estimated">Estimated</div>
-        <div class="rdi-earn" style="color:var(--green-dark)">+$100</div>
-      </div>
-
-      <div class="rd-referral-item">
-        <div class="rdi-avatar" style="background:#C4714A">SK</div>
-        <div class="rdi-info">
-          <div class="rdi-name">Sara Kim</div>
-          <div class="rdi-date">Referred Feb 18 · Phoenix, AZ</div>
-        </div>
-        <div class="rdi-status submitted">Submitted</div>
-        <div class="rdi-earn" style="color:var(--ink-dim)">+$50</div>
-      </div>
-
-      <!-- Add referral inline -->
-      <div class="rd-add-referral">
-        <div class="rd-section-title">Add a new referral</div>
-        <div class="ref-manual">
-          <div class="field" style="margin:0"><label>Their Name</label><input type="text" id="dash-ref-name" placeholder="Jane Smith"></div>
-          <div class="field" style="margin:0"><label>Email or Phone</label><input type="text" id="dash-ref-contact" placeholder="jane@email.com"></div>
-        </div>
-        <button class="btn-next" style="margin-top:12px" onclick="submitDashReferral()">Send Referral Invite →</button>
-      </div>
-
-      <p style="font-size:0.68rem;color:var(--ink-dim);margin-top:16px;line-height:1.6;text-align:center;">Rewards paid within 30 days of each milestone trigger. Subject to installer partnership terms. WattWorth powered by SunLoop.</p>
-    </div>
-  </div>
-</div>
-</div>
 
 
 <!-- ── LOADING SCREEN ───────────────────────────── -->
@@ -1716,10 +1628,11 @@ const lead = {
   refCode: '',
   utmSource: new URLSearchParams(location.search).get('utm_source') || 'direct',
   utmMedium: new URLSearchParams(location.search).get('utm_medium') || '',
-  refBy: new URLSearchParams(location.search).get('ref') || ''
+  refBy: new URLSearchParams(location.search).get('ref') || ((/^\/r\/([A-Za-z0-9]+)/.exec(location.pathname) || [])[1] || '')
 };
 
-const stepLabels = ['Your Address','Monthly Bill','Ownership','Roof Type','Your Details'];
+const stepLabels = ['Monthly Bill','Ownership','Roof Type','Your Address','Your Details'];
+const STEP_POS = { 2:1, 3:2, 4:3, 1:4, 5:5 };   // funnel order: bill, ownership, roof, address, details (address is never asked first)
 
 /* ── ADDRESS INTELLIGENCE ─────────────────── */
 const utilityData = {
@@ -1770,9 +1683,10 @@ function goStep(n) {
   prog.style.display = 'block';
   body.style.padding = '';
   document.getElementById('fs' + n).classList.add('active');
-  document.getElementById('funnelStepLabel').textContent = stepLabels[n-1];
-  document.getElementById('funnelStepCount').textContent = n + ' / 6';
-  document.getElementById('funnelFill').style.width = (n / 6 * 100) + '%';
+  const pos = STEP_POS[n];
+  document.getElementById('funnelStepLabel').textContent = stepLabels[pos-1];
+  document.getElementById('funnelStepCount').textContent = pos + ' / 5';
+  document.getElementById('funnelFill').style.width = (pos / 5 * 100) + '%';
 }
 
 /* ── OPTION PICKING ──────────────────────── */
@@ -1850,8 +1764,15 @@ async function submitLead() {
   lead.address   = document.getElementById('inp-addr').value.trim();
   lead.city      = document.getElementById('inp-city').value.trim();
   lead.state     = document.getElementById('inp-state').value;
+  lead.zip       = document.getElementById('inp-zip').value.trim();
 
-  if (!lead.firstName || !lead.email) { alert('Please enter your name and email.'); return; }
+  const err = (m) => { const b = document.getElementById('formErr'); b.textContent = m; b.style.display = m ? 'block' : 'none'; return false; };
+  err('');
+  if (!lead.firstName) return err('Please enter your first name.');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(lead.email)) return err('Please enter a valid email address.');
+  if (lead.phone.replace(/\D/g, '').replace(/^1/, '').length !== 10) return err('Please enter a 10-digit mobile number so your solar specialist can reach you.');
+  if (!document.getElementById('inp-consent').checked) return err('Please tick the box to agree to be contacted.');
+  const sending = sendLead();   // runs while the estimate animation plays
 
   // Loading sequence
   const ls = document.getElementById('loadingScreen');
@@ -1870,15 +1791,18 @@ async function submitLead() {
   lsItems.forEach(i => { document.getElementById(i).classList.remove('active','done'); });
   li = 0;
 
+  const sent = await sending;
+  if (!sent.ok) { document.getElementById('lsBar').style.width = '0%'; err(sent.error); return; }
+  lead.ref = sent.ref;
+
   lead.estimate = calcEstimate();
-  lead.refCode  = genRefCode(lead.firstName);
-  document.getElementById('refLinkUrl').textContent  = 'wattworthsolar.com/r/' + lead.refCode;
-  document.getElementById('dashRefLink').textContent = 'wattworthsolar.com/r/' + lead.refCode;
+  lead.refCode  = sent.own_code || genRefCode(lead.firstName);
+  document.getElementById('refLinkUrl').textContent  = location.host + '/r/' + lead.refCode;
+  setTracker(sent);
   document.getElementById('confirm-name').textContent = lead.firstName;
 
   renderQuote();
   goStep('quote');
-  sendWebhook();
 }
 
 /* ── RENDER QUOTE ────────────────────────── */
@@ -1959,7 +1883,7 @@ function renderQuote() {
       <div class="q-disclaimer">Estimates based on regional solar data and typical usage patterns. Actual savings may vary. Final system design subject to site inspection. This is not a contract or binding offer.<br><span style="color:var(--green-dark);font-weight:600">Powered by SunLoop</span></div>
 
       <button class="btn-proposal" onclick="requestProposal()">
-        📄 Send my free proposal PDF →
+        See my next steps →
       </button>
     </div>
   `;
@@ -1973,10 +1897,10 @@ function pickPlan(el, plan) {
 
 async function requestProposal() {
   const ls = document.getElementById('loadingScreen');
-  document.getElementById('ls1').textContent = 'Generating your WattWorth proposal PDF…';
-  document.getElementById('ls2').textContent = 'Applying SunLoop routing…';
-  document.getElementById('ls3').textContent = 'Generating your referral link…';
-  document.getElementById('ls4').textContent = 'Scheduling follow-up sequence…';
+  document.getElementById('ls1').textContent = 'Setting up your project tracker…';
+  document.getElementById('ls2').textContent = 'Connecting you with a local solar specialist…';
+  document.getElementById('ls3').textContent = 'Preparing your referral link…';
+  document.getElementById('ls4').textContent = 'Saving your estimate…';
   document.getElementById('ls5').textContent = 'Almost done…';
   ls.classList.add('on');
   document.getElementById('lsBar').style.width = '95%';
@@ -1994,23 +1918,15 @@ async function requestProposal() {
 
 /* ── REFERRAL ACTIONS ────────────────────── */
 function copyRefLink() {
-  const link = 'https://wattworthsolar.com/r/' + lead.refCode;
+  const link = location.origin + '/r/' + lead.refCode;
   navigator.clipboard?.writeText(link).catch(()=>{});
   const btn = document.getElementById('copyBtn');
   btn.textContent = 'Copied!';
   btn.classList.add('copied');
   setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
 }
-function copyDashLink() {
-  const link = 'https://wattworthsolar.com/r/' + (lead.refCode || 'DEMO1234');
-  navigator.clipboard?.writeText(link).catch(()=>{});
-  const btn = document.getElementById('dashCopyBtn');
-  btn.textContent = 'Copied!';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-}
 function shareVia(channel) {
-  const link = 'https://wattworthsolar.com/r/' + (lead.refCode || 'DEMO1234');
+  const link = location.origin + '/r/' + lead.refCode;
   const msg = encodeURIComponent(`Check your solar savings for free — I saved $${(lead.estimate?.monthlyLow || 120)}/mo! ${link}`);
   const urls = {
     sms: `sms:?body=${msg}`,
@@ -2020,59 +1936,66 @@ function shareVia(channel) {
   window.open(urls[channel], '_blank');
 }
 function submitReferral() {
+  // Opens the visitor's own messaging app with their link pre-filled, so nothing is sent on their behalf.
   const name = document.getElementById('ref-name').value.trim();
   const contact = document.getElementById('ref-contact').value.trim();
-  if (name || contact) {
-    // Would POST to webhook in production
-    console.log('Referral submitted:', { name, contact, refBy: lead.refCode });
+  if (contact) {
+    const link = location.origin + '/r/' + lead.refCode;
+    const msg = encodeURIComponent(`Hi${name ? ' ' + name.split(' ')[0] : ''}, check your solar savings for free with WattWorth: ${link}`);
+    if (/@/.test(contact)) window.location.href = `mailto:${encodeURIComponent(contact)}?subject=Check%20your%20solar%20savings&body=${msg}`;
+    else window.location.href = `sms:${contact.replace(/[^0-9+]/g, '')}?body=${msg}`;
   }
-  goStep('confirm');
-}
-function submitDashReferral() {
-  const name = document.getElementById('dash-ref-name').value.trim();
-  const contact = document.getElementById('dash-ref-contact').value.trim();
-  if (!name && !contact) { alert('Please enter a name or contact for your referral.'); return; }
-  alert(`✅ Referral invite sent to ${name || contact}! You'll earn $50 when they submit.`);
-  document.getElementById('dash-ref-name').value = '';
-  document.getElementById('dash-ref-contact').value = '';
+  setTimeout(() => goStep('confirm'), contact ? 600 : 0);
 }
 
-/* ── WEBHOOK ──────────────────────────────── */
-async function sendWebhook() {
+/* ── SEND LEAD TO THE LEAD SYSTEM (/api/leads) ───────────
+   Same origin as this page. The lead is stored, logged and delivered to your solar partner
+   by email / text / webhook. Nothing is sent until the consent box is ticked. */
+function setTracker(sent) {
+  try { if (sent.portal_token) localStorage.setItem('ww_portal_token', sent.portal_token); } catch (_) {}
+  const btn = document.getElementById('trackerBtn');
+  if (sent.portal_token) btn.href = '/portal/#t=' + sent.portal_token;
+  else if (sent.existing_tracker) {
+    btn.href = '/portal/';
+    document.getElementById('confirm-desc').textContent = 'We already have a request for this number, so we emailed your existing tracker link. Here is what happens next:';
+  }
+}
+
+const BILL_MID = { 'under-75': 60, '75-150': 110, '150-250': 200, '250+': 300 };
+async function sendLead() {
+  const q = new URLSearchParams(location.search);
+  const intel = [];
+  if (lead.bill) intel.push('Bill range: ' + lead.bill);
+  if (lead.roof) intel.push('Roof: ' + lead.roof);
+  if (lead.billUploaded) intel.push('Offered a bill upload');
   const payload = {
-    source: 'wattworthsolar', powered_by: 'sunloop',
-    timestamp: new Date().toISOString(),
-    utm: { source: lead.utmSource, medium: lead.utmMedium },
-    referred_by: lead.refBy,
-    lead: {
-      firstName: lead.firstName, lastName: lead.lastName,
-      email: lead.email, phone: lead.phone,
-      address: lead.address, city: lead.city, state: lead.state,
-    },
-    qualification: {
-      billTier: lead.bill, ownership: lead.ownership, roofType: lead.roof,
-      billUploaded: lead.billUploaded, qualScore: lead.qualScore,
-      tier: lead.estimate?.tier
-    },
-    estimate: lead.estimate,
-    referral: { code: lead.refCode }
+    first_name: lead.firstName, last_name: lead.lastName, phone: lead.phone, email: lead.email,
+    address: lead.address, city: lead.city, state: lead.state, zip: lead.zip,
+    monthly_bill: BILL_MID[lead.bill] || null,
+    homeowner: lead.ownership === 'own' ? true : lead.ownership === 'rent' ? false : null,
+    notes: intel.join('. ') || null,
+    consent: true,
+    consent_text: document.getElementById('consentText').textContent.trim(),   // exact wording the visitor saw
+    referrer_code: lead.refBy || null,
+    source: location.pathname,
+    utm: Object.fromEntries(['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].map(k => [k, q.get(k)]).filter(([, v]) => v)),
+    website: document.getElementById('inp-website').value || '',   // honeypot
   };
-  const HOOK = 'https://hooks.zapier.com/hooks/catch/YOUR_HOOK_ID/';
   try {
-    await fetch(HOOK, { method:'POST', headers:{'Content-Type':'application/json'}, mode:'no-cors', body:JSON.stringify(payload) });
-  } catch(e) { console.warn('Webhook not configured'); }
+    const res = await fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const j = await res.json().catch(() => ({}));
+    if (res.ok) return { ok: true, ref: j.ref, portal_token: j.portal_token || null, own_code: j.own_code || null, existing_tracker: !!j.existing_tracker };
+    return { ok: false, error: res.status === 429 ? 'Too many submissions from this connection. Please try again later.' : (j.error && /phone/i.test(j.error) ? 'Please check your phone number.' : 'We could not submit your request. Please check your details and try again.') };
+  } catch (e) {
+    return { ok: false, error: 'Network problem. Please check your connection and try again.' };
+  }
 }
 
 /* ── MODAL HELPERS ───────────────────────── */
 function openFunnel() {
   document.getElementById('funnelOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  goStep(1);
-}
-function openDash(e) {
-  if (e) e.preventDefault();
-  document.getElementById('dashOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  goStep(2);
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');

@@ -1,0 +1,16 @@
+{
+  "name": "wattworth-leads",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node dev.js",
+    "test": "node --test test/*.test.js",
+    "vapid": "node -e \"const k=require('web-push').generateVAPIDKeys();console.log('VAPID_PUBLIC_KEY='+k.publicKey);console.log('VAPID_PRIVATE_KEY='+k.privateKey);console.log('VAPID_SUBJECT=mailto:you@yourdomain.com')\""
+  },
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}

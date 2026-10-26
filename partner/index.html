@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F6F1E7">
+<title>WattWorth Partner Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/ww.css">
+</head>
+<body>
+<div id="demo" class="demo" hidden>Demo mode: sample data stored on this device only</div>
+<header class="top"><div class="wrap">
+  <div><div class="brand">Watt<i>Worth</i></div><div class="sub" id="who">Partner dashboard</div></div>
+  <div class="spacer"></div>
+  <button class="btn ghost sm" id="csv" hidden>Export CSV</button>
+  <button class="btn ghost sm" id="out" hidden>Sign out</button>
+</div></header>
+
+<main class="wrap" id="app"></main>
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Lead details"></aside>
+
+<script src="/lib/shared.js"></script>
+<script src="/assets/ww.js"></script>
+<script>
+(function () {
+  const { $, esc, ago, date, when, name, phone, usd, toast, api, ls, W } = App;
+  const state = { data: null, filter: 'all', q: '', open: null, draftStage: null };
+  const app = $('#app'), sheet = $('#sheet'), scrim = $('#scrim');
+  const isDemo = () => ls.get('ww_partner_token') === 'demo';
+
+  function signIn(msg) {
+    $('#out').hidden = $('#csv').hidden = true; $('#demo').hidden = true; $('#who').textContent = 'Partner dashboard';
+    app.innerHTML = `<div class="card stack" style="max-width:460px;margin:48px auto 0">
+      <h1 style="font-size:28px">Welcome back</h1>
+      <p class="note" style="margin:0">Enter the access key Kacy sent you to see your WattWorth leads and update where each deal stands.</p>
+      <div><label for="k">Access key</label><input id="k" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="wp_…"></div>
+      ${msg ? `<div class="flag red">${esc(msg)}</div>` : ''}
+      <button class="btn" id="go" style="width:100%">Open dashboard</button>
+      <button class="btn ghost" id="try" style="width:100%">Preview with sample data</button></div>`;
+    const go = (key) => { ls.set('ww_partner_token', key); load(); };
+    $('#go').onclick = () => { const v = $('#k').value.trim(); if (v) go(v); };
+    $('#k').onkeydown = (e) => { if (e.key === 'Enter') $('#go').click(); };
+    $('#try').onclick = () => go('demo');
+  }
+
+  async function load(silent) {
+    try {
+      state.data = await api('partner', '/api/partner');
+      $('#out').hidden = $('#csv').hidden = false; $('#demo').hidden = !isDemo();
+      $('#who').textContent = state.data.partner.company || state.data.partner.name;
+      render();
+      if (state.open) { const l = state.data.leads.find((x) => x.id === state.open); if (l && !sheet.classList.contains('on')) openSheet(l.id); }
+    } catch (e) {
+      if (e.status === 401) return signIn(silent ? 'Your session ended. Please sign in again.' : '');
+      if (!silent) toast(e.message || 'Could not load leads', true);
+      if (!state.data) app.innerHTML = `<div class="empty">Couldn't load your leads.<br><br><button class="btn" onclick="location.reload()">Try again</button></div>`;
+    }
+  }
+
+  const counts = (leads) => Object.fromEntries(['all', ...W.KEYS].map((k) => [k, k === 'all' ? leads.length : leads.filter((l) => l.stage === k).length]));
+  const waiting = (l) => l.stage === 'received' && Date.now() - new Date(l.created_at).getTime() > 24 * 3600e3;
+
+  function render() {
+    const leads = state.data.leads, c = counts(leads);
+    const active = leads.filter((l) => !['installed', 'lost'].includes(l.stage)).length;
+    const q = state.q.toLowerCase();
+    const shown = leads.filter((l) => (state.filter === 'all' || l.stage === state.filter) && (!q || (name(l) + ' ' + l.ref + ' ' + (l.city || '') + ' ' + l.phone).toLowerCase().includes(q)));
+    const needs = leads.filter(waiting).length;
+    app.innerHTML = `
+      <div class="grid kpis" style="margin-top:16px;grid-template-columns:repeat(2,1fr)">
+        <div class="card kpi ${c.received ? 'gold' : ''}"><div class="n">${c.received}</div><div class="l">New, need first contact</div></div>
+        <div class="card kpi"><div class="n">${active}</div><div class="l">Active deals</div></div>
+        <div class="card kpi"><div class="n">${c.signed}</div><div class="l">Signed</div></div>
+        <div class="card kpi"><div class="n">${c.installed}</div><div class="l">Installed</div></div>
+      </div>
+      ${needs ? `<div class="flag red" style="margin-top:12px">${needs} lead${needs > 1 ? 's' : ''} waiting more than 24 hours for first contact</div>` : ''}
+      <div style="margin-top:16px"><input id="q" type="search" placeholder="Search name, city, phone, reference" value="${esc(state.q)}"></div>
+      <div class="pills" role="tablist">${['all', ...W.KEYS].map((k) => `<button class="pill ${state.filter === k ? 'on' : ''}" data-f="${k}">${k === 'all' ? 'All' : W.LABEL[k]}<b>${c[k]}</b></button>`).join('')}</div>
+      <div class="list" id="list">${shown.length ? shown.map(card).join('') : `<div class="empty">${leads.length ? 'No leads match.' : 'No leads yet. New leads appear here the moment they come in.'}</div>`}</div>`;
+    $('#q').oninput = (e) => { state.q = e.target.value; const pos = e.target.selectionStart; render(); const el = $('#q'); el.focus(); el.setSelectionRange(pos, pos); };
+    app.querySelectorAll('[data-f]').forEach((b) => (b.onclick = () => { state.filter = b.dataset.f; render(); }));
+    app.querySelectorAll('[data-id]').forEach((b) => (b.onclick = () => openSheet(b.dataset.id)));
+  }
+
+  const stageText = (l) => l.stage !== 'invalid' ? W.LABEL[l.stage] : l.dispute_status === 'accepted' ? 'Invalid (accepted)' : l.dispute_status === 'pending' ? 'Invalid (in review)' : 'Invalid lead';
+  const card = (l) => `<button class="lead" data-id="${l.id}">
+    <div class="main"><div class="name">${esc(name(l))}</div>
+      <div class="meta">${esc([l.city, l.state].filter(Boolean).join(', '))}${l.monthly_bill ? ' · ' + usd(l.monthly_bill) + '/mo bill' : ''}${l.system_kw ? ' · ' + l.system_kw + ' kW' : ''}</div>
+      <div class="ref">${esc(l.ref)} · ${ago(l.created_at)}</div>
+      ${waiting(l) ? `<span class="flag">Waiting ${ago(l.created_at).replace(' ago', '')}</span>` : ''}</div>
+    <span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="badge ${l.stage}">${stageText(l)}</span>${l.unread ? `<span class="badge" style="background:var(--red);color:#fff">${l.unread} new message${l.unread > 1 ? 's' : ''}</span>` : ''}</span></button>`;
+
+  const toLocalInput = (iso) => { const d = new Date(iso), p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+  function openSheet(id) {
+    const l = state.data.leads.find((x) => x.id === id); if (!l) return;
+    state.open = id; state.draftStage = l.stage; state.openStage = l.stage; state.shownReasonFor = l.stage;
+    const addr = [l.address, [l.city, l.state].filter(Boolean).join(', '), l.zip].filter(Boolean).join(', ');
+    sheet.innerHTML = `<div class="grab"></div>
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h2 style="margin:0;font-size:26px">${esc(name(l))}</h2><div class="ref note">${esc(l.ref)} · received ${when(l.created_at)}</div></div><button class="btn ghost sm" id="close">Close</button></div>
+      <div class="actions"><a href="tel:${esc(l.phone)}">Call</a><a href="sms:${esc(l.phone)}">Text</a>${l.email ? `<a href="mailto:${esc(l.email)}">Email</a>` : '<a style="opacity:.4;pointer-events:none">Email</a>'}</div>
+      <div class="card" style="font-size:14px"><b>${esc(phone(l.phone))}</b>${l.email ? '<br>' + esc(l.email) : ''}${addr ? '<br><span class="note">' + esc(addr) + '</span>' : ''}${l.monthly_bill ? '<br><span class="note">Electric bill ' + usd(l.monthly_bill) + '/mo' + (l.homeowner === false ? ' · renter' : l.homeowner ? ' · homeowner' : '') + '</span>' : ''}${l.notes ? '<br><span class="note">“' + esc(l.notes) + '”</span>' : ''}</div>
+      <label>Messages with ${esc(l.first_name)}</label>
+      <div class="card" style="padding:12px"><div id="thr" style="max-height:200px;overflow:auto;display:flex;flex-direction:column;gap:6px">${(l.messages || []).map((m) => `<div style="align-self:${m.from === 'customer' ? 'flex-start' : 'flex-end'};max-width:86%;padding:8px 12px;border-radius:14px;font-size:14px;white-space:pre-wrap;word-wrap:break-word;${m.from === 'customer' ? 'background:var(--cream-2)' : 'background:var(--forest);color:#fff'}">${esc(m.body)}<div style="font-size:11px;opacity:.65;margin-top:2px">${m.from === 'customer' ? esc(l.first_name) : 'You' + (m.via === 'email' ? ' (email)' : '')} · ${ago(m.at)}</div></div>`).join('') || '<div class="note">No messages yet. They can write to you from their app, and you can reply here or by email.</div>'}</div>
+        <textarea id="rep" rows="2" maxlength="2000" placeholder="Reply to ${esc(l.first_name)} (they get a notification)" style="margin-top:10px"></textarea>
+        <button class="btn sm" id="repbtn" style="margin-top:8px">Send reply</button></div>
+      <label for="appt">Consultation time</label>
+      <input id="appt" type="datetime-local" value="${l.appointment_at ? toLocalInput(l.appointment_at) : ''}">
+      <div class="note" style="margin-top:6px">Setting this notifies the customer and sends them reminders.</div>
+      <label>Deal status</label>
+      <div class="stages" id="stages">${W.STAGES.map((s) => `<button class="stage ${s.key} ${s.key === l.stage ? 'on' : ''}" data-s="${s.key}">${s.label}</button>`).join('')}</div>
+      <div id="lostbox" ${['lost', 'invalid'].includes(l.stage) ? '' : 'hidden'}><label for="lr" id="lrl"></label><input id="lr" maxlength="300" value="${esc(l.stage === 'invalid' ? l.invalid_reason || '' : l.lost_reason || '')}"><div class="note" id="lrn" style="margin-top:6px"></div></div>
+      ${l.dispute_status === 'pending' ? '<div class="flag">Invalid flag is waiting for Kacy to review</div>' : l.dispute_status === 'accepted' ? '<div class="flag">Invalid flag accepted. This lead will not be billed.</div>' : l.dispute_status === 'rejected' ? '<div class="flag red">Invalid flag was declined. This lead is active again.</div>' : ''}
+      <div class="row2"><div><label for="kw">System size (kW)</label><input id="kw" inputmode="decimal" placeholder="e.g. 8.4" value="${l.system_kw ?? ''}"></div>
+      <div><label for="cv">Contract value ($)</label><input id="cv" inputmode="numeric" placeholder="optional" value="${l.contract_value ?? ''}"></div></div>
+      <div id="cmbox" ${['signed', 'installed'].includes(l.stage) || l.commission_cents != null ? '' : 'hidden'}>
+        <label for="cm">Your company's commission on this deal ($)</label>
+        <input id="cm" inputmode="decimal" placeholder="Total earned so far. Update as payments arrive." value="${l.commission_cents != null ? l.commission_cents / 100 : ''}">
+        <div class="note" id="cmn" style="margin-top:6px"></div>
+      </div>
+      <label for="nt">Add a note (optional)</label><textarea id="nt" rows="2" maxlength="1000" placeholder="e.g. site survey Thursday 10am"></textarea>
+      <button class="btn" id="save" style="width:100%;margin-top:16px">Save update</button>
+      ${l.history && l.history.length ? `<h3 style="margin:24px 0 10px;font-size:18px">History</h3><ul class="tl">${l.history.map((h) => `<li>${h.type === 'stage' ? `Moved <b>${esc(W.LABEL[h.from] || h.from)}</b> to <b>${esc(W.LABEL[h.to] || h.to)}</b>` : h.type === 'size' ? `System size set to <b>${esc(h.to)} kW</b>` : h.type === 'value' ? `Contract value set to <b>${usd(h.to)}</b>` : h.type === 'commission' ? `Commission set to <b>${usd(h.to)}</b>` : h.type === 'created' ? 'Lead received' : h.type === 'dispute' ? `Kacy ${esc(h.to)} the invalid flag` : 'Note'}${h.note && h.type !== 'created' ? `<br>“${esc(h.note)}”` : ''}<div class="t">${when(h.at)}${h.actor && h.actor.startsWith('admin') ? ' · Kacy' : ''}</div></li>`).join('')}</ul>` : ''}`;
+    sheet.classList.add('on'); scrim.classList.add('on');
+    $('#close').onclick = closeSheet;
+    const thr = $('#thr'); if (thr) thr.scrollTop = thr.scrollHeight;
+    if (l.unread) api('partner', '/api/partner', { method: 'PATCH', body: JSON.stringify({ lead_id: l.id, read: true }) }).then(() => { l.unread = 0; (l.messages || []).forEach((m) => (m.unread = false)); }).catch(() => {});
+    $('#repbtn').onclick = async () => {
+      const t = $('#rep').value.trim(); if (!t) return toast('Write a reply first', true);
+      const b = $('#repbtn'); b.disabled = true;
+      try { await api('partner', '/api/partner', { method: 'PATCH', body: JSON.stringify({ lead_id: l.id, message: t }) }); toast('Sent. They will be notified.'); await load(true); const x = state.data.leads.find((y) => y.id === l.id); if (x) openSheet(x.id); }
+      catch (e) { toast(e.message || 'Could not send', true); b.disabled = false; }
+    };
+    sheet.querySelectorAll('[data-s]').forEach((b) => (b.onclick = () => {
+      state.draftStage = b.dataset.s;
+      sheet.querySelectorAll('[data-s]').forEach((x) => x.classList.toggle('on', x === b));
+      reasonBox();
+      $('#cmbox').hidden = !(['signed', 'installed'].includes(b.dataset.s) || l.commission_cents != null);
+    }));
+    reasonBox();
+    const cmCalc = () => {
+      const terms = (state.data && state.data.terms) || {}, v = parseFloat($('#cm').value);
+      $('#cmn').textContent = terms.mode === 'split' && terms.owner_percent != null && v >= 0 ? 'WattWorth share (' + terms.owner_percent + '%): ' + W.money(Math.round(v * terms.owner_percent)) : '';
+    };
+    $('#cm').oninput = cmCalc; cmCalc();
+    $('#save').onclick = async () => {
+      const b = $('#save'); b.disabled = true;
+      const body = { lead_id: l.id, system_kw: $('#kw').value.trim(), contract_value: $('#cv').value.trim(), appointment_at: $('#appt').value ? new Date($('#appt').value).toISOString() : '', commission_dollars: $('#cm').value.trim(), note: $('#nt').value.trim() };
+      if (state.draftStage !== l.stage) body.stage = state.draftStage;
+      if (state.draftStage === 'lost') body.lost_reason = $('#lr').value.trim();
+      if (state.draftStage === 'invalid') body.invalid_reason = $('#lr').value.trim();
+      try { await api('partner', '/api/partner', { method: 'PATCH', body: JSON.stringify(body) }); toast('Saved. Kacy can see this now.'); closeSheet(); await load(true); }
+      catch (e) { toast(e.message || 'Could not save. Try again.', true); b.disabled = false; }
+    };
+  }
+  function reasonBox() {
+    const st = state.draftStage, box = $('#lostbox');
+    box.hidden = !['lost', 'invalid'].includes(st);
+    $('#lrl').textContent = st === 'invalid' ? 'Why is this lead invalid? (required)' : 'Why was it lost?';
+    $('#lr').placeholder = st === 'invalid' ? 'e.g. wrong number, renter, outside service area' : 'e.g. roof issue, went with another installer';
+    $('#lrn').textContent = st === 'invalid' ? 'Kacy reviews every invalid flag. Accepted ones are not billed.' : '';
+    if (st !== state.shownReasonFor) { state.shownReasonFor = st; if (st !== state.openStage) $('#lr').value = ''; }
+  }
+  function closeSheet() { sheet.classList.remove('on'); scrim.classList.remove('on'); state.open = null; }
+  scrim.onclick = closeSheet;
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+
+  $('#out').onclick = () => { ls.del('ww_partner_token'); state.data = null; closeSheet(); signIn(); };
+  $('#csv').onclick = () => App.download('partner', '/api/export', 'wattworth-deals.csv');
+  setInterval(() => { if (state.data && !sheet.classList.contains('on') && !document.hidden) load(true); }, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && state.data && !sheet.classList.contains('on')) load(true); });
+
+  if (ls.get('ww_partner_token')) load(); else signIn();
+})();
+</script>
+</body>
+</html>
