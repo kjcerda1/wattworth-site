@@ -1340,23 +1340,28 @@ footer {
   <!-- progress bar -->
   <div class="modal-progress" id="funnelProgress">
     <div class="mp-top">
-      <span class="mp-label" id="funnelStepLabel">Your address</span>
-      <span class="mp-count" id="funnelStepCount">1 / 6</span>
+      <span class="mp-label" id="funnelStepLabel">Monthly Bill</span>
+      <span class="mp-count" id="funnelStepCount">1 / 5</span>
     </div>
-    <div class="mp-track"><div class="mp-fill" id="funnelFill" style="width:16.6%"></div></div>
+    <div class="mp-track"><div class="mp-fill" id="funnelFill" style="width:20%"></div></div>
   </div>
 
   <div class="modal-body">
 
     <!-- STEP 1: Address -->
     <div class="fstep active" id="fs1">
-      <div class="fstep-tag">Step 1 — Location</div>
+      <button class="btn-back" onclick="goStep(4)">← Back</button>
+      <div class="fstep-tag">Step 4 — Location</div>
       <div class="fstep-title">What's your home address?</div>
       <div class="fstep-desc">We use your address to look up local utility rates, solar potential, and customize your estimate.</div>
 
       <div class="field">
         <label>Street Address</label>
         <input type="text" id="inp-addr" placeholder="123 Maple Street" oninput="checkAddressIntel()">
+      </div>
+      <div class="field">
+        <label>ZIP Code</label>
+        <input type="text" id="inp-zip" inputmode="numeric" maxlength="10" autocomplete="postal-code" placeholder="78701">
       </div>
       <div class="fcols">
         <div class="field">
@@ -1403,13 +1408,12 @@ footer {
         </div>
       </div>
 
-      <button class="btn-next" onclick="goStep(2)">Continue →</button>
+      <button class="btn-next" onclick="goStep(5)">Continue →</button>
     </div>
 
     <!-- STEP 2: Bill -->
     <div class="fstep" id="fs2">
-      <button class="btn-back" onclick="goStep(1)">← Back</button>
-      <div class="fstep-tag">Step 2 — Usage</div>
+      <div class="fstep-tag">Step 1 — Usage</div>
       <div class="fstep-title">Average monthly electric bill?</div>
       <div class="fstep-desc">This is the single biggest factor in your savings estimate.</div>
       <div class="choices">
@@ -1452,7 +1456,7 @@ footer {
     <!-- STEP 3: Ownership -->
     <div class="fstep" id="fs3">
       <button class="btn-back" onclick="goStep(2)">← Back</button>
-      <div class="fstep-tag">Step 3 — Property</div>
+      <div class="fstep-tag">Step 2 — Property</div>
       <div class="fstep-title">Do you own or rent your home?</div>
       <div class="fstep-desc">Ownership determines which financing options you can access.</div>
       <div class="choices two">
@@ -1473,7 +1477,7 @@ footer {
     <!-- STEP 4: Roof -->
     <div class="fstep" id="fs4">
       <button class="btn-back" onclick="goStep(3)">← Back</button>
-      <div class="fstep-tag">Step 4 — Roof</div>
+      <div class="fstep-tag">Step 3 — Roof</div>
       <div class="fstep-title">What type of roof do you have?</div>
       <div class="fstep-desc">Optional — helps refine installation cost estimates.</div>
       <div class="choices two">
@@ -1503,12 +1507,12 @@ footer {
           <div class="ch-radio"></div>
         </div>
       </div>
-      <button class="btn-next" id="btn-roof" disabled onclick="goStep(5)">Continue →</button>
+      <button class="btn-next" id="btn-roof" disabled onclick="goStep(1)">Continue →</button>
     </div>
 
     <!-- STEP 5: Soft Commit + Contact -->
     <div class="fstep" id="fs5">
-      <button class="btn-back" onclick="goStep(4)">← Back</button>
+      <button class="btn-back" onclick="goStep(1)">← Back</button>
       <div class="soft-commit">
         <div class="sc-icon">📊</div>
         <div class="sc-text">
@@ -1524,8 +1528,10 @@ footer {
         <div class="field"><label>Last Name</label><input type="text" id="inp-last" placeholder="Johnson"></div>
       </div>
       <div class="field"><label>Email Address</label><input type="email" id="inp-email" placeholder="alex@example.com"></div>
-      <div class="field"><label>Phone (optional — for SMS updates)</label><input type="tel" id="inp-phone" placeholder="(555) 000-0000"></div>
-      <p style="font-size:0.7rem;color:var(--ink-dim);line-height:1.55;margin-bottom:4px;">By submitting you agree to receive your free solar estimate and optional follow-up from WattWorth. We never sell your data. No spam. Unsubscribe anytime. Powered by SunLoop.</p>
+      <div class="field"><label>Mobile Phone</label><input type="tel" id="inp-phone" inputmode="tel" autocomplete="tel" placeholder="(555) 000-0000"></div>
+      <input type="text" id="inp-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0">
+      <label id="consentLabel" style="display:flex;gap:10px;align-items:flex-start;font-size:0.72rem;line-height:1.5;color:var(--ink-dim);margin:6px 0 4px;text-transform:none;letter-spacing:0;font-weight:400;cursor:pointer;"><input type="checkbox" id="inp-consent" onchange="document.getElementById('formErr').style.display='none'" style="width:20px;height:20px;min-height:0;margin-top:2px;flex:none"><span id="consentText">I agree that WattWorth and a local solar partner may contact me about my solar estimate by phone, text message and email, including with automated technology. Consent is not a condition of any purchase. Message and data rates may apply. Reply STOP to opt out. We never sell your data.</span></label>
+      <div id="formErr" role="alert" style="display:none;color:#C62828;font-size:0.8rem;font-weight:600;margin:6px 0"></div>
       <button class="btn-next" onclick="submitLead()">Generate my free estimate →</button>
     </div>
 
@@ -1719,7 +1725,8 @@ const lead = {
   refBy: new URLSearchParams(location.search).get('ref') || ''
 };
 
-const stepLabels = ['Your Address','Monthly Bill','Ownership','Roof Type','Your Details'];
+const stepLabels = ['Monthly Bill','Ownership','Roof Type','Your Address','Your Details'];
+const STEP_POS = { 2:1, 3:2, 4:3, 1:4, 5:5 };   // funnel order: bill, ownership, roof, address, details (address is never asked first)
 
 /* ── ADDRESS INTELLIGENCE ─────────────────── */
 const utilityData = {
@@ -1770,9 +1777,10 @@ function goStep(n) {
   prog.style.display = 'block';
   body.style.padding = '';
   document.getElementById('fs' + n).classList.add('active');
-  document.getElementById('funnelStepLabel').textContent = stepLabels[n-1];
-  document.getElementById('funnelStepCount').textContent = n + ' / 6';
-  document.getElementById('funnelFill').style.width = (n / 6 * 100) + '%';
+  const pos = STEP_POS[n];
+  document.getElementById('funnelStepLabel').textContent = stepLabels[pos-1];
+  document.getElementById('funnelStepCount').textContent = pos + ' / 5';
+  document.getElementById('funnelFill').style.width = (pos / 5 * 100) + '%';
 }
 
 /* ── OPTION PICKING ──────────────────────── */
@@ -1850,8 +1858,15 @@ async function submitLead() {
   lead.address   = document.getElementById('inp-addr').value.trim();
   lead.city      = document.getElementById('inp-city').value.trim();
   lead.state     = document.getElementById('inp-state').value;
+  lead.zip       = document.getElementById('inp-zip').value.trim();
 
-  if (!lead.firstName || !lead.email) { alert('Please enter your name and email.'); return; }
+  const err = (m) => { const b = document.getElementById('formErr'); b.textContent = m; b.style.display = m ? 'block' : 'none'; return false; };
+  err('');
+  if (!lead.firstName) return err('Please enter your first name.');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(lead.email)) return err('Please enter a valid email address.');
+  if (lead.phone.replace(/\D/g, '').replace(/^1/, '').length !== 10) return err('Please enter a 10-digit mobile number so your solar specialist can reach you.');
+  if (!document.getElementById('inp-consent').checked) return err('Please tick the box to agree to be contacted.');
+  const sending = sendLead();   // runs while the estimate animation plays
 
   // Loading sequence
   const ls = document.getElementById('loadingScreen');
@@ -1870,6 +1885,10 @@ async function submitLead() {
   lsItems.forEach(i => { document.getElementById(i).classList.remove('active','done'); });
   li = 0;
 
+  const sent = await sending;
+  if (!sent.ok) { document.getElementById('lsBar').style.width = '0%'; err(sent.error); return; }
+  lead.ref = sent.ref;
+
   lead.estimate = calcEstimate();
   lead.refCode  = genRefCode(lead.firstName);
   document.getElementById('refLinkUrl').textContent  = 'wattworthsolar.com/r/' + lead.refCode;
@@ -1878,7 +1897,6 @@ async function submitLead() {
 
   renderQuote();
   goStep('quote');
-  sendWebhook();
 }
 
 /* ── RENDER QUOTE ────────────────────────── */
@@ -2037,37 +2055,44 @@ function submitDashReferral() {
   document.getElementById('dash-ref-contact').value = '';
 }
 
-/* ── WEBHOOK ──────────────────────────────── */
-async function sendWebhook() {
+/* ── SEND LEAD TO THE LEAD SYSTEM (/api/leads) ───────────
+   Same origin as this page. The lead is stored, logged and delivered to your solar partner
+   by email / text / webhook. Nothing is sent until the consent box is ticked. */
+const BILL_MID = { 'under-75': 60, '75-150': 110, '150-250': 200, '250+': 300 };
+async function sendLead() {
+  const q = new URLSearchParams(location.search);
+  const intel = [];
+  if (lead.bill) intel.push('Bill range: ' + lead.bill);
+  if (lead.roof) intel.push('Roof: ' + lead.roof);
+  if (lead.billUploaded) intel.push('Offered a bill upload');
   const payload = {
-    source: 'wattworthsolar', powered_by: 'sunloop',
-    timestamp: new Date().toISOString(),
-    utm: { source: lead.utmSource, medium: lead.utmMedium },
-    referred_by: lead.refBy,
-    lead: {
-      firstName: lead.firstName, lastName: lead.lastName,
-      email: lead.email, phone: lead.phone,
-      address: lead.address, city: lead.city, state: lead.state,
-    },
-    qualification: {
-      billTier: lead.bill, ownership: lead.ownership, roofType: lead.roof,
-      billUploaded: lead.billUploaded, qualScore: lead.qualScore,
-      tier: lead.estimate?.tier
-    },
-    estimate: lead.estimate,
-    referral: { code: lead.refCode }
+    first_name: lead.firstName, last_name: lead.lastName, phone: lead.phone, email: lead.email,
+    address: lead.address, city: lead.city, state: lead.state, zip: lead.zip,
+    monthly_bill: BILL_MID[lead.bill] || null,
+    homeowner: lead.ownership === 'own' ? true : lead.ownership === 'rent' ? false : null,
+    notes: intel.join('. ') || null,
+    consent: true,
+    consent_text: document.getElementById('consentText').textContent.trim(),   // exact wording the visitor saw
+    referrer_code: lead.refBy || null,
+    source: location.pathname,
+    utm: Object.fromEntries(['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].map(k => [k, q.get(k)]).filter(([, v]) => v)),
+    website: document.getElementById('inp-website').value || '',   // honeypot
   };
-  const HOOK = 'https://hooks.zapier.com/hooks/catch/YOUR_HOOK_ID/';
   try {
-    await fetch(HOOK, { method:'POST', headers:{'Content-Type':'application/json'}, mode:'no-cors', body:JSON.stringify(payload) });
-  } catch(e) { console.warn('Webhook not configured'); }
+    const res = await fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const j = await res.json().catch(() => ({}));
+    if (res.ok) return { ok: true, ref: j.ref };
+    return { ok: false, error: res.status === 429 ? 'Too many submissions from this connection. Please try again later.' : (j.error && /phone/i.test(j.error) ? 'Please check your phone number.' : 'We could not submit your request. Please check your details and try again.') };
+  } catch (e) {
+    return { ok: false, error: 'Network problem. Please check your connection and try again.' };
+  }
 }
 
 /* ── MODAL HELPERS ───────────────────────── */
 function openFunnel() {
   document.getElementById('funnelOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  goStep(1);
+  goStep(2);
 }
 function openDash(e) {
   if (e) e.preventDefault();

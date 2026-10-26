@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>WattWorth Commission Statement</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/ww.css">
+<style>
+body{padding:24px 16px}
+.paper{max-width:760px;margin:0 auto;background:var(--white);border:1px solid var(--line);border-radius:18px;padding:28px;box-shadow:var(--shadow)}
+.head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start;border-bottom:2px solid var(--gold);padding-bottom:16px;margin-bottom:18px}
+.head h1{font-size:30px}.meta{text-align:right;font-size:13px;color:var(--muted)}
+.wrapx{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:8px 6px;border-bottom:1px solid var(--line)}
+td{padding:10px 6px;border-bottom:1px solid var(--cream-2);vertical-align:top}
+.r{text-align:right;font-variant-numeric:tabular-nums}
+.sub2{font-size:12px;color:var(--muted)}
+.tot{margin:18px 0 0 auto;max-width:300px}
+.tot div{display:flex;justify-content:space-between;padding:6px 0}
+.tot .bal{border-top:2px solid var(--forest);font-weight:700;font-size:18px;margin-top:6px;padding-top:10px}
+.tools{max-width:760px;margin:0 auto 14px;display:flex;gap:8px;justify-content:flex-end}
+@media print{body{background:#fff;padding:0}.tools{display:none}.paper{border:0;box-shadow:none;padding:0}}
+</style>
+</head>
+<body>
+<div class="tools"><button class="btn ghost sm" onclick="history.length>1?history.back():window.close()">Back</button><button class="btn sm" onclick="window.print()">Print or save as PDF</button></div>
+<div class="paper" id="doc"><p class="note">Loading…</p></div>
+<script src="/lib/shared.js"></script>
+<script>
+(function () {
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const m = (c) => (c < 0 ? '-' : '') + WW.money(Math.abs(c));
+  const q = new URLSearchParams(location.search);
+  let token = null; try { token = localStorage.getItem('ww_admin_token'); } catch (_) {}
+  const doc = document.getElementById('doc');
+  if (!token) { doc.innerHTML = '<p>Sign in on the <a href="/admin/">owner dashboard</a> first, then reopen this statement.</p>'; return; }
+  fetch('/api/statement?month=' + encodeURIComponent(q.get('month') || '') + '&partner_id=' + encodeURIComponent(q.get('partner_id') || ''), { headers: { Authorization: 'Bearer ' + token } })
+    .then((r) => r.json().then((j) => (r.ok ? j : Promise.reject(j.error || 'Could not load'))))
+    .then((st) => {
+      const d = (iso) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      doc.innerHTML = `<div class="head"><div><div class="brand">Watt<i>Worth</i></div><h1>Commission statement</h1></div>
+        <div class="meta"><b>${esc(st.number)}</b><br>${esc(st.month_label)}<br>For ${esc(st.partner.company || st.partner.name)}</div></div>
+        <p class="note" style="margin-top:0">${st.mode === 'split' ? 'WattWorth share of commission' : 'Lead fees'} for deals that reached <b>${esc(st.trigger_label)}</b> during ${esc(st.month_label)} (UTC). ${st.mode === 'split' ? 'Each amount is ' + (st.split_percent == null ? 'the agreed percentage' : st.split_percent + '%') + ' of the commission reported by the partner.' : 'Each fee is a flat amount set by system size.'}</p>
+        <div class="wrapx"><table><tr><th>Date</th><th>Ref</th><th>Lead</th>${st.mode === 'split' ? '<th class="r">Commission</th><th class="r">Share</th>' : '<th>Size</th><th class="r">Fee</th>'}<th class="r">Paid</th></tr>
+        ${st.lines.map((l) => `<tr><td>${d(l.date)}</td><td>${esc(l.ref)}</td><td>${esc(l.name)}<div class="sub2">${esc([l.city, l.state].filter(Boolean).join(', '))}${l.note ? ' · ' + esc(l.note) : ''}</div></td>${st.mode === 'split' ? `<td class="r">${l.commission_cents != null ? m(l.commission_cents) : ''}<div class="sub2">${l.pct != null ? l.pct + '%' : ''}</div></td>` : `<td>${l.system_kw ? esc(l.system_kw) + ' kW' : ''}<div class="sub2">${esc(l.tier || '')}</div></td>`}<td class="r">${m(l.billed_cents)}</td><td class="r">${l.paid_cents ? m(l.paid_cents) : ''}</td></tr>`).join('') || '<tr><td colspan="6" style="padding:24px 6px;color:var(--muted)">No billable deals this month.</td></tr>'}</table></div>
+        <div class="tot"><div><span>Total billed</span><span>${m(st.totals.billed_cents)}</span></div><div><span>Already paid</span><span>${m(st.totals.paid_cents)}</span></div><div class="bal"><span>${st.totals.balance_cents < 0 ? 'Credit to you' : 'Balance due'}</span><span>${m(Math.abs(st.totals.balance_cents))}</span></div></div>
+        ${st.unpriced.length ? `<p class="note" style="margin-top:20px"><b>Not yet priced (${st.unpriced.length}):</b> ${st.unpriced.map((u) => esc(u.ref)).join(', ')}. These are waiting on the commission amount, a system size or an agreed rate and will appear once set.</p>` : ''}
+        ${st.payment_note ? `<p style="margin-top:20px">${esc(st.payment_note)}</p>` : ''}`;
+    })
+    .catch((e) => { doc.innerHTML = `<p>${esc(typeof e === 'string' ? e : 'Could not load this statement.')} <a href="/admin/">Back to dashboard</a></p>`; });
+})();
+</script>
+</body>
+</html>

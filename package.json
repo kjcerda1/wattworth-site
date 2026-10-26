@@ -1,0 +1,10 @@
+{
+  "name": "wattworth-leads",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node dev.js",
+    "test": "node --test test/*.test.js"
+  }
+}
