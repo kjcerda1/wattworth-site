@@ -181,7 +181,7 @@
     const d = S.d, k = d.kpis;
     const owed = d.leads.filter((l) => l.fee && ['owed', 'needs_size', 'no_tier', 'rate_unset', 'needs_commission', 'split_unset'].includes(l.fee.state));
     const paid = d.leads.filter((l) => l.fee && l.fee.state === 'paid');
-    const rw = (st) => d.rewards.filter((p) => st.includes(p.status)), openRw = rw(['installation_confirmed', 'reward_pending']), doneRw = rw(['paid']);
+    const order = { reward_pending: 0, installation_confirmed: 1, tracking: 2, ineligible: 3, paid: 4 }, allRw = d.rewards.slice().sort((a, b) => order[a.status] - order[b.status] || (a.attributed_at < b.attributed_at ? 1 : -1));
     return `<div class="grid kpis" style="margin-top:12px">${kpi(W.money(k.feesOwedCents), 'Commission owed to you', 'gold')}${kpi(W.money(k.feesPaidCents), 'Commission collected')}${kpi(W.money(k.rewardsDueCents), 'Referral rewards ready to pay', k.rewardsDueCents ? 'alert' : '')}${kpi(k.rewardsToVerify, 'Referral installations to verify')}${k.creditsDueCents ? kpi(W.money(k.creditsDueCents), 'Credits owed for invalid leads', 'alert') : ''}</div>
       <h2>Monthly statement</h2><div class="card"><p class="note" style="margin-top:0">Optional. A statement lists every deal that reached <b>${W.LABEL[d.config.feeTrigger]}</b> in the month, with credits for invalid leads. Open it to review or save as PDF, or email it to your partner.</p>
         <div class="row2"><div><label for="stm">Month</label><input id="stm" type="month" value="${S.stMonth}"></div><div><label for="stp">Partner</label><select id="stp">${d.partners.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></div></div>
@@ -189,10 +189,23 @@
       ${afterAds()}
       <h2>Commission to collect</h2><div class="list">${owed.map((l) => `<div class="card">${dealLine(l)}${l.fee.state === 'owed' ? `<div class="row2" style="margin-top:10px;align-items:end"><div><label for="rp-${l.id}">Received so far? Add a payment ($)</label><input id="rp-${l.id}" inputmode="decimal" placeholder="e.g. 500"></div><div style="display:flex;gap:6px"><button class="btn sm" data-recpay="${l.id}">Add payment</button><button class="btn ghost sm" data-feepaid="${l.id}">Paid in full</button></div></div>` : ''}</div>`).join('') || '<div class="empty">Nothing to collect yet.</div>'}</div>
       ${paid.length ? `<h2>Collected</h2><div class="list">${paid.map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} ${feeBadge(l)}</div><div class="t2">${esc(l.ref)} · settled ${date(l.fee_paid_at)}${l.commission_cents != null && l.fee.pct != null ? ' · ' + W.money(l.commission_cents) + ' commission × ' + l.fee.pct + '%' : ''}</div></div><button class="btn ghost sm" data-feepaid="${l.id}" data-undo="1">Undo</button></div>`).join('')}</div>` : ''}
-      <h2>Referral rewards ($1,000 each)</h2><p class="note" style="margin-top:0">The only referral reward is $1,000 after the referred homeowner completes a verified qualifying installation. Nothing is paid automatically. Verify the installation with the partner's company first, then pay and record the reference.</p>
-      <div class="list">${openRw.map((p) => `<div class="card"><div class="t1" style="font-weight:700">${W.money(p.amount_cents)} · ${esc(W.REWARD_LABEL[p.status])}</div><div class="t2 note">${esc(p.lead_ref || '')} · referrer ${esc(p.referrer_code)}${p.installation_confirmed_at ? ' · installation reported ' + date(p.installation_confirmed_at) : ''}</div>
-        ${p.status === 'installation_confirmed' ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn sm" data-rwverify="${p.id}">Installation verified</button><button class="btn ghost sm" data-rwno="${p.id}">Not eligible</button></div>` : `<div class="row2" style="margin-top:10px;align-items:end"><div><label for="rt-${p.id}">Payment reference</label><input id="rt-${p.id}" maxlength="120" placeholder="Check # or transfer id"></div><div style="display:flex;gap:6px"><button class="btn sm" data-rwpaid="${p.id}">Record payment</button><button class="btn ghost sm" data-rwno="${p.id}">Not eligible</button></div></div>`}</div>`).join('') || '<div class="empty">No referral rewards waiting on you.</div>'}</div>
-      ${doneRw.length ? `<p class="note" style="margin-top:12px">${doneRw.length} referral reward${doneRw.length > 1 ? 's' : ''} already paid.</p>` : ''}`;
+      <h2>Referral rewards ($1,000 each)</h2><p class="note" style="margin-top:0">The only referral reward is $1,000 after the referred homeowner completes a verified qualifying installation. Everything before that is tracking and earns $0. Nothing is paid automatically: verify the installation with the partner's company, then pay and record the reference. Every change is logged below.</p>
+      <div class="list">${allRw.map((p) => { const dt = (x) => (x ? date(x) : '—'); return `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><div class="t1" style="font-weight:700">${esc(p.lead_name || p.lead_ref || '')} <span class="ref note">${esc(p.lead_ref || '')}</span></div><div class="t2 note">Referred by ${esc(p.referrer_name || 'unknown')} · code ${esc(p.referrer_code)}</div></div><span class="badge ${p.status === 'paid' ? 'paid' : p.status === 'ineligible' ? 'failed' : p.status === 'reward_pending' ? 'pending' : 'skipped'}">${esc(W.REWARD_LABEL[p.status])}</span></div>
+        <table class="note" style="width:100%;margin-top:10px;font-size:13px;border-collapse:collapse">
+          <tr><td>Milestone</td><td style="text-align:right">${esc(p.milestone_label)}</td></tr>
+          <tr><td>Attributed</td><td style="text-align:right">${dt(p.attributed_at)}</td></tr>
+          <tr><td>Installation reported by partner</td><td style="text-align:right">${dt(p.installation_confirmed_at)}</td></tr>
+          <tr><td>Installation verified</td><td style="text-align:right">${p.installation_verified_at ? dt(p.installation_verified_at) + ' · ' + esc(p.verified_by || '') : '—'}</td></tr>
+          <tr><td>Reward amount</td><td style="text-align:right"><b>${W.money(p.amount_cents)}</b></td></tr>
+          <tr><td>Reward pending since</td><td style="text-align:right">${dt(p.reward_pending_at)}</td></tr>
+          <tr><td>Paid</td><td style="text-align:right">${p.paid_at ? dt(p.paid_at) + ' · ' + esc(p.paid_by || '') : '—'}</td></tr>
+          <tr><td>Transaction reference</td><td style="text-align:right">${esc(p.transaction_ref || '—')}</td></tr>
+          ${p.ineligible_reason ? `<tr><td>Not eligible because</td><td style="text-align:right">${esc(p.ineligible_reason)}</td></tr>` : ''}</table>
+        <div style="margin-top:10px">${p.status === 'installation_confirmed' ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" data-rwverify="${p.id}">Installation verified</button><button class="btn ghost sm" data-rwno="${p.id}">Not eligible</button></div>`
+          : p.status === 'reward_pending' ? `<div class="row2" style="align-items:end"><div><label for="rt-${p.id}">Payment reference</label><input id="rt-${p.id}" maxlength="120" placeholder="Check # or transfer id"></div><div style="display:flex;gap:6px"><button class="btn sm" data-rwpaid="${p.id}">Record payment</button></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn ghost sm" data-rwundo="${p.id}">Undo verification</button><button class="btn ghost sm" data-rwno="${p.id}">Not eligible</button></div>`
+          : p.status === 'ineligible' ? `<button class="btn ghost sm" data-rwback="${p.id}">Reinstate</button>` : p.status === 'tracking' ? `<button class="btn ghost sm" data-rwno="${p.id}">Not eligible</button>` : ''}</div>
+        ${p.status !== 'paid' ? `<details style="margin-top:10px"><summary class="note" style="cursor:pointer">Change or remove the referrer</summary><div class="row2" style="margin-top:8px;align-items:end"><div><label for="oc-${p.id}">New referral code (blank removes)</label><input id="oc-${p.id}" maxlength="40" placeholder="e.g. DANA7K2"></div><div><label for="or-${p.id}">Reason (required)</label><input id="or-${p.id}" maxlength="300"></div></div><button class="btn ghost sm" style="margin-top:8px" data-override="${p.lead_id}" data-rid="${p.id}">Override and log</button></details>` : ''}
+        ${p.audit && p.audit.length ? `<details style="margin-top:8px"><summary class="note" style="cursor:pointer">Audit history (${p.audit.length})</summary><ul class="tl" style="margin-top:8px">${p.audit.map((e) => `<li>${e.type === 'referral_override' ? `Referrer changed ${esc(e.from || 'none')} → <b>${esc(e.to || 'none')}</b> by ${esc(e.actor)}. ${esc(e.note || '')}` : `${esc(e.from || '')} → <b>${esc(e.to || '')}</b> by ${esc(e.actor)}${e.note ? '. ' + esc(e.note) : ''}`}<span class="note"> · ${when(e.at)}</span></li>`).join('')}</ul></details>` : ''}</div>`; }).join('') || '<div class="empty">No referrals yet.</div>'}</div>`;
   };
   binders.money = () => {
     const mark = (sel, key, extra) => app.querySelectorAll(sel).forEach((b) => (b.onclick = async () => {
@@ -205,8 +218,17 @@
       try { await act({ action, reward_id: b.dataset[key], ...(extra ? extra(b.dataset[key]) : {}) }); toast('Updated'); await load(true); } catch (e) { toast(e.message || 'Failed', true); b.disabled = false; }
     }));
     rwAct('[data-rwverify]', 'rwverify', 'reward_verify');
+    rwAct('[data-rwundo]', 'rwundo', 'reward_unverify');
+    rwAct('[data-rwback]', 'rwback', 'reward_reinstate');
     rwAct('[data-rwpaid]', 'rwpaid', 'reward_paid', (id) => ({ transaction_ref: $('#rt-' + id).value.trim() }));
-    rwAct('[data-rwno]', 'rwno', 'reward_ineligible');
+    rwAct('[data-rwno]', 'rwno', 'reward_ineligible', () => ({ reason: prompt('Why is this referral not eligible? (optional)') || '' }));
+    app.querySelectorAll('[data-override]').forEach((b) => (b.onclick = async () => {
+      const id = b.dataset.rid, reason = $('#or-' + id).value.trim(), code = $('#oc-' + id).value.trim();
+      if (!reason) return toast('Enter a reason. It is saved in the audit history.', true);
+      if (!confirm(code ? 'Change the referrer to ' + code + '?' : 'Remove the referrer from this lead?')) return;
+      b.disabled = true;
+      try { await act({ action: 'override_referrer', lead_id: b.dataset.override, referrer_code: code, reason }); toast('Referrer updated and logged'); await load(true); } catch (e) { toast(e.message || 'Failed', true); b.disabled = false; }
+    }));
     app.querySelectorAll('[data-recpay]').forEach((b) => (b.onclick = async () => {
       const v = $('#rp-' + b.dataset.recpay).value.trim(); if (!v) return toast('Enter the amount you received', true);
       b.disabled = true;

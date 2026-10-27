@@ -1,10 +1,11 @@
 // Owner dashboard API (auth: Bearer ADMIN_TOKEN)
 //   GET  /api/admin                 -> everything the dashboard renders
-//   POST /api/admin {action,...}    -> resend | fee_paid | reward_verify | reward_paid | reward_ineligible | set_tiers | create_partner | update_partner | rotate_key | admin_update | record_payment | erase_lead
+//   POST /api/admin {action,...}    -> resend | fee_paid | reward_verify | reward_unverify | reward_paid | reward_ineligible | reward_reinstate | override_referrer | set_tiers | create_partner | update_partner | rotate_key | admin_update | record_payment | erase_lead
 const db = require('../lib/db');
 const W = require('../lib/shared');
 const { route, body, deny } = require('../lib/http');
 const { isAdmin, newKey, sha } = require('../lib/auth');
+const R = require('../lib/referral');
 const { retryDelivery, applyUpdate, resolveDispute, event, HttpError, clean, normPhone } = require('../lib/leads');
 const { emailReady, smsReady } = require('../lib/mail');
 
@@ -32,6 +33,7 @@ module.exports = route(async (req, res) => {
       db.select('messages', { limit: 20000 }),
     ]);
     const summary = W.buildSummary({ leads, deliveries, rewards, tiers, ad_spend, partners, messages });
+    const auditEvents = [...(await db.select('lead_events', { where: { type: 'reward' }, limit: 5000 })), ...(await db.select('lead_events', { where: { type: 'referral_override' }, limit: 5000 }))].sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
     const pn = Object.fromEntries(partners.map((p) => [p.id, p.name]));
     const pmap = Object.fromEntries(partners.map((p) => [p.id, p]));
     const ref = Object.fromEntries(leads.map((l) => [l.id, l]));
@@ -42,7 +44,13 @@ module.exports = route(async (req, res) => {
       ...summary,
       leads: leads.map((l) => ({ ...l, portal_token: undefined, bill_storage_path: undefined, bill_sha256: undefined, has_bill: !!l.bill_storage_path, consent_ip: undefined, consent_user_agent: undefined, partner_name: pn[l.partner_id] || null, fee: l.fee || W.feeFor(l, tiers, undefined, pmap[l.partner_id]) })),
       deliveries: deliveries.map((d) => ({ ...d, lead_ref: ref[d.lead_id] && ref[d.lead_id].ref, lead_name: ref[d.lead_id] && ref[d.lead_id].first_name, partner_name: pn[d.partner_id] })),
-      rewards: rewards.map((p) => ({ ...p, lead_ref: ref[p.lead_id] && ref[p.lead_id].ref, stage: ref[p.lead_id] && ref[p.lead_id].stage })),
+      rewards: rewards.map((p) => {
+        const L = ref[p.lead_id] || {}, owner = leads.find((x) => x.own_code === p.referrer_code);
+        return { ...p, lead_ref: L.ref, lead_name: L.first_name ? `${L.first_name} ${L.last_name || ''}`.trim() : null, stage: L.stage,
+          referrer_name: owner ? `${owner.first_name} ${owner.last_name || ''}`.trim() : null, referrer_ref: owner ? owner.ref : null,
+          attributed_at: p.created_at, milestone: R.milestoneOf(p, L), milestone_label: R.MILESTONES[R.milestoneOf(p, L)],
+          audit: auditEvents.filter((e) => e.lead_id === p.lead_id).map((e) => ({ type: e.type, actor: e.actor, from: e.from_value, to: e.to_value, note: e.note, at: e.created_at })) };
+      }),
       tiers, ad_spend, partners: partners.map(partnerView),
       events: events.map((e) => ({ ...e, lead_ref: ref[e.lead_id] && ref[e.lead_id].ref })),
     });
@@ -87,31 +95,26 @@ module.exports = route(async (req, res) => {
       await event(lead.id, 'fee', 'admin', null, 'received $' + (amt / 100).toFixed(2), null);
       return res.json({ ok: true });
     }
-    // Referral reward steps. Nothing here is automatic: the owner verifies the installation, then records the payment.
-    case 'reward_verify': {
+    // Referral reward steps. Owner/admin only (this endpoint). Nothing is automatic: the owner verifies the installation, then records the payment.
+    case 'reward_verify': case 'reward_unverify': case 'reward_paid': case 'reward_ineligible': case 'reward_reinstate': {
       const r = await db.get('referral_rewards', { id: b.reward_id });
       if (!r) throw new HttpError(404, 'reward not found');
-      if (r.status !== 'installation_confirmed') throw new HttpError(409, 'The installation has not been reported yet');
-      await db.update('referral_rewards', { id: r.id }, { status: 'reward_pending', reward_pending_at: new Date().toISOString() });
-      await event(r.lead_id, 'reward', 'admin', null, 'reward_pending', null);
+      const actor = 'admin';
+      try {
+        if (b.action === 'reward_verify') await R.verifyInstallation(r, actor);
+        else if (b.action === 'reward_unverify') await R.undoVerification(r, actor);
+        else if (b.action === 'reward_paid') await R.markPaid(r, actor, b.transaction_ref);
+        else if (b.action === 'reward_ineligible') await R.markIneligible(r, actor, b.reason);
+        else await R.reinstate(r, actor);
+      } catch (e) { throw e.status ? new HttpError(e.status, e.message) : e; }
       return res.json({ ok: true });
     }
-    case 'reward_paid': {
-      const r = await db.get('referral_rewards', { id: b.reward_id });
-      if (!r) throw new HttpError(404, 'reward not found');
-      if (r.status !== 'reward_pending') throw new HttpError(409, 'Verify the installation before recording a payment');
-      const ref = String(b.transaction_ref || '').trim().slice(0, 120);
-      if (!ref) throw new HttpError(400, 'Enter a payment reference (check number, transfer id)');
-      await db.update('referral_rewards', { id: r.id }, { status: 'paid', paid_at: new Date().toISOString(), transaction_ref: ref });
-      await event(r.lead_id, 'reward', 'admin', null, 'paid', null);
-      return res.json({ ok: true });
-    }
-    case 'reward_ineligible': {
-      const r = await db.get('referral_rewards', { id: b.reward_id });
-      if (!r) throw new HttpError(404, 'reward not found');
-      if (r.status === 'paid') throw new HttpError(409, 'Already paid');
-      await db.update('referral_rewards', { id: r.id }, { status: 'ineligible' });
-      await event(r.lead_id, 'reward', 'admin', null, 'ineligible', String(b.reason || '').slice(0, 200) || null);
+    // Change or clear who referred a lead. Reason required; always written to the lead's audit history.
+    case 'override_referrer': {
+      const lead = await db.get('leads', { id: b.lead_id });
+      if (!lead) throw new HttpError(404, 'lead not found');
+      try { await R.overrideReferrer(lead, b.referrer_code ? String(b.referrer_code).trim() : null, 'admin', b.reason); }
+      catch (e) { throw e.status ? new HttpError(e.status, e.message) : e; }
       return res.json({ ok: true });
     }
     case 'set_tiers': {

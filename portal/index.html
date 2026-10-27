@@ -56,6 +56,7 @@ body{overscroll-behavior:none;padding-bottom:0}
 .grid>.card{margin-top:0!important}
 .sect{margin-top:12px}
 .sect-t{font-family:var(--serif);font-size:19px;margin:20px 2px 8px;color:var(--forest-2)}
+.refshare{display:flex;gap:16px;align-items:center}.qrbox{width:132px;height:132px;flex:none;background:#fff;border-radius:12px;padding:4px;border:1px solid var(--line)}.qrbox svg{width:100%;height:100%;display:block}.refmeta{min-width:0;flex:1}.refmeta .keybox{word-break:break-all}.msgbox{background:var(--forest-soft);border-radius:12px;padding:12px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;color:var(--ink)}.refstats{grid-template-columns:repeat(3,1fr)!important}.refstats .kpi .n{font-size:24px}.refstats .kpi .l{font-size:12px}@media(max-width:360px){.refshare{flex-direction:column;align-items:flex-start}}
 .chip{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;background:var(--forest-soft);color:var(--forest)}
 .chip.gold{background:var(--gold-soft);color:var(--gold-ink)}
 .thread{display:flex;flex-direction:column;gap:8px;padding-bottom:6px}
@@ -89,6 +90,7 @@ ol.how li{margin:6px 0}
 <body>
 <div id="root"></div>
 <noscript><p style="padding:24px">WattWorth needs JavaScript to show your project tracker.</p></noscript>
+<script src="/portal/qrcode.js"></script>
 <script>
 (function () {
   'use strict';
@@ -136,7 +138,7 @@ ol.how li{margin:6px 0}
       appointment_at: d.appt, specialist: { name: 'Pedro', company: 'Demo Solar Co.', phone: '+15125550111' },
       messages: d.msgs, unread: d.msgs.filter((m) => m.from === 'partner' && !m.read).length,
       confirm: { state: d.confirm, ask: !d.confirm }, push: { available: false, public_key: null, devices: 0 },
-      referral: { code: 'DANA7K2', friends: [{ name: 'Marcus B.', status: 'In progress', at: new Date(now - 90 * h).toISOString() }, { name: 'Priya S.', status: 'Submitted', at: new Date(now - 20 * h).toISOString() }], rewards: [{ friend: 'Marcus B.', cents: 100000, status: 'installation_confirmed', status_label: 'Installation reported' }, { friend: 'Priya S.', cents: 100000, status: 'tracking', status_label: 'Tracking' }], paid_cents: 0, pending_cents: 100000 } };
+      referral: { code: 'DANA7K2', path: '/r/DANA7K2', reward_cents: 100000, stats: { total: 3, verified: 3, in_progress: 1, installed: 1, reward_pending: 1, paid: 0 }, paid_cents: 0, pending_cents: 100000, list: [{ n: 1, milestone: 'reward_pending', label: 'Installation verified: $1,000 reward pending', updated: '2026-10-24' }, { n: 2, milestone: 'consultation', label: 'Consultation', updated: '2026-10-23' }, { n: 3, milestone: 'verification_complete', label: 'Verification complete', updated: '2026-10-25' }] } };
   }
   function demoApi(method, b) {
     const d = demoState();
@@ -246,13 +248,37 @@ ol.how li{margin:6px 0}
   }
 
   function refer() {
-    const r = S.d.referral, link = location.origin + '/r/' + r.code, hasShare = !!navigator.share;
-    return `<div class="card hero"><div class="eyebrow">Refer a friend</div><h1>Earn $1,000 for a referral</h1><p>Earn $1,000 after your referral completes a verified qualifying solar installation. Nothing is earned at earlier steps. Rewards are subject to program terms.</p></div>
-      <div class="card" style="margin-top:12px"><div class="fine" style="margin-bottom:4px">Your referral code</div><div class="code">${esc(r.code || '')}</div><div class="keybox light">${esc(link)}</div>
-        <div class="btnrow"><button class="btn" id="rshare">${hasShare ? 'Share my link' : 'Copy my link'}</button>${hasShare ? '<button class="btn ghost" id="rcopy">Copy</button>' : ''}</div></div>
-      <div class="grid kpis" style="grid-template-columns:1fr 1fr;margin-top:12px"><div class="card kpi"><div class="n">${money(r.paid_cents)}</div><div class="l">Paid to you</div></div><div class="card kpi gold"><div class="n">${money(r.pending_cents)}</div><div class="l">Pending</div></div></div>
-      <div class="sect-t">Your friends</div><div class="card">${r.friends.length ? `<div class="list2">${r.friends.map((f) => `<div><span><b>${esc(f.name)}</b> <span class="muted">${esc(day(f.at))}</span></span><span class="chip ${f.status === 'Submitted' ? 'gold' : ''}">${esc(f.status)}</span></div>`).join('')}</div>` : '<p class="muted center" style="margin:6px 0">Nobody yet. Share your link to get started.</p>'}</div>
-      ${r.rewards.length ? `<div class="sect-t">Rewards</div><div class="card"><div class="list2">${r.rewards.map((w) => `<div><span>${esc(w.friend)}<br><span class="muted" style="font-size:12px">$1,000 after a verified installation</span></span><span><b>${money(w.cents)}</b> <span class="chip ${w.status === 'paid' ? '' : 'gold'}">${esc(w.status_label || '')}</span></span></div>`).join('')}</div><p class="fine" style="margin:10px 0 0">We verify each installation first, then contact you by email to arrange payment.</p></div>` : ''}`;
+    const r = S.d.referral, url = location.origin + (r.path || ''), hasShare = !!navigator.share;
+    const st = r.stats, card = (n, l, cls) => `<div class="card kpi ${cls || ''}"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+    return `<div class="card hero"><div class="eyebrow">Refer a homeowner</div><h1>Share solar. Earn $1,000.</h1><p>Share your personal WattWorth link. When a referred homeowner completes a verified qualifying solar installation, you become eligible for a $1,000 reward.</p></div>
+      <div class="card" style="margin-top:12px">
+        <div class="refshare">
+          <div class="qrbox" id="qr" role="img" aria-label="QR code for your referral link"></div>
+          <div class="refmeta"><div class="fine" style="margin-bottom:4px">Your referral code</div><div class="code">${esc(r.code || '')}</div>
+            <div class="fine" style="margin:10px 0 4px">Your personal link</div><div class="keybox light">${esc(url)}</div></div>
+        </div>
+        <div class="btnrow"><button class="btn" id="rcopy">Copy link</button>${hasShare ? '<button class="btn ghost" id="rshare">Share</button>' : ''}</div>
+        <div class="fine" style="margin:16px 0 6px">Ready-to-share message</div>
+        <div class="msgbox" id="rmsg">${esc(shareText(r))}</div>
+        <div class="btnrow"><button class="btn ghost" id="rcopymsg">Copy message</button></div>
+        <p class="fine" style="margin:12px 0 0">You never enter anyone's details. They follow your link and complete WattWorth themselves.</p>
+      </div>
+      <div class="sect-t">Your referrals</div>
+      <div class="grid kpis refstats">${card(st.total, 'Total referrals')}${card(st.verified, 'Verified')}${card(st.in_progress, 'In progress')}${card(st.installed, 'Installed')}${card(st.reward_pending, 'Reward pending', 'gold')}${card(st.paid, 'Paid')}</div>
+      <div class="grid kpis" style="grid-template-columns:1fr 1fr;margin-top:10px">${card(money(r.paid_cents), 'Paid to you')}${card(money(r.pending_cents), 'Pending', 'gold')}</div>
+      <p class="fine" style="margin:12px 2px 0">Track your referrals as they progress. The $1,000 reward becomes eligible only after a verified qualifying solar installation.</p>
+      <div class="card" style="margin-top:12px">${r.list.length ? `<div class="list2">${r.list.map((x) => `<div><span><b>Referral #${x.n}</b><br><span class="muted" style="font-size:12px">${esc(x.label)}</span></span><span class="chip ${['reward_pending', 'paid'].includes(x.milestone) ? 'gold' : ''}">${x.milestone === 'paid' ? 'Paid' : x.milestone === 'reward_pending' ? '$1,000 pending' : x.milestone === 'ineligible' ? 'Not eligible' : 'Tracking'}</span></div>`).join('')}</div>` : '<p class="muted center" style="margin:6px 0">No referrals yet. Share your link to get started.</p>'}
+        <p class="fine" style="margin:12px 0 0">Referrals are anonymous. We verify each installation before a reward becomes pending, then contact you by email to arrange payment. Reward terms apply.</p></div>`;
+  }
+  // The recipient sees nothing about money; the sender discloses the reward (FTC endorsement guidance).
+  function shareText(r) {
+    return `I checked what solar could save me with WattWorth. It takes about a minute and there is no obligation. See what you could save: ${location.origin}${r.path || ''}\n\n(Disclosure: I may receive a reward if you complete a qualifying solar installation through WattWorth.)`;
+  }
+  function drawQr(el, text) {
+    try {
+      const q = qrcode(0, 'M'); q.addData(text); q.make();
+      el.innerHTML = q.createSvgTag({ scalable: true, margin: 2 });
+    } catch (_) { el.innerHTML = ''; }
   }
 
   function you() {
@@ -293,7 +319,7 @@ ol.how li{margin:6px 0}
     try {
       const perm = await Notification.requestPermission();
       if (perm !== 'granted') { shell(); return; }
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, no) => setTimeout(no, 1500))]);
       let sub = await reg.pushManager.getSubscription();
       if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(S.d.push.public_key) });
       await api('POST', { action: 'subscribe', subscription: sub.toJSON() });
@@ -301,7 +327,7 @@ ol.how li{margin:6px 0}
     } catch (e) { toast('Could not turn on notifications on this device.'); }
   }
   async function checkDevice() {
-    try { if ('serviceWorker' in navigator && 'PushManager' in window) { const reg = await navigator.serviceWorker.ready; S.deviceOn = !!(await reg.pushManager.getSubscription()) && Notification.permission === 'granted'; } } catch (_) {}
+    try { if ('serviceWorker' in navigator && 'PushManager' in window) { const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, no) => setTimeout(no, 1500))]); S.deviceOn = !!(await reg.pushManager.getSubscription()) && Notification.permission === 'granted'; } } catch (_) {}
   }
   function bind() {
     document.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => { S.tab = b.dataset.tab; shell(); }));
@@ -317,9 +343,12 @@ ol.how li{margin:6px 0}
     }
     const ms = $('#msend'); if (ms) ms.onclick = () => send($('#mtext').value);
     document.querySelectorAll('[data-sugg]').forEach((b) => (b.onclick = () => send(b.dataset.sugg)));
-    const link = () => location.origin + '/r/' + S.d.referral.code;
-    const rs = $('#rshare'); if (rs) rs.onclick = async () => { const msg = 'Check your solar savings for free with WattWorth: ' + link(); try { if (navigator.share) await navigator.share({ title: 'WattWorth', text: 'Check your solar savings for free', url: link() }); else { await navigator.clipboard.writeText(link()); toast('Link copied'); } } catch (_) {} };
-    const rc = $('#rcopy'); if (rc) rc.onclick = async () => { try { await navigator.clipboard.writeText(link()); toast('Link copied'); } catch (_) { toast(link()); } };
+    const rr = S.d.referral, rurl = location.origin + (rr.path || '');
+    const q = $('#qr'); if (q) drawQr(q, rurl);
+    const copy = async (t, ok) => { try { await navigator.clipboard.writeText(t); toast(ok); } catch (_) { toast(t); } };
+    const rs = $('#rshare'); if (rs) rs.onclick = async () => { try { await navigator.share({ title: 'WattWorth', text: shareText(rr).split('\n\n')[0], url: rurl }); } catch (_) {} };
+    const rc = $('#rcopy'); if (rc) rc.onclick = () => copy(rurl, 'Link copied');
+    const rm = $('#rcopymsg'); if (rm) rm.onclick = () => copy(shareText(rr), 'Message copied');
     const ml = $('#mail'); if (ml) ml.onclick = async () => { toast('If we have your email, a new link is on its way.'); };
     const dl = $('#del'); if (dl) dl.onclick = async () => { if (!confirm('Delete your data? Your tracker will stop working and your request will be removed.')) return; try { await api('POST', { action: 'delete_request' }); ls.del(TK); ls.del(VK); gate('Your deletion request was received.'); } catch (e) { toast(e.message || 'Try again'); } };
     const out = $('#out'); if (out) out.onclick = () => { ls.del(TK); ls.del(VK); S.d = null; gate('You are signed out on this device.'); };

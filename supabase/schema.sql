@@ -99,7 +99,7 @@ create index if not exists deliveries_status_idx on deliveries(status);
 create table if not exists lead_events (
   id uuid primary key default gen_random_uuid(),
   lead_id uuid not null references leads(id) on delete cascade,
-  type text not null,              -- created | stage | size | value | commission | note | delivery | duplicate | fee | reward | dispute | bill_view
+  type text not null,              -- created | stage | size | value | commission | note | delivery | duplicate | fee | reward | referral_override | dispute | bill_view
   actor text not null,             -- system | partner:<name> | admin
   from_value text,
   to_value text,
@@ -120,22 +120,31 @@ create table if not exists fee_tiers (
 );
 
 -- Referral program: ONE $1,000 reward per referred lead, only after a verified qualifying installation.
--- Nothing is earned at form submission or estimate. unique(lead_id) makes a second reward for the same
--- referred installation impossible. Status only moves forward by explicit owner action; nothing is paid automatically.
+-- A row is the referral record: it exists from attribution (created_at = attribution date) and is worth $0 until the
+-- owner verifies the installation, at which point the amount becomes exactly 100000 cents and the status reward_pending.
+-- unique(lead_id) makes a second reward for the same referred installation impossible. Status only changes through
+-- explicit owner/admin actions (or the partner reporting Installed, which is only a flag); nothing is paid automatically.
 create table if not exists referral_rewards (
   id uuid primary key default gen_random_uuid(),
-  lead_id uuid not null unique references leads(id) on delete cascade,   -- the REFERRED lead
+  lead_id uuid not null unique references leads(id) on delete cascade,   -- the REFERRED lead (one referrer per lead)
   referrer_code text not null,                                           -- the referring customer's own_code
-  amount_cents int not null default 100000 check (amount_cents = 100000),
+  amount_cents int not null default 0 check (amount_cents in (0, 100000)),
   status text not null default 'tracking'
     check (status in ('tracking','installation_confirmed','reward_pending','paid','ineligible')),
-  installation_confirmed_at timestamptz,      -- partner reported the installation
-  reward_pending_at timestamptz,              -- owner verified the installation
+  installation_confirmed_at timestamptz,      -- partner reported the installation (a flag only; earns nothing)
+  installation_verified_at timestamptz,       -- owner/admin verified a qualifying installation
+  verified_by text,
+  reward_pending_at timestamptz,
   paid_at timestamptz,
+  paid_by text,                               -- admin actor who recorded the payment
   transaction_ref text,                       -- internal payment reference (check number, transfer id)
+  ineligible_reason text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint referral_paid_has_ref check (status <> 'paid' or (paid_at is not null and transaction_ref is not null))
+  -- $1,000 exactly when payable or paid, $0 otherwise
+  constraint referral_amount_matches_status check ((status in ('reward_pending','paid')) = (amount_cents = 100000)),
+  constraint referral_pending_needs_verification check (status not in ('reward_pending','paid') or (installation_verified_at is not null and reward_pending_at is not null)),
+  constraint referral_paid_has_ref check (status <> 'paid' or (paid_at is not null and nullif(trim(transaction_ref), '') is not null and paid_by is not null))
 );
 create index if not exists referral_rewards_code_idx on referral_rewards(referrer_code);
 

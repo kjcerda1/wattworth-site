@@ -147,7 +147,7 @@ test('confirm contact: a "no" alerts the owner and shows in the dashboard stats'
 });
 
 test('referrals: real codes only; friend progress and rewards appear in the referrer\'s tracker', async () => {
-  const self = await call('../api/leads', mk('POST', { body: intake({ phone: '5125550999', referrer_code: code }) }));   // different person, valid code
+  const self = await call('../api/leads', mk('POST', { body: intake({ phone: '5125550999', email: 'friend@example.com', referrer_code: code }) }));   // different person, valid code
   assert.equal(self.code, 201);
   const bogus = await call('../api/leads', mk('POST', { body: intake({ phone: '5125550888', first_name: 'Eve', referrer_code: 'NOPE123' }) }));
   const adm = (await call('../api/admin', mk('GET', { headers: A }))).payload;
@@ -155,9 +155,8 @@ test('referrals: real codes only; friend progress and rewards appear in the refe
   assert.equal(adm.rewards.length, 1);
   assert.equal(adm.rewards[0].status, 'tracking');
   const v = await cview();
-  assert.equal(v.referral.friends.length, 1); assert.equal(v.referral.friends[0].status, 'Submitted');
+  assert.equal(v.referral.stats.total, 1); assert.equal(v.referral.list[0].label, 'Verification complete');
   assert.equal(v.referral.pending_cents, 0, 'nothing is earned before a verified installation'); assert.equal(v.referral.paid_cents, 0);
-  assert.equal(v.referral.rewards[0].friend.startsWith('Dana'), true); assert.equal(v.referral.rewards[0].cents, 100000); assert.equal(v.referral.rewards[0].status, 'tracking');
   assert.ok(!JSON.stringify(v.referral).includes('555'), 'no friend contact details');
   assert.ok(bogus.payload.own_code);
 });
