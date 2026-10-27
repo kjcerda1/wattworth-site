@@ -1,7 +1,7 @@
 /* WattWorth customer app service worker: installable shell, offline fallback, push notifications.
    Scope is /portal/. API calls are never cached (the app keeps its own last-seen copy). */
-const CACHE = 'wattworth-portal-v1';
-const SHELL = ['/portal/', '/portal/manifest.webmanifest', '/portal/icon-192.png', '/portal/apple-touch-icon.png', '/assets/ww.css'];
+const CACHE = 'wattworth-portal-v2';
+const SHELL = ['/portal/', '/portal/manifest.webmanifest', '/portal/icon-192.png', '/portal/qrcode.js', '/portal/apple-touch-icon.png', '/assets/ww.css'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -27,7 +27,7 @@ self.addEventListener('push', (e) => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (_) { d = { title: 'WattWorth', body: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(d.title || 'WattWorth', {
-    body: d.body || '', tag: d.tag || 'wattworth', icon: '/portal/icon-192.png', badge: '/portal/icon-192.png',
+    body: d.body || '', tag: d.tag || 'wattworth', icon: '/portal/icon-192.png', '/portal/qrcode.js', badge: '/portal/icon-192.png',
     data: { url: d.url || '/portal/' },
   }));
 });

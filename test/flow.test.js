@@ -91,7 +91,7 @@ test('intake stores lead + consent, sends email/SMS/webhook, logs deliveries', a
   assert.deepEqual(admin.deliveries.map((d) => d.status).sort(), ['sent', 'sent', 'sent']);
   assert.equal(admin.rewards.length, 1); // one reward row, tracking only: nothing earned for submitting the form
   assert.equal(admin.rewards[0].status, 'tracking');
-  assert.equal(admin.rewards[0].amount_cents, 100000);
+  assert.equal(admin.rewards[0].amount_cents, 0, 'submitting earns $0');
   assert.equal(admin.kpis.rewardsDueCents, 0);
   assert.equal(admin.kpis.total, 1);
 });
@@ -165,7 +165,7 @@ test('installation moves the single $1,000 reward to installation_confirmed; own
   let admin = await rw();
   assert.equal(admin.rewards.length, 1);
   const r0 = admin.rewards[0];
-  assert.equal(r0.amount_cents, 100000);
+  assert.equal(r0.amount_cents, 0, 'reported, not yet verified: still $0');
   assert.equal(r0.status, 'installation_confirmed');
   assert.ok(r0.installation_confirmed_at);
   assert.equal(admin.kpis.rewardsToVerify, 1);

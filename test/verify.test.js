@@ -21,7 +21,7 @@ const BILL = up(PDF, 'application/pdf', 'may-bill.pdf');
 const METER = { electric_provider: 'CPS Energy', meter_number: 'M-1234567' };
 
 let phoneN = 100;
-const base = (o = {}) => ({ first_name: 'Dana', last_name: 'Reyes', phone: '51255501' + String(++phoneN).slice(-2), email: 'dana@example.com', city: 'Austin', state: 'TX', zip: '78701', monthly_bill: 220, homeowner: true, consent: true, consent_text: 'I agree to be contacted.', ...o });
+const base = (o = {}) => ({ first_name: 'Dana', last_name: 'Reyes', phone: '51255501' + String(++phoneN).slice(-2), email: 'p' + String(phoneN + 1) + '@example.com', city: 'Austin', state: 'TX', zip: '78701', monthly_bill: 220, homeowner: true, consent: true, consent_text: 'I agree to be contacted.', ...o });
 const post = (o) => call('../api/leads', mk('POST', { body: base(o) }));
 const db = () => require('../lib/db');
 
@@ -154,13 +154,13 @@ test('11. unknown and self referral codes are rejected', async () => {
   assert.equal((await rewards()).length, 0, 'no reward rows for rejected codes');
 });
 
-test('12. a referred lead creates no $50 reward (only a $1,000 tracking row)', async () => {
+test('12. a referred lead creates no $50 reward (only a $0 tracking record)', async () => {
   const r = await post({ ...METER, first_name: 'Friend', phone: '5125552001', referrer_code: owner.own_code });
   refd = (await db().select('leads', {})).find((l) => l.ref === r.payload.ref);
   assert.equal(refd.referrer_code, owner.own_code);
   const rw = await rewards();
   assert.equal(rw.length, 1);
-  assert.equal(rw[0].amount_cents, 100000); assert.equal(rw[0].status, 'tracking');
+  assert.equal(rw[0].amount_cents, 0); assert.equal(rw[0].status, 'tracking');
   assert.ok(!rw.some((x) => x.amount_cents === 5000));
   assert.equal(rw[0].milestone, undefined);
 });
@@ -178,12 +178,12 @@ test('13. an estimate / proposal creates no $100 reward and earns nothing', asyn
 test('14. a verified installation produces exactly one $1,000 reward', async () => {
   await call('../api/partner', mk('PATCH', { headers: C(pkey), body: { lead_id: refd.id, stage: 'installed' } }));
   let rw = await rewards();
-  assert.equal(rw.length, 1); assert.equal(rw[0].status, 'installation_confirmed'); assert.equal(rw[0].amount_cents, 100000);
+  assert.equal(rw.length, 1); assert.equal(rw[0].status, 'installation_confirmed'); assert.equal(rw[0].amount_cents, 0, 'a reported install is still worth $0 until verified');
   assert.equal((await call('../api/admin', mk('POST', { headers: A, body: { action: 'reward_verify', reward_id: rw[0].id } }))).code, 200);
   rw = await rewards();
-  assert.equal(rw[0].status, 'reward_pending'); assert.ok(rw[0].reward_pending_at);
+  assert.equal(rw[0].status, 'reward_pending'); assert.equal(rw[0].amount_cents, 100000); assert.ok(rw[0].reward_pending_at); assert.ok(rw[0].installation_verified_at);
   const v = (await call('../api/portal', mk('GET', { headers: C(owner.portal_token) }))).payload;
-  assert.equal(v.referral.rewards.length, 1); assert.equal(v.referral.rewards[0].cents, 100000); assert.equal(v.referral.pending_cents, 100000);
+  assert.equal(v.referral.stats.reward_pending, 1); assert.equal(v.referral.pending_cents, 100000);
 });
 
 test('15. repeat installation / status updates never duplicate the reward', async () => {
