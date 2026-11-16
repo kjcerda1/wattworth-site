@@ -91,7 +91,7 @@
         <div class="card"><div class="t1" style="font-weight:700;margin-bottom:6px">Top cities</div>${ac.cities.length ? `<table style="width:100%;border-collapse:collapse;font-size:14px"><tr style="text-align:left;color:var(--muted)"><th style="padding:4px 0">City</th><th>Leads</th><th>Signed</th></tr>${ac.cities.map((r) => `<tr style="border-top:1px solid var(--line)"><td style="padding:8px 0">${esc(r.name)}</td><td>${r.count}</td><td>${r.signed}</td></tr>`).join('')}</table>` : '<div class="note">Appears once leads arrive.</div>'}</div></div>
       <h2>What happened to them</h2><div class="card">${d.funnel.map((f) => `<div class="bar"><i style="width:${(f.count / max) * 100}%"></i><span>${f.label}</span><b>${f.count}</b></div>`).join('')}<p class="note" style="margin:8px 0 0">As reported by your partner. Each bar counts every lead that reached that stage or later. ${k.lost} lost${k.invalid ? ', ' + k.invalid + ' invalid' : ''}.${k.medianHoursToContact != null ? ' Median time to first contact: ' + hours(k.medianHoursToContact) + '.' : ''}</p></div>
       ${pst.length ? `<h2>By partner</h2><div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px;min-width:420px"><tr style="text-align:left;color:var(--muted)"><th style="padding:4px 0">Partner</th><th>Leads</th><th>Contacted</th><th>Deals</th><th>Commission</th></tr>${pst.map((r) => `<tr style="border-top:1px solid var(--line)"><td style="padding:8px 0"><b>${esc(r.name)}</b></td><td>${r.leads}</td><td>${r.contacted}</td><td>${r.inPlace}</td><td>${W.money(r.owedCents + r.paidCents)}</td></tr>`).join('')}</table><p class="note" style="margin:10px 0 0">Adding another rep later shows up here side by side.</p></div>` : ''}
-      ${marketingCard()}
+      ${economicsCard()}${funnelCard()}${marketingCard()}
       <h2>Recent activity</h2><div class="list">${d.events.filter((e) => e.type !== 'delivery').slice(0, 8).map((e) => `<div class="item"><div class="l"><div class="t1">${esc(e.lead_ref || '')} · ${evText(e)}</div><div class="t2">${esc((e.actor || '').replace('partner:', '').replace(' (api)', ' via API'))} · ${when(e.created_at)}</div></div></div>`).join('') || '<div class="empty">Activity shows up here as your partner updates deals.</div>'}</div>`;
   };
   function setupCard() {
@@ -104,6 +104,35 @@
     if (!u.appUrl) todo.push('Set APP_URL so emails link to the dashboards.');
     if (!todo.length || ls.get('ww_admin_token') === 'demo') return '';
     return `<h2 style="margin-top:12px">Finish setup</h2><div class="card"><ul style="margin:0;padding-left:18px">${todo.map((t) => `<li style="margin:6px 0">${esc(t)}</li>`).join('')}</ul></div>`;
+  }
+  const dash = (n) => (n == null ? 'n/a' : W.money(n));
+  function economicsCard() {
+    const e = S.d.economics; if (!e) return '';
+    const c = e.costPer, k = (n, l) => `<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+    const net = (n) => `<span style="color:var(--${n >= 0 ? 'green' : 'red'},inherit);font-weight:700">${W.money(n)}</span>`;
+    return `<h2>Unit economics</h2><div class="card">
+      ${e.termsSet ? '' : '<div class="flag" style="display:block;margin:0 0 10px;font-weight:600">Commission terms are not set yet, so income below is only what you have recorded as received. Do not treat this as profit until the terms are agreed in writing.</div>'}
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px">${k(W.money(e.adSpendCents), 'Ad spend')}${k(W.money(e.opexCents), 'Operating costs')}${k(W.money(e.commissionReceivedCents), 'Commission received')}${k(W.money(e.referralRewardsPaidCents), 'Referral rewards paid')}</div>
+      <div style="overflow-x:auto;margin-top:12px"><table style="width:100%;border-collapse:collapse;font-size:14px"><tr style="text-align:left;color:var(--muted)"><th style="padding:6px 4px">Step</th><th>Count</th><th>Cost each</th></tr>
+        <tr style="border-top:1px solid var(--line)"><td style="padding:6px 4px">Lead</td><td>${e.counts.leads}</td><td>${dash(c.leadCents)}</td></tr>
+        <tr style="border-top:1px solid var(--line)"><td style="padding:6px 4px">Qualified lead</td><td>${e.counts.qualified}</td><td>${dash(c.qualifiedLeadCents)}</td></tr>
+        <tr style="border-top:1px solid var(--line)"><td style="padding:6px 4px">Appointment</td><td>${e.counts.appointments}</td><td>${dash(c.appointmentCents)}</td></tr>
+        <tr style="border-top:1px solid var(--line)"><td style="padding:6px 4px">Signed</td><td>${e.counts.signed}</td><td>${dash(c.signedCents)}</td></tr>
+        <tr style="border-top:1px solid var(--line)"><td style="padding:6px 4px">Installation</td><td>${e.counts.installed}</td><td>${dash(c.installationCents)}</td></tr></table></div>
+      <div style="margin-top:12px;line-height:1.9">Net so far (money in minus money out): ${net(e.netRealisedCents)}<br>
+        <span class="note">If everything owed to you were collected and pending rewards paid (${W.money(e.commissionOwedCents)} owed to you, ${W.money(e.referralRewardsOwedCents)} rewards pending): ${net(e.netIfSettledCents)}</span></div>
+      <p class="note" style="margin:8px 0 0">Qualified lead = a valid lead from a homeowner that your partner contacted or moved forward. Referral rewards are your own cost and are not taken out of the partner's commission. Nothing here is estimated: a cost shows n/a until there is something to divide by.</p></div>`;
+  }
+  function funnelCard() {
+    const v = S.d.visitor_funnel; if (!v) return '';
+    const max = Math.max(1, v.starts);
+    const err = Object.entries(v.errors || {}).map(([k, n]) => `${esc(k)}: ${n}`).join(' · ');
+    if (!v.visitors && !v.starts) return `<h2>Visitor funnel</h2><div class="card"><p class="note" style="margin:0">No visits recorded yet. Once the funnel is live, this shows visits, form starts, where people drop off, and results by campaign. It counts visits with privacy-friendly analytics (no cookies, no ad pixels, no personal details) and skips visitors who send a privacy signal.</p></div>`;
+    return `<h2>Visitor funnel</h2><div class="card">
+      <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:12px"><div class="kpi"><div class="n">${v.visitors}</div><div class="l">Visits</div></div><div class="kpi"><div class="n">${v.startRate == null ? 'n/a' : v.startRate + '%'}</div><div class="l">Started the form</div></div><div class="kpi"><div class="n">${v.completionRate == null ? 'n/a' : v.completionRate + '%'}</div><div class="l">Of starts, submitted</div></div></div>
+      <div style="margin-top:12px">${v.steps.map((st) => `<div class="bar"><i style="width:${(st.reached / max) * 100}%"></i><span>${st.step}. ${esc(st.label)}</span><b>${st.reached}${st.droppedBefore ? ` <small style="font-weight:400">(-${st.droppedBefore})</small>` : ''}</b></div>`).join('')}</div>
+      <p class="note" style="margin:8px 0 0">People who reached each step. The number in brackets is how many left before it. Verification choice: bill ${v.verifyChoice.bill}, meter ${v.verifyChoice.meter}.${err ? ' Errors: ' + err + '.' : ''}</p>
+      ${v.campaigns.length ? `<div style="overflow-x:auto;margin-top:12px"><table style="width:100%;border-collapse:collapse;font-size:14px;min-width:460px"><tr style="text-align:left;color:var(--muted)"><th style="padding:6px 4px">Campaign</th><th>Visits</th><th>Starts</th><th>Leads</th><th>Contacted</th><th>Appts</th><th>Signed</th></tr>${v.campaigns.map((r) => `<tr style="border-top:1px solid var(--line)"><td style="padding:6px 4px">${esc(r.source)}${r.campaign ? ' / ' + esc(r.campaign) : ''}</td><td>${r.visitors}</td><td>${r.starts}</td><td>${r.leads}</td><td>${r.contacted}</td><td>${r.appointments}</td><td>${r.signed}</td></tr>`).join('')}</table></div>` : ''}</div>`;
   }
   function marketingCard() {
     const m = S.d.marketing; if (!m || !m.months.length || !m.totalSpendCents) return '';
@@ -252,6 +281,10 @@
         <form id="spendf" class="row2" autocomplete="off"><div><label for="sm">Month</label><input id="sm" type="month" required value="${S.stMonth}"></div><div><label for="ss">Amount ($)</label><input id="ss" inputmode="decimal" required placeholder="500"></div>
         <div><label for="sc">Source</label><input id="sc" maxlength="60" placeholder="Meta, Google…"></div><div style="align-self:end"><button class="btn" style="width:100%">Add</button></div></form>
         <div class="list" style="margin-top:12px">${(d.ad_spend || []).map((x) => `<div class="item"><div class="l"><div class="t1">${W.money(x.amount_cents)} · ${esc(x.month)}</div><div class="t2">${esc(x.source || 'No source')}</div></div><button class="btn ghost sm" data-delspend="${x.id}">Remove</button></div>`).join('')}</div></div>
+      <h2>Operating costs</h2><div class="card"><p class="note" style="margin-top:0">Hosting, email, tools and other running costs. They are subtracted in Unit economics on the Overview.</p>
+        <form id="expf" class="row2" autocomplete="off"><div><label for="em">Month</label><input id="em" type="month" required value="${S.stMonth}"></div><div><label for="ea">Amount ($)</label><input id="ea" inputmode="decimal" required placeholder="25"></div>
+        <div><label for="ec">What for</label><input id="ec" maxlength="60" placeholder="Supabase, Vercel…"></div><div style="align-self:end"><button class="btn" style="width:100%">Add</button></div></form>
+        <div class="list" style="margin-top:12px">${(d.expenses || []).map((x) => `<div class="item"><div class="l"><div class="t1">${W.money(x.amount_cents)} · ${esc(x.month)}</div><div class="t2">${esc(x.category || 'Other')}</div></div><button class="btn ghost sm" data-delexp="${x.id}">Remove</button></div>`).join('')}</div></div>
       <h2>Invalid-lead flags</h2><div class="card"><p class="note" style="margin-top:0">If your partner flags a lead invalid (wrong number, renter), it is accepted automatically after 5 days with no commission impact. You can decide sooner here.</p>
         <div class="list">${S.d.leads.filter((l) => l.stage === 'invalid' && l.dispute_status === 'pending').map((l) => `<div class="item"><div class="l"><div class="t1">${esc(name(l))} <span class="note">${esc(l.ref)}</span></div><div class="t2">${esc(l.invalid_reason || '')}</div></div><div style="display:flex;gap:6px"><button class="btn sm" data-dispute="${l.id}" data-accept="1">Accept</button><button class="btn ghost sm" data-dispute="${l.id}" data-accept="0">Decline</button></div></div>`).join('') || '<div class="note">Nothing waiting.</div>'}</div></div>
       <h2>Your data</h2><div class="card"><button class="btn ghost" id="csv2">Export all leads (CSV)</button></div>`;
@@ -262,6 +295,8 @@
       try { await act({ action: 'set_tiers', tiers }); toast('Rates saved'); await load(true); } catch (e) { toast(e.message || 'Failed', true); }
     };
     $('#spendf').onsubmit = async (e) => { e.preventDefault(); try { await act({ action: 'add_spend', month: $('#sm').value, amount_dollars: $('#ss').value.trim(), source: $('#sc').value.trim() }); toast('Added'); await load(true); } catch (er) { toast(er.message || 'Enter a month and amount', true); } };
+    $('#expf').onsubmit = async (e) => { e.preventDefault(); try { await act({ action: 'add_expense', month: $('#em').value, amount_dollars: $('#ea').value.trim(), category: $('#ec').value.trim() }); toast('Added'); await load(true); } catch (er) { toast(er.message || 'Enter a month and amount', true); } };
+    app.querySelectorAll('[data-delexp]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { await act({ action: 'delete_expense', id: b.dataset.delexp }); toast('Removed'); await load(true); } catch (er) { toast(er.message, true); b.disabled = false; } }));
     app.querySelectorAll('[data-delspend]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { await act({ action: 'delete_spend', id: b.dataset.delspend }); toast('Removed'); await load(true); } catch (er) { toast(er.message, true); b.disabled = false; } }));
     app.querySelectorAll('[data-dispute]').forEach((b) => (b.onclick = async () => {
       b.disabled = true;

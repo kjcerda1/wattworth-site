@@ -1,11 +1,12 @@
 // Owner dashboard API (auth: Bearer ADMIN_TOKEN)
 //   GET  /api/admin                 -> everything the dashboard renders
-//   POST /api/admin {action,...}    -> resend | fee_paid | reward_verify | reward_unverify | reward_paid | reward_ineligible | reward_reinstate | override_referrer | set_tiers | create_partner | update_partner | rotate_key | admin_update | record_payment | erase_lead
+//   POST /api/admin {action,...}    -> resend | fee_paid | reward_verify | reward_unverify | reward_paid | reward_ineligible | reward_reinstate | override_referrer | add_expense | delete_expense | set_tiers | create_partner | update_partner | rotate_key | admin_update | record_payment | erase_lead
 const db = require('../lib/db');
 const W = require('../lib/shared');
 const { route, body, deny } = require('../lib/http');
 const { isAdmin, newKey, sha } = require('../lib/auth');
 const R = require('../lib/referral');
+const EV = require('../lib/events');
 const { retryDelivery, applyUpdate, resolveDispute, event, HttpError, clean, normPhone } = require('../lib/leads');
 const { emailReady, smsReady } = require('../lib/mail');
 
@@ -22,7 +23,7 @@ module.exports = route(async (req, res) => {
   if (!isAdmin(req)) return deny(res);
 
   if (req.method === 'GET') {
-    const [leads, deliveries, rewards, tiers, partners, events, ad_spend, messages] = await Promise.all([
+    const [leads, deliveries, rewards, tiers, partners, events, ad_spend, messages, expenses, funnelEvents] = await Promise.all([
       db.select('leads', { order: ['created_at', 'desc'], limit: 2000 }),
       db.select('deliveries', { order: ['created_at', 'desc'], limit: 2000 }),
       db.select('referral_rewards', { order: ['created_at', 'desc'], limit: 2000 }),
@@ -31,8 +32,10 @@ module.exports = route(async (req, res) => {
       db.select('lead_events', { order: ['created_at', 'desc'], limit: 300 }),
       db.select('ad_spend', { order: ['month', 'desc'], limit: 500 }),
       db.select('messages', { limit: 20000 }),
+      db.select('expenses', { order: ['month', 'desc'], limit: 500 }),
+      db.selectAll('funnel_events', {}),
     ]);
-    const summary = W.buildSummary({ leads, deliveries, rewards, tiers, ad_spend, partners, messages });
+    const summary = W.buildSummary({ leads, deliveries, rewards, tiers, ad_spend, partners, messages, expenses });
     const auditEvents = [...(await db.select('lead_events', { where: { type: 'reward' }, limit: 5000 })), ...(await db.select('lead_events', { where: { type: 'referral_override' }, limit: 5000 }))].sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
     const pn = Object.fromEntries(partners.map((p) => [p.id, p.name]));
     const pmap = Object.fromEntries(partners.map((p) => [p.id, p]));
@@ -51,7 +54,7 @@ module.exports = route(async (req, res) => {
           attributed_at: p.created_at, milestone: R.milestoneOf(p, L), milestone_label: R.MILESTONES[R.milestoneOf(p, L)],
           audit: auditEvents.filter((e) => e.lead_id === p.lead_id).map((e) => ({ type: e.type, actor: e.actor, from: e.from_value, to: e.to_value, note: e.note, at: e.created_at })) };
       }),
-      tiers, ad_spend, partners: partners.map(partnerView),
+      tiers, ad_spend, expenses, visitor_funnel: EV.report(funnelEvents, leads), partners: partners.map(partnerView),
       events: events.map((e) => ({ ...e, lead_ref: ref[e.lead_id] && ref[e.lead_id].ref })),
     });
   }
@@ -174,6 +177,16 @@ module.exports = route(async (req, res) => {
     }
     case 'delete_spend': {
       await db.remove('ad_spend', { id: b.id });
+      return res.json({ ok: true });
+    }
+    case 'add_expense': {
+      const dollars = Number(b.amount_dollars);
+      if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(b.month || '') || !(dollars >= 0) || dollars > 10000000) throw new HttpError(400, 'Enter a month and a dollar amount');
+      const row = await db.insert('expenses', { month: b.month, category: clean(b.category, 60) || 'Other', amount_cents: Math.round(dollars * 100), note: clean(b.note, 200) });
+      return res.status(201).json({ ok: true, id: row.id });
+    }
+    case 'delete_expense': {
+      await db.remove('expenses', { id: b.id });
       return res.json({ ok: true });
     }
     case 'erase_lead': {
