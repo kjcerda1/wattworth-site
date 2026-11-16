@@ -159,6 +159,35 @@ create table if not exists ad_spend (
   updated_at timestamptz not null default now()
 );
 
+-- Operating expenses (hosting, email, tools). Ad spend stays in ad_spend. Together they feed the owner's net-profit view.
+create table if not exists expenses (
+  id uuid primary key default gen_random_uuid(),
+  month text not null check (month ~ '^[0-9]{4}-[0-9]{2}$'),
+  category text not null default 'Other',
+  amount_cents int not null check (amount_cents >= 0),
+  note text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- First-party funnel analytics. Anonymous per-tab-session id + allowlisted event names + campaign tags. NEVER holds names,
+-- contact details, addresses, meter/provider/bill data, referral codes, IPs or free text (the API enforces an allowlist).
+-- Purged after 180 days by the daily job.
+create table if not exists funnel_events (
+  id uuid primary key default gen_random_uuid(),
+  visitor_id text not null check (visitor_id ~ '^[a-z0-9]{8,32}$'),
+  event text not null check (event in ('landing_view','cta_click','funnel_start','step_view','verify_method','submit_attempt','submit_success','submit_error','referral_view','tracker_open','abandon')),
+  step int check (step between 1 and 6),
+  utm_source text, utm_medium text, utm_campaign text, utm_content text,
+  ref_host text,
+  device text check (device in ('mobile','tablet','desktop')),
+  props jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists funnel_events_created_idx on funnel_events(created_at);
+create index if not exists funnel_events_visitor_idx on funnel_events(visitor_id);
+
 -- Alerts already sent (stops the same alert repeating every cron run)
 create table if not exists alerts (
   id uuid primary key default gen_random_uuid(),
@@ -173,6 +202,8 @@ alter table deliveries enable row level security;
 alter table lead_events enable row level security;
 alter table fee_tiers enable row level security;
 alter table referral_rewards enable row level security;
+alter table expenses enable row level security;
+alter table funnel_events enable row level security;
 alter table ad_spend enable row level security;
 alter table alerts enable row level security;
 

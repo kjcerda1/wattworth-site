@@ -539,7 +539,7 @@ footer {
   padding-top: 24px;
   display: flex; justify-content: space-between; align-items: flex-start;
 }
-.footer-disc { font-size: 0.7rem; color: rgba(255,255,255,0.25); line-height: 1.7; max-width: 680px; }
+.footer-disc { font-size: 0.7rem; color: rgba(255,255,255,0.62); line-height: 1.7; max-width: 680px; }
 .footer-sl {
   font-size: 0.72rem; color: rgba(255,255,255,0.25);
   display: flex; align-items: center; gap: 5px; white-space: nowrap;
@@ -991,13 +991,12 @@ footer {
 <nav>
   <div class="logo-wrap">
     <div class="logo-main">Watt<span>Worth</span></div>
-    <div class="logo-sub">Solar Savings Platform</div>
+    <div class="logo-sub">Free solar check</div>
   </div>
   <div class="nav-right">
     <a href="#how" class="nav-link">How it works</a>
-    <a href="#referral" class="nav-link">Earn $1,000</a>
     <a href="/portal/" class="nav-link">My Tracker</a>
-    <button class="nav-cta" onclick="openFunnel()">Check my savings</button>
+    <button class="nav-cta" onclick="openFunnel('nav')">Check my savings</button>
   </div>
 </nav>
 
@@ -1009,12 +1008,12 @@ footer {
   <div class="hero-left">
     <div class="location-banner">
       <div class="pulse"></div>
-      Homeowners in your area are saving up to $2,200/year
+      Free solar savings check for homeowners
     </div>
 
     <h1>For <em>watt</em><br>it's <span class="gold">worth</span> to you</h1>
 
-    <p class="hero-sub">See your real solar savings in under 60 seconds. No calls, no reps, no obligation — and earn $1,000 when a friend you refer completes a verified solar installation.</p>
+    <p class="hero-sub">Answer a few quick questions to get a free, rough estimate of what solar could save on your electric bill. No obligation. A solar specialist follows up only after you submit.</p>
 
     <div class="trust-pills">
       <div class="trust-pill">
@@ -1023,88 +1022,59 @@ footer {
       </div>
       <div class="trust-pill">
         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        Free savings estimate
+        Free estimate
       </div>
       <div class="trust-pill">
         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        Takes 60 seconds
+        About a minute
       </div>
       <div class="trust-pill">
         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        Earn $1,000 per referral
+        Bill details stay private
       </div>
     </div>
 
     <div class="hero-cta-row">
-      <button class="btn-hero" onclick="openFunnel()">
+      <button class="btn-hero" onclick="openFunnel('hero')">
         Check my savings
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </button>
-      <span class="hero-timer">Takes about 60 seconds</span>
+      <span class="hero-timer">Free. About a minute. No obligation.</span>
     </div>
   </div>
 
   <div class="hero-cards">
     <div class="hcard green">
-      <div class="hc-label">Estimated monthly savings</div>
+      <div class="hc-label">Example: monthly savings</div>
       <div class="hc-value">$<span id="hero-monthly">148</span></div>
-      <div class="hc-sub">Based on avg. $185/mo bill · Your area</div>
+      <div class="hc-sub">Illustrative example for a $185/mo bill. Your result will differ.</div>
     </div>
     <div class="hcard-row">
       <div class="hcard-mini">
         <div class="hm-val">7.8 kW</div>
-        <div class="hm-label">System size</div>
+        <div class="hm-label">Example system size</div>
       </div>
       <div class="hcard-mini">
-        <div class="hm-val">9.6 yr</div>
-        <div class="hm-label">Payback</div>
-      </div>
-    </div>
-    <div class="hcard gold">
-      <div class="hc-label">25-year projected return</div>
-      <div class="hc-value">$<span>57,400</span></div>
-      <div class="hc-sub">After 30% federal tax credit</div>
-    </div>
-    <div class="referral-teaser">
-      <div class="rt-icon">💸</div>
-      <div class="rt-text">
-        <div class="rt-label">Referral program</div>
-        <div class="rt-value">Earn $1,000</div>
-        <div class="rt-sub">Per homeowner who installs solar</div>
+        <div class="hm-val">~1 min</div>
+        <div class="hm-label">To get your own estimate</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── PROOF BAR ──────────────────────────────────── -->
+<!-- ── WHAT TO EXPECT (facts about how this works; no statistics) ───── -->
 <div class="proof-bar">
-  <div class="proof-stat">
-    <div class="ps-val">14,200+</div>
-    <div class="ps-label">Estimates generated</div>
-  </div>
-  <div class="proof-stat">
-    <div class="ps-val">$1,840</div>
-    <div class="ps-label">Avg. annual savings</div>
-  </div>
-  <div class="proof-stat">
-    <div class="ps-val">$2.1M+</div>
-    <div class="ps-label">Referral rewards paid</div>
-  </div>
-  <div class="proof-stat">
-    <div class="ps-val">Zero</div>
-    <div class="ps-label">Calls required upfront</div>
-  </div>
-  <div class="proof-stat">
-    <div class="ps-val">4.9 ★</div>
-    <div class="ps-label">Customer satisfaction</div>
-  </div>
+  <div class="proof-stat"><div class="ps-val">Free</div><div class="ps-label">No cost to get your estimate</div></div>
+  <div class="proof-stat"><div class="ps-val">About a minute</div><div class="ps-label">A few short questions</div></div>
+  <div class="proof-stat"><div class="ps-val">Private</div><div class="ps-label">Bill and meter details go only to your solar specialist</div></div>
+  <div class="proof-stat"><div class="ps-val">Your choice</div><div class="ps-label">No obligation. Reply STOP to end texts</div></div>
 </div>
 
 <!-- ── HOW IT WORKS ───────────────────────────────── -->
 <section class="section alt" id="how">
   <div class="sec-tag">How it works</div>
-  <h2>From address to savings<br>to <em>earning</em> — in minutes</h2>
-  <p class="sec-sub">We replaced the old solar sales process with a self-serve flow that respects your time and rewards your network.</p>
+  <h2>A few questions, a rough estimate,<br>then <em>your options</em></h2>
+  <p class="sec-sub">A self-serve flow that respects your time. There is no obligation at any step.</p>
 
   <div class="steps-grid">
     <div class="step-card">
@@ -1112,32 +1082,75 @@ footer {
       <div class="step-ico">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
       </div>
-      <h3>Enter your address</h3>
-      <p>We instantly look up your utility provider, local solar irradiance, and avg. electricity rates. No technical knowledge needed.</p>
+      <h3>Answer a few quick questions</h3>
+      <p>Your typical electric bill, whether you own your home, and your roof type. We do not ask for your address until later.</p>
     </div>
     <div class="step-card">
       <div class="step-num">02</div>
       <div class="step-ico">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
       </div>
-      <h3>Get an instant estimate</h3>
-      <p>See a savings range, system size, payback period, and financing options — before talking to anyone. All clearly labeled as estimates.</p>
+      <h3>Confirm your electric account</h3>
+      <p>Upload a recent bill, or enter your electric provider and meter number. This keeps requests real and lets your specialist size a system accurately.</p>
     </div>
     <div class="step-card">
       <div class="step-num">03</div>
       <div class="step-ico">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
       </div>
-      <h3>Meet your solar specialist</h3>
-      <p>A local specialist reaches out to go over your options. Follow progress and message them any time in your private tracker app.</p>
+      <h3>See a rough estimate</h3>
+      <p>A savings range based on your bill range and typical sun in your state. It is labeled as an estimate, not a quote.</p>
     </div>
     <div class="step-card">
       <div class="step-num">04</div>
       <div class="step-ico">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       </div>
-      <h3>Refer & earn $1,000</h3>
-      <p>Share your unique link. When a friend submits, estimates, or installs — you earn. Track everything in your referral dashboard.</p>
+      <h3>Talk with a solar specialist</h3>
+      <p>A specialist contacts you by phone, text or email about your options. You can message them any time in your private tracker.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── PAYING FOR SOLAR (no invented numbers) ─────── -->
+<section class="fin-section">
+  <div class="sec-tag">Good to know</div>
+  <h2>Ways homeowners <em>pay for solar</em></h2>
+
+  <div class="fin-grid">
+    <div class="fin-chart">
+      <div class="fin-chart-title">Incentives change, so ask</div>
+      <p style="font-size:0.92rem;line-height:1.7;color:var(--ink-mid,#41564b);margin:0 0 12px">The federal homeowner solar tax credit (Section 25D) ended for systems purchased after December 31, 2025. Some installers still offer leases or power-purchase agreements (PPAs), where the company that owns the system may claim a business credit and may pass some of the benefit to you. Programs also differ by state and utility.</p>
+      <p style="font-size:0.92rem;line-height:1.7;color:var(--ink-mid,#41564b);margin:0">Your solar specialist can explain what applies to your home. WattWorth does not give tax advice, so check with a tax professional before you decide.</p>
+    </div>
+
+    <div class="fin-right">
+      <h3>Three common ways to go solar</h3>
+      <p>Your specialist will go over which of these are available to you. Nothing is decided on this page.</p>
+      <div class="fin-option">
+        <div class="fo-dot green"></div>
+        <div>
+          <div class="fo-name">Cash purchase</div>
+          <div class="fo-desc">You own the system outright and keep its savings. You are responsible for upkeep.</div>
+        </div>
+        <div class="fo-price">You own</div>
+      </div>
+      <div class="fin-option">
+        <div class="fo-dot gold"></div>
+        <div>
+          <div class="fo-name">Solar loan</div>
+          <div class="fo-desc">You own the system and pay a lender over time. Some loans have no down payment; terms vary.</div>
+        </div>
+        <div class="fo-price">You own</div>
+      </div>
+      <div class="fin-option">
+        <div class="fo-dot blue"></div>
+        <div>
+          <div class="fo-name">Lease or PPA</div>
+          <div class="fo-desc">A company owns the system and you pay a set rate. Read the terms on contract length and what happens if you sell your home.</div>
+        </div>
+        <div class="fo-price">They own</div>
+      </div>
     </div>
   </div>
 </section>
@@ -1166,7 +1179,7 @@ footer {
     <!-- Dashboard Preview -->
     <div class="ref-dashboard-preview">
       <div class="rdp-header">
-        <div class="rdp-title">Example referral tracker</div>
+        <div class="rdp-title">Example referral tracker (anonymized)</div>
         <div class="rdp-badge">Sample data</div>
       </div>
       <div class="rdp-earnings">
@@ -1175,105 +1188,35 @@ footer {
           <div class="rde-value">$1,000</div>
           <div class="rde-sub">per verified installation</div>
         </div>
-        <button class="btn-hero" style="padding:10px 20px;font-size:0.82rem;" onclick="openFunnel()">
-          Add referral →
+        <button class="btn-hero" style="padding:10px 20px;font-size:0.82rem;" onclick="openFunnel('referral')">
+          Get my estimate →
         </button>
       </div>
       <div class="rdp-breakdown">
         <div class="rdb-item">
-          <div class="rdb-avatar" style="background:var(--green)">MJ</div>
+          <div class="rdb-avatar" style="background:var(--green)">#1</div>
           <div>
-            <div class="rdb-name">Maria Johnson</div>
-            <div class="rdb-status s-installed"><span class="status-dot"></span>Installed ⚡</div>
+            <div class="rdb-name">Referral #1</div>
+            <div class="rdb-status s-installed"><span class="status-dot"></span>Installation verified</div>
           </div>
-          <div class="rdb-earn" style="color:var(--gold-dark)">+$1,000</div>
+          <div class="rdb-earn" style="color:var(--gold-dark)">$1,000 pending</div>
         </div>
         <div class="rdb-item">
-          <div class="rdb-avatar" style="background:var(--blue)">TR</div>
+          <div class="rdb-avatar" style="background:var(--blue)">#2</div>
           <div>
-            <div class="rdb-name">Tom Reynolds</div>
-            <div class="rdb-status s-estimated"><span class="status-dot"></span>Getting an estimate</div>
+            <div class="rdb-name">Referral #2</div>
+            <div class="rdb-status s-estimated"><span class="status-dot"></span>Consultation</div>
           </div>
           <div class="rdb-earn" style="color:var(--ink-dim)">Tracking</div>
         </div>
         <div class="rdb-item">
-          <div class="rdb-avatar" style="background:var(--blue)" style="background:#C4714A">SK</div>
+          <div class="rdb-avatar" style="background:var(--blue)">#3</div>
           <div>
-            <div class="rdb-name">Sara Kim</div>
-            <div class="rdb-status s-submitted"><span class="status-dot"></span>Submitted</div>
+            <div class="rdb-name">Referral #3</div>
+            <div class="rdb-status s-submitted"><span class="status-dot"></span>Verification complete</div>
           </div>
           <div class="rdb-earn" style="color:var(--ink-dim)">Tracking</div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── FINANCING VIZ ──────────────────────────────── -->
-<section class="fin-section">
-  <div class="sec-tag">The math</div>
-  <h2>Your bill vs. <em>solar</em><br>— see the difference</h2>
-
-  <div class="fin-grid">
-    <div class="fin-chart">
-      <div class="fin-chart-title">Monthly Cost Comparison</div>
-      <div class="fin-bar-row">
-        <div class="fin-bar-item">
-          <div class="fb-label-row">
-            <span class="fb-label">Current electric bill</span>
-            <span class="fb-amount" style="color:var(--ink-dim)">$185/mo</span>
-          </div>
-          <div class="fb-track"><div class="fb-fill current" style="width:100%"></div></div>
-        </div>
-        <div class="fin-bar-item">
-          <div class="fb-label-row">
-            <span class="fb-label">Solar loan payment</span>
-            <span class="fb-amount" style="color:var(--green-dark)">$106/mo</span>
-          </div>
-          <div class="fb-track"><div class="fb-fill solar" style="width:57%"></div></div>
-        </div>
-        <div class="fin-bar-item">
-          <div class="fb-label-row">
-            <span class="fb-label">Monthly savings</span>
-            <span class="fb-amount" style="color:var(--gold-dark)">$79/mo</span>
-          </div>
-          <div class="fb-track"><div class="fb-fill savings" style="width:43%"></div></div>
-        </div>
-      </div>
-      <div class="fin-summary">
-        <div class="fin-stat"><div class="fs-val green">$948</div><div class="fs-label">Year 1 savings</div></div>
-        <div class="fin-stat"><div class="fs-val gold">$34,200</div><div class="fs-label">25-yr projection</div></div>
-        <div class="fin-stat"><div class="fs-val green">30%</div><div class="fs-label">Federal ITC</div></div>
-        <div class="fin-stat"><div class="fs-val gold">$0</div><div class="fs-label">Down payment</div></div>
-      </div>
-    </div>
-
-    <div class="fin-right">
-      <h3>Three ways to go solar</h3>
-      <p>Choose the path that fits your goals. All options are available after you get your free estimate.</p>
-      <div class="fin-option">
-        <div class="fo-dot green"></div>
-        <div>
-          <div class="fo-name">Cash Purchase</div>
-          <div class="fo-desc">Own outright. Maximum ROI. Full 30% ITC.</div>
-        </div>
-        <div class="fo-price">Best value</div>
-      </div>
-      <div class="fin-option">
-        <div class="fo-dot gold"></div>
-        <div>
-          <div class="fo-name">Solar Loan</div>
-          <div class="fo-desc">$0 down, own the system, claim the credit.</div>
-        </div>
-        <div class="fo-price">$0 down</div>
-      </div>
-      <div class="fin-option">
-        <div class="fo-dot blue"></div>
-        <div>
-          <div class="fo-name">Lease / PPA</div>
-          <div class="fo-desc">$0 down, $0 maintenance, fixed low rate.</div>
-        </div>
-        <div class="fo-price">Lowest risk</div>
       </div>
     </div>
   </div>
@@ -1290,25 +1233,25 @@ footer {
   <div class="footer-grid">
     <div class="footer-brand">
       <div class="fl">Watt<span>Worth</span></div>
-      <p>For watt it's worth — a self-serve solar savings platform that respects your time, rewards your network, and never requires a cold call.</p>
+      <p>For watt it's worth: a free solar savings check that respects your time. A solar specialist contacts you only after you submit a request.</p>
     </div>
     <div class="footer-col">
       <h4>Platform</h4>
-      <a href="#">Get my estimate</a>
-      <a href="#">Referral program</a>
-      <a href="#">My dashboard</a>
-      <a href="#">Saved quote</a>
+      <a href="#" onclick="openFunnel('footer');return false">Get my estimate</a>
+      <a href="#referral">Referral program</a>
+      <a href="/portal/">My tracker</a>
     </div>
     <div class="footer-col">
       <h4>Legal</h4>
-      <a href="#">Privacy policy</a>
-      <a href="#">Terms of service</a>
-      <a href="#">Referral terms</a>
-      <a href="#">TCPA disclosure</a>
+      <a href="/legal/privacy.html">Privacy policy</a>
+      <a href="/legal/terms.html">Terms of use</a>
+      <a href="/legal/referral-terms.html">Referral terms</a>
+      <a href="/legal/contact-consent.html">Calls and texts</a>
+      <a href="#" id="analyticsToggle" onclick="WWT.toggle();return false">Analytics: on</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <p class="footer-disc">Estimates are based on regional solar irradiance data, publicly available utility rates, and typical usage patterns for your area. Actual savings will vary based on system design, shading, roof orientation, utility tariff structure, and financing terms. The 30% federal Investment Tax Credit (ITC) is available to qualifying taxpayers; consult a tax professional. WattWorth is not a licensed solar contractor. This platform connects homeowners with certified installers. Referral rewards are subject to terms and conditions and installer partnership agreements. Not a guarantee of savings.</p>
+    <p class="footer-disc">Estimates are rough ranges based on your bill range and typical sun and electricity rates for your state. Actual savings depend on system design, shading, roof, utility rates and financing, and are not guaranteed. This is not a quote or an offer. WattWorth is not a solar installer or contractor; we connect homeowners with solar specialists. Tax rules change and WattWorth does not give tax advice. A referral reward of $1,000 is paid only after a verified qualifying solar installation and is subject to the <a href="/legal/referral-terms.html" style="color:inherit;text-decoration:underline">referral terms</a>. We count visits and form steps with privacy-friendly analytics: no cookies, no ad trackers, and no personal details. You can turn this off with the Analytics link above or with a Global Privacy Control browser setting.</p>
     <div class="footer-sl">Powered by <span>SunLoop</span></div>
   </div>
 </footer>
@@ -1337,7 +1280,7 @@ footer {
       <button class="btn-back" onclick="goStep(4)">← Back</button>
       <div class="fstep-tag">Step 4 — Location</div>
       <div class="fstep-title">What's your home address?</div>
-      <div class="fstep-desc">We use your address to look up local utility rates, solar potential, and customize your estimate.</div>
+      <div class="fstep-desc">We use your location to apply state averages to your estimate. Your solar specialist will confirm the details with you.</div>
 
       <div class="field">
         <label>Street Address</label>
@@ -1375,18 +1318,18 @@ footer {
 
       <!-- Address Intelligence Panel -->
       <div class="addr-intel" id="addrIntel">
-        <div class="ai-label">📡 We found data for your area</div>
+        <div class="ai-label">Typical for your state (not your exact rate)</div>
         <div class="ai-items">
           <div class="ai-item">
-            <div class="ai-item-label">Utility</div>
+            <div class="ai-item-label">Common utilities</div>
             <div class="ai-item-val" id="ai-utility">—</div>
           </div>
           <div class="ai-item">
-            <div class="ai-item-label">Avg Rate</div>
+            <div class="ai-item-label">Typical rate</div>
             <div class="ai-item-val" id="ai-rate">—</div>
           </div>
           <div class="ai-item">
-            <div class="ai-item-label">Solar Score</div>
+            <div class="ai-item-label">Sun level</div>
             <div class="ai-item-val" id="ai-solar">—</div>
           </div>
         </div>
@@ -1399,7 +1342,7 @@ footer {
     <div class="fstep" id="fs2">
       <div class="fstep-tag">Step 1 — Usage</div>
       <div class="fstep-title">Average monthly electric bill?</div>
-      <div class="fstep-desc">This is the single biggest factor in your savings estimate.</div>
+      <div class="fstep-desc">This is the biggest factor in your estimate. Free and no obligation. It takes about a minute.</div>
       <div class="choices">
         <div class="choice" onclick="pick(this,'bill','under-75')">
           <div class="ch-ico">💡</div>
@@ -1452,7 +1395,7 @@ footer {
       <button class="btn-back" onclick="goStep(3)">← Back</button>
       <div class="fstep-tag">Step 3 — Roof</div>
       <div class="fstep-title">What type of roof do you have?</div>
-      <div class="fstep-desc">Optional — helps refine installation cost estimates.</div>
+      <div class="fstep-desc">Optional. You can continue without choosing.</div>
       <div class="choices two">
         <div class="choice" onclick="pick(this,'roof','asphalt')">
           <div class="ch-ico">🏠</div>
@@ -1480,7 +1423,7 @@ footer {
           <div class="ch-radio"></div>
         </div>
       </div>
-      <button class="btn-next" id="btn-roof" disabled onclick="goStep(1)">Continue →</button>
+      <button class="btn-next" id="btn-roof" onclick="goStep(1)">Continue →</button>
     </div>
 
     <!-- STEP 5: Soft Commit + Contact -->
@@ -1489,13 +1432,13 @@ footer {
       <div class="soft-commit">
         <div class="sc-icon">📊</div>
         <div class="sc-text">
-          <div class="sc-title">Your estimate is ready</div>
-          <div class="sc-sub">Where should we send your full savings report?</div>
+          <div class="sc-title">Next: how to reach you</div>
+          <div class="sc-sub">Your specialist uses this to follow up and share your estimate.</div>
         </div>
       </div>
       <div class="fstep-tag">Step 5 — Your Details</div>
       <div class="fstep-title">Almost there</div>
-      <div class="fstep-desc">Enter your info to view and receive your personalized solar savings report.</div>
+      <div class="fstep-desc">Enter your details so a solar specialist can follow up. You will see your rough estimate right after you submit.</div>
       <div class="fcols">
         <div class="field"><label>First Name</label><input type="text" id="inp-first" placeholder="Alex"></div>
         <div class="field"><label>Last Name</label><input type="text" id="inp-last" placeholder="Johnson"></div>
@@ -1513,7 +1456,11 @@ footer {
       <button class="btn-back" onclick="goStep(5)">← Back</button>
       <div class="fstep-tag">⚡ Last step</div>
       <div class="fstep-title">Verify your electric account</div>
-      <div class="fstep-desc">Your specialist needs this to size your system accurately. Give us either option below, or both.</div>
+      <div class="fstep-desc">Choose whichever is easier. One option is enough.</div>
+      <div id="whyVerify" style="background:var(--cream,#f5f1e6);border-radius:12px;padding:12px 14px;margin:6px 0 14px;font-size:0.8rem;line-height:1.6;color:var(--ink-mid,#41564b)">
+        <strong style="color:var(--ink,#17261f)">Why we ask:</strong> your specialist uses your electric account to size a system accurately, and it confirms the request is from a real homeowner so nobody's time is wasted.<br>
+        <strong style="color:var(--ink,#17261f)">Who sees it:</strong> only your assigned solar specialist and WattWorth. It is not shown in your tracker and is not sent to advertisers or ad platforms.
+      </div>
 
       <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-dim);margin:4px 0 8px;">Option A · Upload a recent electric bill</div>
       <input type="file" id="inp-bill" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" style="display:none" onchange="onBillPicked(this)">
@@ -1529,7 +1476,7 @@ footer {
       <div class="field"><label for="inp-meter">Meter number</label><input type="text" id="inp-meter" maxlength="30" placeholder="Printed on your meter and your bill" autocomplete="off" inputmode="text"></div>
       <div style="font-size:0.72rem;color:var(--ink-dim);line-height:1.5;margin:-4px 0 10px">Your bill and meter number are only shared with your solar specialist. Meter and bill details are never shown in your public tracker.</div>
       <div id="verifyErr" role="alert" style="display:none;color:#C62828;font-size:0.8rem;font-weight:600;margin:6px 0"></div>
-      <button class="btn-next" onclick="submitLead()">Generate my free estimate →</button>
+      <button class="btn-next" onclick="submitLead()">Submit and see my estimate →</button>
     </div>
 
     <!-- STEP: QUOTE -->
@@ -1540,7 +1487,7 @@ footer {
       <div class="ref-screen">
         <div class="fstep-tag">💸 Earn $1,000</div>
         <div class="ref-headline">Refer a homeowner,<br>earn real cash</div>
-        <div class="ref-sub">You've seen how much solar can save you. Share it with friends and family. You earn $1,000 after your referral completes a verified qualifying solar installation.</div>
+        <div class="ref-sub">Know someone who might want a free solar estimate? Share your link. You become eligible for a $1,000 reward only after your referral completes a verified qualifying solar installation.</div>
 
         <div class="ref-tiers">
           <div class="ref-tier"><div class="ref-tier-icon">⚡</div><div class="ref-tier-text">Your referral completes a verified solar installation</div><div class="ref-tier-amt">$1,000</div></div>
@@ -1584,7 +1531,7 @@ footer {
           <div class="cs-item"><div class="cs-num">3</div><div class="cs-text">👋 A local solar specialist will reach out by phone, text or email</div></div>
           <div class="cs-item"><div class="cs-num">4</div><div class="cs-text">💸 Your referral link is active, and you can track your friends in the app</div></div>
         </div>
-        <a class="btn-view-referral" id="trackerBtn" href="/portal/" style="display:block;text-align:center;text-decoration:none">Open my tracker →</a>
+        <a class="btn-view-referral" id="trackerBtn" onclick="WWT.track('tracker_open')" href="/portal/" style="display:block;text-align:center;text-decoration:none">Open my tracker →</a>
         <div id="installNote" style="font-size:0.75rem;color:var(--ink-dim);text-align:center;margin:8px 0 0">Tip: add the tracker to your home screen to get notifications.</div>
         <button class="btn-close-done" onclick="closeModal('funnelOverlay')">Close</button>
       </div>
@@ -1599,17 +1546,71 @@ footer {
 <div class="loading-screen" id="loadingScreen">
   <div class="loader-spinner"></div>
   <div class="loader-steps">
-    <div class="ls-item active" id="ls1">Analyzing solar data for your area</div>
-    <div class="ls-item" id="ls2">Calculating system size & savings</div>
-    <div class="ls-item" id="ls3">Applying local incentives</div>
-    <div class="ls-item" id="ls4">Scoring your lead profile</div>
-    <div class="ls-item" id="ls5">Building your estimate</div>
+    <div class="ls-item active" id="ls1">Saving your request securely</div>
+    <div class="ls-item" id="ls2">Checking your details</div>
+    <div class="ls-item" id="ls3">Building your rough estimate</div>
+    <div class="ls-item" id="ls4">Setting up your private tracker</div>
+    <div class="ls-item" id="ls5">Almost done</div>
   </div>
   <div class="ls-bar-wrap"><div class="ls-bar" id="lsBar"></div></div>
 </div>
 
 
 <script>
+/* ══════════════════════════════════════════
+   PRIVACY-FRIENDLY ANALYTICS (first-party)
+   No cookies, no ad pixels, no personal details. Skipped entirely under Global Privacy Control, Do Not Track, or the
+   footer "Analytics" switch. Sends only: an anonymous per-tab id, event name, step number, campaign tags, referring
+   host and device class, to /api/event on this same site. Nothing here is sent to an advertising platform.
+══════════════════════════════════════════ */
+const WWT = (function () {
+  const KEY_OFF = 'ww_analytics_off', KEY_VID = 'ww_vid', KEY_UTM = 'ww_utm';
+  const safe = (fn, d) => { try { return fn(); } catch (_) { return d; } };
+  const gpc = () => navigator.globalPrivacyControl === true || navigator.doNotTrack === '1' || window.doNotTrack === '1';
+  const off = () => gpc() || safe(() => localStorage.getItem(KEY_OFF) === '1', false);
+  const TAGS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'], CLICK = ['gclid', 'fbclid', 'msclkid'];
+
+  // Campaign tags are a record of where the visitor came from, kept for the session so they survive reloads and /r/ links.
+  const q = new URLSearchParams(location.search);
+  const fresh = {};
+  [...TAGS, ...CLICK].forEach(k => { const v = q.get(k); if (v) fresh[k] = v.slice(0, 120); });
+  let utm = safe(() => JSON.parse(sessionStorage.getItem(KEY_UTM) || '{}'), {});
+  if (Object.keys(fresh).length) { utm = fresh; safe(() => sessionStorage.setItem(KEY_UTM, JSON.stringify(utm))); }
+
+  let vid = safe(() => sessionStorage.getItem(KEY_VID), null);
+  if (!vid) {
+    vid = Array.from(crypto.getRandomValues(new Uint8Array(10)), b => (b % 36).toString(36)).join('');
+    safe(() => sessionStorage.setItem(KEY_VID, vid));
+  }
+  const device = innerWidth < 600 ? 'mobile' : innerWidth < 1024 ? 'tablet' : 'desktop';
+  const refHost = safe(() => { const h = new URL(document.referrer).host; return h && h !== location.host ? h : ''; }, '');
+  const hasRef = () => !!(typeof lead !== 'undefined' && lead && lead.refBy);
+  let queue = [], timer = null, started = false, done = false, lastStep = null;
+
+  function flush(beacon) {
+    if (!queue.length) return;
+    const body = JSON.stringify({ events: queue.splice(0, 25) });
+    if (beacon && navigator.sendBeacon) { if (navigator.sendBeacon('/api/event', new Blob([body], { type: 'application/json' }))) return; }
+    fetch('/api/event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+  }
+  function track(event, extra) {
+    if (off()) return;
+    const clean = {}; TAGS.slice(0, 4).forEach(k => { if (utm[k]) clean[k] = utm[k]; });   // click ids are not needed for funnel analytics
+    queue.push(Object.assign({ event, vid, utm: clean, device, ref_host: refHost, has_ref: hasRef() || undefined }, extra || {}));
+    clearTimeout(timer); timer = setTimeout(() => flush(false), 1200);
+  }
+  function setToggleLabel() { const a = document.getElementById('analyticsToggle'); if (a) a.textContent = gpc() ? 'Analytics: off (privacy signal)' : (off() ? 'Analytics: off' : 'Analytics: on'); }
+  addEventListener('pagehide', () => { if (started && !done && lastStep) track('abandon', { step: lastStep }); flush(true); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(true); });
+  return {
+    track, flush, setToggleLabel,
+    started: () => { started = true; }, finished: () => { done = true; },
+    step: (n) => { lastStep = n; },
+    // Campaign tags for the lead record. Ad click ids are stored only when analytics is on.
+    utm: () => { const o = {}; TAGS.forEach(k => { if (utm[k]) o[k] = utm[k]; }); if (!off()) CLICK.forEach(k => { if (utm[k]) o[k] = utm[k]; }); return o; },
+    toggle: () => { if (gpc()) { setToggleLabel(); return; } safe(() => { if (localStorage.getItem(KEY_OFF) === '1') localStorage.removeItem(KEY_OFF); else localStorage.setItem(KEY_OFF, '1'); }); if (off()) queue = []; setToggleLabel(); },
+  };
+})();
 /* ══════════════════════════════════════════
    WATTWORTHAPP STATE
 ══════════════════════════════════════════ */
@@ -1625,6 +1626,9 @@ const lead = {
   utmMedium: new URLSearchParams(location.search).get('utm_medium') || '',
   refBy: new URLSearchParams(location.search).get('ref') || ((/^\/r\/([A-Za-z0-9]+)/.exec(location.pathname) || [])[1] || '')
 };
+
+WWT.setToggleLabel();
+WWT.track('landing_view');
 
 const stepLabels = ['Monthly Bill','Ownership','Roof Type','Your Address','Your Details','Verify Account'];
 const STEP_POS = { 2:1, 3:2, 4:3, 1:4, 5:5, 6:6 };   // funnel order: bill, ownership, roof, address, details (address is never asked first)
@@ -1670,6 +1674,7 @@ function goStep(n) {
   const body = document.querySelector('#funnelModal .modal-body');
 
   if (n === 'quote' || n === 'referral' || n === 'confirm') {
+    if (n === 'referral') WWT.track('referral_view');
     prog.style.display = 'none';
     body.style.padding = '0';
     document.getElementById('fs-' + n).classList.add('active');
@@ -1679,6 +1684,7 @@ function goStep(n) {
   body.style.padding = '';
   document.getElementById('fs' + n).classList.add('active');
   const pos = STEP_POS[n];
+  WWT.step(pos); WWT.track('step_view', { step: pos });
   document.getElementById('funnelStepLabel').textContent = stepLabels[pos-1];
   document.getElementById('funnelStepCount').textContent = pos + ' / 6';
   document.getElementById('funnelFill').style.width = (pos / 6 * 100) + '%';
@@ -1723,8 +1729,8 @@ function calcEstimate() {
   const py25 = Math.round(((yearlyLow + yearlyHigh)/2) * 25 * 1.03);
   const co2  = Math.round(kwh * 12 * 0.386);
   const cost = Math.round(systemKw * 3200);
-  const credit = Math.round(cost * 0.30);
-  const net = cost - credit;
+  const credit = 0;                 // the federal homeowner credit (25D) ended 12/31/2025, so no credit is applied or implied
+  const net = cost;
   const payback = Math.round(net / ((yearlyLow+yearlyHigh)/2) * 10) / 10;
 
   // Scoring
@@ -1736,7 +1742,7 @@ function calcEstimate() {
   if (lead.verifyMethod === 'both') score = Math.min(score + 5, 100);
   lead.qualScore = Math.min(score, 100);
 
-  const tier = score >= 80 ? 'HOT 🔴' : score >= 50 ? 'WARM 🟡' : 'COOL 🔵';
+  const tier = '';   // internal scoring is never shown to the visitor
 
   return { systemKw, monthlyLow, monthlyHigh, yearlyLow, yearlyHigh, py25, co2, cost, credit, net, payback, tier };
 }
@@ -1788,6 +1794,7 @@ function onBillPicked(inp) {
   const rd = new FileReader();
   rd.onload = () => {
     lead.billFile = { filename: f.name, mime: f.type, data: String(rd.result).split(',')[1] || '' };
+    WWT.track('verify_method', { method: 'bill' });
     document.getElementById('billLabel').textContent = '✅ ' + f.name;
     document.getElementById('billSub').textContent = (f.size / 1024 < 1024 ? Math.round(f.size / 1024) + ' KB' : (f.size / 1048576).toFixed(1) + ' MB') + ' · tap to change';
     document.getElementById('billArea').style.borderColor = 'var(--green)'; document.getElementById('billRemove').style.display = 'block';
@@ -1808,11 +1815,13 @@ function verifyError() {
 }
 
 async function submitLead() {
+  WWT.track('submit_attempt');
   readContact();
   const cerr = contactError();
-  if (cerr) { goStep(5); const b = document.getElementById('formErr'); b.textContent = cerr; b.style.display = 'block'; return; }
+  if (cerr) { WWT.track('submit_error', { error: 'contact' }); goStep(5); const b = document.getElementById('formErr'); b.textContent = cerr; b.style.display = 'block'; return; }
   const verr = verifyError();
-  if (verr) return verifyErr(verr);
+  if (verr) { WWT.track('submit_error', { error: 'verify' }); return verifyErr(verr); }
+  WWT.track('verify_method', { method: lead.verifyMethod });
   verifyErr('');
   const err = (m) => { verifyErr(m); return false; };
   const sending = sendLead();   // runs while the estimate animation plays
@@ -1826,16 +1835,17 @@ async function submitLead() {
   const lsInterval = setInterval(() => {
     if (li > 0) { document.getElementById(lsItems[li-1]).classList.remove('active'); document.getElementById(lsItems[li-1]).classList.add('done'); }
     if (li < lsItems.length) { document.getElementById(lsItems[li]).classList.add('active'); li++; }
-  }, 650);
+  }, 450);
 
-  await new Promise(r => setTimeout(r, 3600));
+  await Promise.all([sending.catch(() => {}), new Promise(r => setTimeout(r, 1800))]);   // wait for the real save, at least a moment so the screen does not flash
   clearInterval(lsInterval);
   ls.classList.remove('on');
   lsItems.forEach(i => { document.getElementById(i).classList.remove('active','done'); });
   li = 0;
 
   const sent = await sending;
-  if (!sent.ok) { document.getElementById('lsBar').style.width = '0%'; err(sent.error); return; }
+  if (!sent.ok) { document.getElementById('lsBar').style.width = '0%'; WWT.track('submit_error', { error: /Too many/.test(sent.error) ? 'rate_limit' : /Network/.test(sent.error) ? 'network' : 'server' }); err(sent.error); return; }
+  WWT.track('submit_success'); WWT.finished(); WWT.flush(false);
   lead.ref = sent.ref;
 
   lead.estimate = calcEstimate();
@@ -1852,75 +1862,56 @@ async function submitLead() {
 function renderQuote() {
   const e = lead.estimate;
   const addr = `${lead.city}, ${lead.state}`;
-  const tierColor = e.tier.includes('HOT') ? '#C62828' : e.tier.includes('WARM') ? '#E65100' : '#1565C0';
 
   document.getElementById('fs-quote').innerHTML = `
     <div class="quote-hero">
       <div class="qh-tag">⚡ WattWorth Estimate</div>
       <div class="qh-name">${lead.firstName}, here's your savings picture</div>
-      <div class="qh-addr">📍 ${addr} · Score: ${lead.qualScore}/100</div>
-      <div class="qh-score" style="background:rgba(255,255,255,0.12)">${e.tier}</div>
+      <div class="qh-addr">📍 ${addr}</div>
     </div>
     <div class="quote-body">
 
       <div class="savings-range">
-        <div class="sr-label">Estimated Monthly Savings Range</div>
+        <div class="sr-label">Rough monthly savings range</div>
         <div class="sr-range">
           $${e.monthlyLow}<span class="sep">–</span>$${e.monthlyHigh}
         </div>
         <div class="sr-period">per month · $${e.yearlyLow.toLocaleString()}–$${e.yearlyHigh.toLocaleString()} / year</div>
-        <div class="sr-context">Based on similar homes in your area</div>
+        <div class="sr-context">Rough range from your bill range and typical sun in your state, assuming solar covers about 75-95% of your electricity. Not a quote.</div>
       </div>
 
       <div class="q-metrics">
-        <div class="q-met"><div class="qm-val">${e.systemKw} kW</div><div class="qm-label">System Size</div></div>
-        <div class="q-met"><div class="qm-val">$${(e.py25/1000).toFixed(0)}K</div><div class="qm-label">25-Yr Return</div></div>
-        <div class="q-met"><div class="qm-val">${e.payback} yr</div><div class="qm-label">Payback</div></div>
-        <div class="q-met"><div class="qm-val">30%</div><div class="qm-label">Fed. Credit</div></div>
-        <div class="q-met"><div class="qm-val">$${(e.credit/1000).toFixed(1)}K</div><div class="qm-label">ITC Est.</div></div>
+        <div class="q-met"><div class="qm-val">${e.systemKw} kW</div><div class="qm-label">Rough system size</div></div>
+        <div class="q-met"><div class="qm-val">$${(e.py25/1000).toFixed(0)}K</div><div class="qm-label">25-yr savings, before cost</div></div>
+        <div class="q-met"><div class="qm-val">${e.payback} yr</div><div class="qm-label">Rough payback</div></div>
+        <div class="q-met"><div class="qm-val">$${(e.cost/1000).toFixed(0)}K</div><div class="qm-label">Rough system cost</div></div>
+        <div class="q-met"><div class="qm-val">Ask</div><div class="qm-label">Incentives vary</div></div>
         <div class="q-met"><div class="qm-val">${(e.co2/1000).toFixed(1)}T</div><div class="qm-label">CO₂/yr</div></div>
       </div>
 
-      <div class="bill-viz">
-        <div class="bv-title">Current Bill vs. Solar</div>
-        <div class="bv-row">
-          <div class="bv-row-top"><span class="bvr-label">Current electric bill</span><span class="bvr-val" style="color:var(--ink-dim)">~$${Math.round((e.monthlyLow+e.monthlyHigh)/2/0.85)}/mo</span></div>
-          <div class="bv-track"><div class="bv-fill bill" style="width:100%"></div></div>
-        </div>
-        <div class="bv-row">
-          <div class="bv-row-top"><span class="bvr-label">Solar loan payment (est.)</span><span class="bvr-val" style="color:var(--green-dark)">~$${Math.round(e.net/120*1.04)}/mo</span></div>
-          <div class="bv-track"><div class="bv-fill solar" style="width:${Math.round(e.net/120*1.04 / (Math.round((e.monthlyLow+e.monthlyHigh)/2/0.85)) * 100)}%"></div></div>
-        </div>
-        <div class="bv-row">
-          <div class="bv-row-top"><span class="bvr-label">Monthly savings</span><span class="bvr-val" style="color:var(--gold-dark)">$${e.monthlyLow}–$${e.monthlyHigh}/mo</span></div>
-          <div class="bv-track"><div class="bv-fill savings" style="width:${Math.round(e.monthlyLow / (Math.round((e.monthlyLow+e.monthlyHigh)/2/0.85)) * 100)}%"></div></div>
-        </div>
-        <div class="bv-savings-label">↑ That's money back in your pocket, starting month 1</div>
-      </div>
-
-      <div class="plan-label">Choose your financing path</div>
+      <div class="plan-label">Ways to pay (your specialist will confirm what is available)</div>
       <div class="plan-card chosen" onclick="pickPlan(this,'purchase')">
         <div style="flex:1">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
-            <div class="plan-name">Cash Purchase</div><span class="plan-chip">Best ROI</span>
+            <div class="plan-name">Cash Purchase</div>
           </div>
-          <div class="plan-desc">Own outright. Maximum 25-yr savings. Full 30% ITC applies.</div>
+          <div class="plan-desc">Own the system outright. The federal homeowner credit ended for purchases after 2025; ask about other incentives.</div>
         </div>
-        <div class="plan-price">$${e.net.toLocaleString()}<small>after fed. credit</small></div>
+        <div class="plan-price">~$${e.net.toLocaleString()}<small>rough cost</small></div>
       </div>
       <div class="plan-card" onclick="pickPlan(this,'loan')">
         <div style="flex:1">
           <div class="plan-name" style="margin-bottom:3px">Solar Loan</div>
-          <div class="plan-desc">$0 down. Own the system. Claim the ITC yourself.</div>
+          <div class="plan-desc">Often little or no money down. You own the system. Terms vary by lender.</div>
         </div>
-        <div class="plan-price">~$${Math.round(e.net/120*1.04)}/mo<small>10-yr est. @ 5% APR</small></div>
+        <div class="plan-price">Varies<small>depends on lender</small></div>
       </div>
       <div class="plan-card" onclick="pickPlan(this,'lease')">
         <div style="flex:1">
           <div class="plan-name" style="margin-bottom:3px">Lease / PPA</div>
-          <div class="plan-desc">$0 down, $0 maintenance. Immediate savings, no ownership.</div>
+          <div class="plan-desc">A company owns the system and you pay a set rate. Read the contract length and sale-of-home terms.</div>
         </div>
-        <div class="plan-price">~$${Math.round(e.monthlyLow*0.65)}/mo<small>fixed rate est.</small></div>
+        <div class="plan-price">Varies<small>depends on provider</small></div>
       </div>
 
       <div class="q-disclaimer">Estimates based on regional solar data and typical usage patterns. Actual savings may vary. Final system design subject to site inspection. This is not a contract or binding offer.<br><span style="color:var(--green-dark);font-weight:600">Powered by SunLoop</span></div>
@@ -1950,11 +1941,11 @@ async function requestProposal() {
   await new Promise(r => setTimeout(r, 2000));
   ls.classList.remove('on');
   // Reset loader text
-  document.getElementById('ls1').textContent = 'Analyzing solar data for your area';
-  document.getElementById('ls2').textContent = 'Calculating system size & savings';
-  document.getElementById('ls3').textContent = 'Applying local incentives';
-  document.getElementById('ls4').textContent = 'Scoring your lead profile';
-  document.getElementById('ls5').textContent = 'Building your estimate';
+  document.getElementById('ls1').textContent = 'Saving your request securely';
+  document.getElementById('ls2').textContent = 'Checking your details';
+  document.getElementById('ls3').textContent = 'Building your rough estimate';
+  document.getElementById('ls4').textContent = 'Setting up your private tracker';
+  document.getElementById('ls5').textContent = 'Almost done';
   document.getElementById('lsBar').style.width = '0';
   goStep('referral');
 }
@@ -1970,7 +1961,7 @@ function copyRefLink() {
 }
 function shareVia(channel) {
   const link = location.origin + '/r/' + lead.refCode;
-  const msg = encodeURIComponent(`Check your solar savings for free — I saved $${(lead.estimate?.monthlyLow || 120)}/mo! ${link}`);
+  const msg = encodeURIComponent(`I checked what solar could save me with WattWorth. It takes about a minute and there is no obligation: ${link}\n\n(Disclosure: I may receive a reward if you complete a qualifying solar installation through WattWorth.)`);
   const urls = {
     sms: `sms:?body=${msg}`,
     email: `mailto:?subject=Check%20your%20solar%20savings&body=${msg}`,
@@ -1984,7 +1975,7 @@ function submitReferral() {
   const contact = document.getElementById('ref-contact').value.trim();
   if (contact) {
     const link = location.origin + '/r/' + lead.refCode;
-    const msg = encodeURIComponent(`Hi${name ? ' ' + name.split(' ')[0] : ''}, check your solar savings for free with WattWorth: ${link}`);
+    const msg = encodeURIComponent(`Hi${name ? ' ' + name.split(' ')[0] : ''}, I checked what solar could save me with WattWorth. It takes about a minute and there is no obligation: ${link}\n\n(Disclosure: I may receive a reward if you complete a qualifying solar installation through WattWorth.)`);
     if (/@/.test(contact)) window.location.href = `mailto:${encodeURIComponent(contact)}?subject=Check%20your%20solar%20savings&body=${msg}`;
     else window.location.href = `sms:${contact.replace(/[^0-9+]/g, '')}?body=${msg}`;
   }
@@ -2023,7 +2014,7 @@ async function sendLead() {
     consent_text: document.getElementById('consentText').textContent.trim(),   // exact wording the visitor saw
     referrer_code: lead.refBy || null,
     source: location.pathname,
-    utm: Object.fromEntries(['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].map(k => [k, q.get(k)]).filter(([, v]) => v)),
+    utm: WWT.utm(),   // campaign tags kept for the whole session, so a reload or /r/ link does not lose the source
     website: document.getElementById('inp-website').value || '',   // honeypot
   };
   try {
@@ -2037,7 +2028,8 @@ async function sendLead() {
 }
 
 /* ── MODAL HELPERS ───────────────────────── */
-function openFunnel() {
+function openFunnel(cta) {
+  WWT.track('cta_click', { cta: ['hero','nav','estimate','plans','referral','footer'].includes(cta) ? cta : 'estimate' }); WWT.started(); WWT.track('funnel_start');
   document.getElementById('funnelOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   goStep(2);
